@@ -86,6 +86,8 @@ function Siteswap(siteswap) {
 	this.numJugglers = 1;
 	var isPassingPattern = /<[^ ]+>/.test(siteswap);
 
+	var numJugglerMismatch = false;
+
 	if (isPassingPattern) {
 		var passingBeatArray = siteswap.match(/<[^ <>]+>/g);
 		this.numJugglers = passingBeatArray[0].split("|").length;
@@ -94,7 +96,7 @@ function Siteswap(siteswap) {
 			check to make sure each beat in the passing pattern has the same number of jugglers 
 			if a passing pattern only has 1 juggler than it's automatically a mismatch
 		*/
-		var numJugglerMismatch = this.numJugglers == 1 ? true : false;
+		numJugglerMismatch = (this.numJugglers == 1 ? true : false);
 		
 		var numJugglersTmp = this.numJugglers;
 		passingBeatArray.map(function(a) { 
@@ -309,7 +311,7 @@ function Siteswap(siteswap) {
 		} else if (siteswap.match(validSyncRe)) {
 			var patterns = siteswap.split(",");
 			getTosses(tosses,patterns[0].substr(1),juggler,true,LEFT);
-			getTosses(tosses,patterns[1].substr(0,patterns.length-1),juggler,true,RIGHT);
+			getTosses(tosses,patterns[1].substr(0,patterns.length),juggler,true,RIGHT);
 		} else if (siteswap.match(validMultiplex)) {
 			var patterns = siteswap.match(validTossRe);
 			patterns.map(function(s) {
