@@ -3,7 +3,7 @@
 <head>
 
 	<script src="js/jquery-1.10.2.min.js"></script>
-	<script src="js/gunswap.js"></script>
+	<script src="js/three.min.js"></script>
 	<style></style>
 
 </head>
@@ -11,6 +11,16 @@
 <body>
 
 <span id="states"></span>
+<span id="propOrbits"></span>
+
+<span id="dbg"></span>
+
+<div id="canvasContainer">
+</div>
+
+<input id="sliderStep" type="range" min="0" max="1000" step="1" value="0" style="width:400px;" onchange="animateFromSlider();"></input>
+
+<script src="js/gunswap.js"></script>
 
 </body>
 
