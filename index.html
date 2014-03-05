@@ -15,11 +15,16 @@
 
 <span id="dbg"></span>
 
-<div id="canvasContainer">
-</div>
+<input id="siteswapInput" type="text" value="5" style="position:absolute;"></input>
+<button id="go" onclick="go();" style="position:absolute;top:35px;">Go</button>
 
-<input id="sliderStep" type="range" min="0" max="1000" step="1" value="0" style="width:400px;" onchange="animateFromSlider();"></input>
+<div id="canvasContainer" width="100%"></div>
+<input id="sliderStep" type="range" min="0" max="1000" step="1" value="0" onchange="animateFromSlider();"></input>
 
+<script src="js/constants.js"></script>
+<script src="js/helpers.js"></script>
+<script src="js/Siteswap.js"></script>
+<script src="js/Juggler.js"></script>
 <script src="js/gunswap.js"></script>
 
 </body>
