@@ -93,8 +93,7 @@ test("Calculates juggler hand positions correctly", function() {
 			}
 		]
 	});
-	ok ( j.handPosition(LEFT).x == -.5 && j.handPosition(LEFT).y == 0 && j.handPosition(LEFT).z == 0, "Left hand correct" )
-	ok ( j.handPosition(RIGHT).x == .5 && j.handPosition(RIGHT).y == 0 && j.handPosition(RIGHT).z == 0, "Right hand correct" )
+	
 	ok ( Math.abs(j.interpolateDwellPath(LEFT,0).x - (-.4)) < eps, "Dwell path interpolation function correct" )
 	ok ( Math.abs(j.interpolateDwellPath(RIGHT,0).x - (.4)) < eps, "Dwell path interpolation function correct" )
 	ok ( Math.abs(j.interpolateDwellPath(LEFT,.5).x - (-.5)) < eps, "Dwell path interpolation function correct" )
@@ -115,27 +114,5 @@ test("Calculates juggler hand positions correctly", function() {
 	ok ( Math.abs(j.interpolateDwellPath(RIGHT,.5).z - (0)) < eps, "Dwell path interpolation function correct" )
 	ok ( Math.abs(j.interpolateDwellPath(LEFT,1).z - (0)) < eps, "Dwell path interpolation function correct" )
 	ok ( Math.abs(j.interpolateDwellPath(RIGHT,1).z - (0)) < eps, "Dwell path interpolation function correct" )
-
-	var j = new Juggler({
-		position: {x:0,y:0,z:0}, 
-		rotation: Math.PI, 
-		width:1,
-		dwellPath: [
-			/* left */
-			{
-				radius: .1,
-				catchRotation: 2*Math.PI,
-				tossRotation: Math.PI
-			},
-			/* right */
-			{
-				radius: .1,
-				catchRotation: Math.PI,
-				tossRotation: 2*Math.PI
-			}
-		]
-	});
-	ok ( j.handPosition(LEFT).x == .5 && j.handPosition(LEFT).y == 0 && Math.abs(j.handPosition(LEFT).z-0) < eps, "Left hand correct" )
-	ok ( j.handPosition(RIGHT).x == -.5 && j.handPosition(RIGHT).y == 0 && Math.abs(j.handPosition(RIGHT).z-0) < eps, "Right hand correct" )
 
 });

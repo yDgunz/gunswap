@@ -4,28 +4,126 @@
 
 	<script src="js/jquery-1.10.2.min.js"></script>
 	<script src="js/three.min.js"></script>
-	<style></style>
+	<script src="js/bootstrap.min.js"></script>
+	
+	<link href="css/bootstrap.min.css" rel="stylesheet">
 
 </head>
 
 <body>
 
-<span id="states"></span>
-<span id="propOrbits"></span>
+	<div id="dbg" style="position:absolute;right:10px;top:10px;background-color:white;">
+		<span id="states"></span><br/>
+		<span id="propOrbits"></span>
+	</div>
 
-<span id="dbg"></span>
+	<input id="siteswapInput" type="text" value="5" style="position:absolute;left:10px;top:10px;"></input>
+	<button id="go" onclick="go();" style="position:absolute;left:10px;top:45px;">Go</button>
+	<button id="help" onclick="$('#helpAccordion').slideToggle();" style="position:absolute;left:70px;top:45px;">Help</button>
 
-<input id="siteswapInput" type="text" value="5" style="position:absolute;"></input>
-<button id="go" onclick="go();" style="position:absolute;top:35px;">Go</button>
+	<div class="panel-group" id="helpAccordion" style="position:absolute;right:10px;top:10px;width:33%;">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#helpAccordion" href="#quickHelp">
+						Quick help
+					</a>
+				</h4>
+			</div>
+			<div id="quickHelp" class="panel-collapse collapse in">
+				<div class="panel-body">
+					Gunswap is a web-based juggling animator. Juggling patterns are defined using standard siteswap notation with support for synchronous, multiplex and passing. Some examples to get you started:
+					<ul>
+						<li><a onclick="$('#siteswapInput').val('5');go();" href="#">5</a> - 5 ball cascade</li>
+						<li><a onclick="$('#siteswapInput').val('7531');go();" href="#">7531</a> - 4 ball tower</li>
+						<li><a onclick="$('#siteswapInput').val('91');go();" href="#">91</a> - 5 ball shower</li>
+						<li><a onclick="$('#siteswapInput').val('(4,4)');go();" href="#">(4,4)</a> - 4 ball sync fountain</li>
+						<li><a onclick="$('#siteswapInput').val('(4,2x)(2x,4)');go();" href="#">(4,2x)(2x,4)</a> - 3 ball box</li>
+						<li><a onclick="$('#siteswapInput').val('43[23]');go();" href="#">43[23]</a> - 4 ball multiplex pattern</li>
+						<li><a onclick="$('#siteswapInput').val('<3|3><3p|3p>');go();" href="#">&lt;3|3&gt;&lt;3p|3p&gt;</a> - 6 ball 2 juggler passing pattern</li>
+						<li><a onclick="$('#siteswapInput').val('<7|5|3>');go();" href="#">&lt;7|5|3&gt;</a> - 3 jugglers no passing</li>
+					</ul>
+				</div> 
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#helpAccordion" href="#whatIsSiteswap">
+						What is siteswap?
+					</a>
+				</h4>
+			</div>
+			<div id="whatIsSiteswap" class="panel-collapse collapse">
+				<div class="panel-body">
+					Siteswap is a notation for describing juggling patterns. <a href="http://www.siteswap.org/">siteswap.org</a> has a bunch of great links explaining siteswap. This application was developed referencing the <a href="http://jugglinglab.sourceforge.net/html/ssnotation.html">Juggling Lab siteswap documentation</a>, though it does not support the Juggling Lab extensions to siteswap.
+				</div> 
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#helpAccordion" href="#additionalResources">
+						Additional resources
+					</a>
+				</h4>
+			</div>
+			<div id="additionalResources" class="panel-collapse collapse">
+				<div class="panel-body">
+					Gunswap is hardly the first siteswap animator out there. Here are some other great siteswap animators:
+					<ul>
+						<li>Juggling Lab</li>
+						<li>Quantum Juggling</li>
+						<li>Juggloid</li>
+						<li>JoePass</li>
+					</ul>
+				</div> 
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#helpAccordion" href="#acknowledgements">
+						Acknowledgements
+					</a>
+				</h4>
+			</div>
+			<div id="acknowledgements" class="panel-collapse collapse">
+				<div class="panel-body">
+					Gunswap makes extensive use of some really awesome open source projects:
+					<ul>
+						<li>Three.js - for 3D graphics</li>
+						<li>Bootstrap - to make UI controls pretty</li>
+						<li>jQuery - for anything and everything</li>
+						<li>QUnit - for testing</li>
+						<li>GitHub - for hosting</li>
+					</ul>
+				</div> 
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#helpAccordion" href="#about">
+						About
+					</a>
+				</h4>
+			</div>
+			<div id="about" class="panel-collapse collapse">
+				<div class="panel-body">
+					Gunswap is just beginning! Check out <a href="http://gunswap.blogspot.com/">http://gunswap.blogspot.com/</a> for updates on development.
+				</div> 
+			</div>
+		</div>				
+	</div>
+	
+	<div id="canvasContainer" width="100%"></div>
 
-<div id="canvasContainer" width="100%"></div>
-<input id="sliderStep" type="range" min="0" max="1000" step="1" value="0" onchange="animateFromSlider();"></input>
-
-<script src="js/constants.js"></script>
-<script src="js/helpers.js"></script>
-<script src="js/Siteswap.js"></script>
-<script src="js/Juggler.js"></script>
-<script src="js/gunswap.js"></script>
+	<script src="js/constants.js"></script>
+	<script src="js/helpers.js"></script>
+	<script src="js/Siteswap.js"></script>
+	<script src="js/Juggler.js"></script>
+	<script src="js/gunswap.js"></script>
 
 </body>
 

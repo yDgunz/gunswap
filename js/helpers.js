@@ -16,13 +16,13 @@ function GetQueryStringParams(sParam)
     }
 }
 
-Object.prototype.cloneState = function() {
-  var newObj = (this instanceof Array) ? [] : {};
-  for (i in this) {
+function cloneState(obj) {
+  var newObj = (obj instanceof Array) ? [] : {};
+  for (i in obj) {
     if (i == 'clone') continue;
-    if (this[i] && typeof this[i] == "object") {
-      newObj[i] = this[i].cloneState();
-    } else newObj[i] = this[i]
+    if (obj[i] && typeof obj[i] == "object") {
+      newObj[i] = cloneState(obj[i]);
+    } else newObj[i] = obj[i]
   } return newObj;
 };
 
@@ -33,6 +33,8 @@ Object.prototype.cloneState = function() {
 function sumIntegers(str) {
 	if (str.length == 1 && parseInt(str)) {
 		return parseInt(str);
+	} else if (str.charCodeAt(0) >= 97 && str.charCodeAt(0) <= 111) {
+		return str.charCodeAt(0)-87;
 	} else if (str.length > 1) {
 		return str.split('').reduce(function(prev,cur) { return (parseInt(prev) ? parseInt(prev) : 0) + (parseInt(cur) ? parseInt(cur) : 0) });
 	} else {

@@ -1,7 +1,7 @@
 var paused = false;
 var renderMode = '3D';
 var camera, scene, renderer;
-var meshes, floor;
+var meshes = [], floor;
 var camTheta = 0, camPhi = .4, camRadius = 5; // camera starting point
 var isMouseDown = false, onMouseDownTheta, onMouseDownPhi, onMouseDownPosition; // helpers for mouse interaction
 
@@ -43,15 +43,76 @@ function onDocumentMouseWheel( event ) {
 	camRadius -= event.wheelDeltaY*.01;
 }
 
-/* ------- */
-/* ON LOAD */
-/* ------- */
+/* --------------------------- */
+/* ANIMATION INIT ON PAGE LOAD */
+/* --------------------------- */
+
+var $container = $('#canvasContainer');
+var width = $container.width(), height = $(window).height()-5;
+
+if (renderMode == '3D') {
+
+	camera = new THREE.PerspectiveCamera( 75, width / height, 1, 10000 );
+	camera.position.x = camRadius * Math.sin( camTheta ) * Math.cos( camPhi );
+	camera.position.y = camRadius * Math.sin( camPhi );
+	camera.position.z = camRadius * Math.cos( camTheta ) * Math.cos( camPhi );
+
+	camera.lookAt(new THREE.Vector3(0,1,0));
+
+	scene = new THREE.Scene();
+
+	/* lights */
+	var pointLight = new THREE.PointLight( 0xffffff );
+	pointLight.position.set(0,4,0);
+	scene.add( pointLight );
+
+	/* draw floor */
+	var floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshLambertMaterial( { color: 0xaaaaaa } ));
+	floor.rotation.x += 3*Math.PI/2
+	scene.add(floor);
+
+	/*
+	var backWall = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshLambertMaterial( { color: 0xaaaaaa } ));
+	backWall.position.z -= 1;
+	backWall.position.y += 5;
+	scene.add(backWall);
+	*/
+
+	/* create the renderer and add it to the canvas container */
+	renderer = new THREE.WebGLRenderer( {antialias: true} );
+	renderer.setSize( width, height );
+
+	$container.empty();
+	$container.append(renderer.domElement);
+
+	//add the event listeners for mouse interaction
+	renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
+	renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
+	renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
+	renderer.domElement.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
+	
+	onMouseDownPosition = new THREE.Vector2();
+
+} else {
+	/* 2D rendering mode */
+
+	$container.empty();
+	$container.append('<canvas id="canvas" width=' + width + ' height=' + height + '></canvas>');
+
+}
+
+/* called by Go button on page */
 
 function go() {
 
-	var s = new Siteswap($('#siteswapInput').val());
+	try {
+		var s = new Siteswap($('#siteswapInput').val());
+	} catch(e) {
+		console.log(e);
+		return null;
+	}
 
-	//s.debugStates();
+	s.debugStates();
 
 	/* initialize jugglers */
 	var jugglers = [];
@@ -178,84 +239,33 @@ function go() {
 		}
 	}
 
-	/* -------------- */
-	/* ANIMATION INIT */
-	/* -------------- */
 
-	var $container = $('#canvasContainer');
-	var width = $container.width(), height = $(window).height()-50;
-	$('#sliderStep').width(width);
+	/* clear out all meshes from scene */
+	while (meshes.length > 0) {
+		var tmp = meshes[0];		
+		scene.remove(tmp);
+		meshes.splice(0,1);
+	}
 
-	if (renderMode == '3D') {
+	/* create each prop and add to empty meshes array */
+	for (var i = 0; i < s.numProps; i++) {
 
-		camera = new THREE.PerspectiveCamera( 75, width / height, 1, 10000 );
-		camera.position.x = camRadius * Math.sin( camTheta ) * Math.cos( camPhi );
-		camera.position.y = camRadius * Math.sin( camPhi );
-		camera.position.z = camRadius * Math.cos( camTheta ) * Math.cos( camPhi );
+		var mesh = new THREE.Mesh( new THREE.SphereGeometry( .1, 20 ), 
+		new THREE.MeshPhongMaterial( { color: 'red' } ) );
+		mesh.castShadow = true;
 
-		camera.lookAt(new THREE.Vector3(0,1,0));
+		/* synchronize the prop mesh and the prop object */
+		mesh.position.x = 0;
+		mesh.position.y = 0;
+		mesh.position.z = 0;
 
-		scene = new THREE.Scene();
-
-		/* lights */
-		var pointLight = new THREE.PointLight( 0xffffff );
-		pointLight.position.set(0,4,0);
-		scene.add( pointLight );
-
-		meshes = [];
-
-		/* create each prop */
-		for (var i = 0; i < s.numProps; i++) {
-
-			var mesh = new THREE.Mesh( new THREE.SphereGeometry( .1, 20 ), 
-			new THREE.MeshPhongMaterial( { color: 'red' } ) );
-			mesh.castShadow = true;
-
-			/* synchronize the prop mesh and the prop object */
-			mesh.position.x = 0;
-			mesh.position.y = 0;
-			mesh.position.z = 0;
-
-			mesh.rotation.x = 0;
-			mesh.rotation.y = 0;
-			mesh.rotation.z = 0;
+		mesh.rotation.x = 0;
+		mesh.rotation.y = 0;
+		mesh.rotation.z = 0;
 
 
-			scene.add( mesh );
-			meshes.push( mesh );
-		}
-
-		/* draw floor */
-		var floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshLambertMaterial( { color: 0xaaaaaa } ));
-		floor.rotation.x += 3*Math.PI/2
-		scene.add(floor);
-
-		var backWall = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshLambertMaterial( { color: 0xaaaaaa } ));
-		backWall.position.z -= 1;
-		backWall.position.y += 5;
-		scene.add(backWall);
-
-		/* create the renderer and add it to the canvas container */
-		renderer = new THREE.WebGLRenderer( {antialias: true} );
-		renderer.setSize( width, height );
-
-		$container.empty();
-		$container.append(renderer.domElement);
-
-		//add the event listeners for mouse interaction
-		renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
-		renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
-		renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
-		renderer.domElement.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
-		
-		onMouseDownPosition = new THREE.Vector2();
-
-	} else {
-		/* 2D rendering mode */
-
-		$container.empty();
-		$container.append('<canvas id="canvas" width=' + width + ' height=' + height + '></canvas>');
-
+		scene.add( mesh );
+		meshes.push( mesh );
 	}
 
 	var startTime = 0;
@@ -288,38 +298,10 @@ function go() {
 			console.log('Error rendering');
 		}
 
-		/* update slider position */
-		$('#sliderStep').val( step );
-
 		if (!paused) {
 			requestAnimationFrame(function() { animate(); });
 		}
 
-	}
-
-	function animateFromSlider() {
-		paused = true;
-
-		var step = $('#sliderStep').val();
-
-		for (var i = 0; i < meshes.length; i++) {
-			meshes[i].position.x = propOrbits[i][step].x;
-			meshes[i].position.y = propOrbits[i][step].y;
-			meshes[i].position.z = propOrbits[i][step].z;
-		}
-
-		///update camera
-		camera.position.x = camRadius * Math.sin( camTheta ) * Math.cos( camPhi );
-		camera.position.y = camRadius * Math.sin( camPhi );
-		camera.position.z = camRadius * Math.cos( camTheta ) * Math.cos( camPhi );
-
-		camera.lookAt(new THREE.Vector3(0,1,0));	
-
-		try {
-			renderer.render(scene, camera);
-		} catch(e) {
-			console.log('Error rendering');
-		}
 	}
 
 }

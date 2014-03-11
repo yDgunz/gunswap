@@ -38,7 +38,7 @@ function Siteswap(siteswap) {
 	}
 
 	/* construct the various regex patterns. see blog post for details about this */
-	var validToss = "(\\d|[a-g])x?(" + passPattern + ")?";
+	var validToss = "(\\d|[a-o])x?(" + passPattern + ")?";
 	var validMultiplex = "\\[(" + validToss + ")+\\]";
 	var validSync = "\\((" + validToss + "|" + validMultiplex + "),(" + validToss + "|" + validMultiplex + ")\\)";
 	var validBeat = "(" + validToss + "|" + validMultiplex + "|" + validSync + ")";
@@ -144,7 +144,7 @@ function Siteswap(siteswap) {
 			while (!patternComplete) {
 
 				/* TODO: explain this */
-				var tmpPropOrbits = this.propOrbits.cloneState();
+				var tmpPropOrbits = cloneState(this.propOrbits);
 
 				/* queue of props to throw this beat */
 				var propsLanding = [];
@@ -224,7 +224,7 @@ function Siteswap(siteswap) {
 					patternComplete = true;				
 				} else {
 					/* add the current state to the state array and update prop orbits */
-					this.states.push(curState.cloneState());
+					this.states.push(cloneState(curState));
 					this.propOrbits = tmpPropOrbits;
 				}					
 
@@ -269,7 +269,8 @@ function Siteswap(siteswap) {
 				getTosses(tosses,s,juggler);
 			});
 		} else {
-			var numBeats = parseInt(siteswap[0]);
+			/* will work from "a" to "o" (p is reserved for passing) */
+			var numBeats = (siteswap[0].charCodeAt(0) >= 97 && siteswap[0].charCodeAt(0) <= 111) ? siteswap[0].charCodeAt(0)-87 : parseInt(siteswap[0]);
 			var targetJuggler = juggler;
 
 			var pIx = siteswap.indexOf("p");
@@ -302,11 +303,7 @@ function Siteswap(siteswap) {
 
 	this.debugStates = function() {
 		$('#states').empty();
-		/*
-		for (var i = 0; i < this.states.length; i++) {
-			$('#states').append(printState(this.states[i]) + '</br>');
-		}
-		*/
+
 		$('#states').append("<table border='1'>");
 		var tbl = '';
 		/* juggler header */
