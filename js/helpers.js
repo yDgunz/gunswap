@@ -65,24 +65,3 @@ function arraysEqual(a,b) {
 	}
 	return true;
 }
-
-/* returns a string describing a given state */
-function printState(state) {
-
-	var str = '';
-
-	for(var juggler = 0; juggler < state.length; juggler++) {
-		str += ('J' + juggler);
-		for (var hand = 0; hand < state[juggler].length; hand++) {
-			str += (hand == LEFT ? ' L ' : ' R ');
-			for (var beat = 0; beat < state[juggler][hand].length; beat++) {
-				str += (state[juggler][hand][beat] == undefined ? 'X' : state[juggler][hand][beat][0]);
-			}
-		}
-		if (juggler < state.length-1) {			
-			str += ' ';
-		}
-	}
-
-	return str;
-}

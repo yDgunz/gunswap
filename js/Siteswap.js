@@ -55,11 +55,11 @@ function Siteswap(siteswap) {
 	if (siteswap.match(validSiteswapRe) && !numJugglerMismatch) {
 		
 		/* get the array of each beats' tosses */
-		var beatArr = isPassingPattern ? siteswap.match(validPassRe) : siteswap.match(validBeatRe);
+		this.beatArr = isPassingPattern ? siteswap.match(validPassRe) : siteswap.match(validBeatRe);
 		
 		/* figure out how many props */
 		var tmp = 0;
-		beatArr.map(function(beat) {
+		this.beatArr.map(function(beat) {
 			if (beat.match(validPassRe)) {
 				var patterns = beat.split('|');
 				for (var i = 0; i < patterns.length; i++) {
@@ -84,8 +84,8 @@ function Siteswap(siteswap) {
 			}
 		});
 
-		if((tmp/beatArr.length % 1) == 0 && tmp/beatArr.length > 0) {
-			this.numProps = tmp/beatArr.length;
+		if((tmp/this.beatArr.length % 1) == 0 && tmp/this.beatArr.length > 0) {
+			this.numProps = tmp/this.beatArr.length;
 		} else {
 			throw 'Invalid pattern - could not determine number of props'
 		}
@@ -97,9 +97,9 @@ function Siteswap(siteswap) {
 			this.tossArr = [];
 
 			/* for each beat get all the tosses */
-			for (var i = 0; i < beatArr.length; i++) {
+			for (var i = 0; i < this.beatArr.length; i++) {
 				var tosses = [];
-				getTosses(tosses,beatArr[i], 0 /* assume juggler 0 */);
+				getTosses(tosses,this.beatArr[i], 0 /* assume juggler 0 */);
 				this.tossArr.push(tosses);
 			}
 
@@ -185,7 +185,8 @@ function Siteswap(siteswap) {
 								throw 'Invalid pattern, prop landing on 0 toss';
 							}
 
-							prop = propsLanding[k].propId;														
+							prop = propsLanding.splice(k,1)[0].propId;
+							break;
 						}
 					}
 
@@ -301,7 +302,7 @@ function Siteswap(siteswap) {
 		}
 	}
 
-	this.debugStates = function() {
+	this.debugStatesHTML = function() {
 		$('#states').empty();
 
 		$('#states').append("<table border='1'>");
@@ -348,6 +349,48 @@ function Siteswap(siteswap) {
 		}
 		$('#propOrbits table').append(tbl);
 
+	}
+
+	this.debugStatesText = function() {
+		$('#states').empty();
+
+		var html = '';
+		for (var i = 0; i < this.states.length; i++) {
+			html += (this.printState(i) + '<br/>');
+		}
+		$('#states').append(html);
+	}
+
+	/* returns a string describing a given state */
+	this.printState = function(ix) {
+
+		var str = (this.beatArr[ix%this.beatArr.length] + ' ');
+
+		for(var juggler = 0; juggler < this.states[ix].length; juggler++) {
+			str += ('J' + juggler + ' ');
+			for (var hand = 0; hand < this.states[ix][juggler].length; hand++) {
+				str += (hand == 0 ? 'L ' : 'R ');
+				for (var beat = 0; beat < this.states[ix][juggler][hand].length; beat++) {
+					str += '[';
+					if (this.states[ix][juggler][hand][beat] == undefined) {
+						str += 'X';
+					} else {
+						for (var prop = 0; prop < this.states[ix][juggler][hand][beat].length; prop++) {
+							str += this.states[ix][juggler][hand][beat][prop];
+						}
+					}
+					str += ']';
+				}
+				if (hand == 0) {				
+					str += ' ';
+				}
+			}
+			if (juggler < this.states[ix].length-1) {			
+				str += ' ';
+			}
+		}
+
+		return str;
 	}
 
 }

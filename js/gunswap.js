@@ -107,12 +107,14 @@ function go() {
 
 	try {
 		var s = new Siteswap($('#siteswapInput').val());
-	} catch(e) {
-		console.log(e);
-		return null;
+		$('#error').hide();
+	} catch(e) {		
+		$('#error').show();
+		$('#errorMessage').html(e);
 	}
 
-	s.debugStates();
+	/* should really refactor the DOM references out of the Siteswap class */
+	s.debugStatesText();
 
 	/* initialize jugglers */
 	var jugglers = [];
@@ -305,3 +307,4 @@ function go() {
 	}
 
 }
+
