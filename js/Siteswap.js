@@ -38,7 +38,7 @@ function Siteswap(siteswap) {
 	}
 
 	/* construct the various regex patterns. see blog post for details about this */
-	var validToss = "(\\d|[a-o])x?(" + passPattern + ")?";
+	var validToss = "(\\d|[a-o])x?(" + passPattern + ")?(B*(L|HL|F|HF))?";
 	var validMultiplex = "\\[(" + validToss + ")+\\]";
 	var validSync = "\\((" + validToss + "|" + validMultiplex + "),(" + validToss + "|" + validMultiplex + ")\\)";
 	var validBeat = "(" + validToss + "|" + validMultiplex + "|" + validSync + ")";
@@ -283,6 +283,18 @@ function Siteswap(siteswap) {
 				}			
 			}
 
+			var numBounces = siteswap.split('B').length-1;
+			var bounceType;
+			if (siteswap.match("HF")) {
+				bounceType = "HF";
+			} else if (siteswap.match("HL")) {
+				bounceType = "HL";
+			} else if (siteswap.match("F")) {
+				bounceType = "F";
+			} else {
+				bounceType = "L";
+			}
+
 			var crossing = (siteswap.length > 1 && (siteswap[1] == "x" && numBeats % 2 == 0) || (siteswap[1] != "x" && numBeats % 2 == 1)) || numBeats % 2 == 1 ? true : false;
 
 			if (sync) {
@@ -296,7 +308,9 @@ function Siteswap(siteswap) {
 					hand: hand, /* only !undefined for sync throws */
 					crossing: crossing,
 					numBeats: numBeats,
-					siteswap: siteswap
+					siteswap: siteswap,
+					numBounces: numBounces,
+					bounceType: bounceType
 				}
 			);
 		}

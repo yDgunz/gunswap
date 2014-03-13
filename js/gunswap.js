@@ -79,7 +79,12 @@ if (renderMode == '3D') {
 	*/
 
 	/* create the renderer and add it to the canvas container */
-	renderer = new THREE.WebGLRenderer( {antialias: true} );
+	/* if browser is mobile, render using canvas */
+	if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+		renderer = new THREE.CanvasRenderer();	
+	} else {
+		renderer = new THREE.WebGLRenderer( {antialias: true} );
+	}
 	renderer.setSize( width, height );
 
 	$container.empty();
