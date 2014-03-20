@@ -4,8 +4,23 @@ var camera, scene, renderer;
 var meshes = [], floor;
 var camTheta = 0, camPhi = .4, camRadius = 5; // camera starting point
 var isMouseDown = false, onMouseDownTheta, onMouseDownPhi, onMouseDownPosition; // helpers for mouse interaction
+var cameraMode = 'sky'
 
 //got the camera rotation code from: http://www.mrdoob.com/projects/voxels/#A/
+function updateCamera() {
+	if (cameraMode == 'sky') {
+		camera.position.x = camRadius * Math.sin( camTheta ) * Math.cos( camPhi );
+		camera.position.y = camRadius * Math.sin( camPhi );
+		camera.position.z = camRadius * Math.cos( camTheta ) * Math.cos( camPhi );
+		camera.lookAt(new THREE.Vector3(0,1,0));
+	} else if (cameraMode == 'juggler') {
+		camera.position.x = 0;
+		camera.position.y = 1.3;
+		camera.position.z = -.5;
+		camera.lookAt(new THREE.Vector3(0,3,1));
+	}
+}
+
 function onDocumentMouseDown( event ) {
 	isMouseDown = true;
 	onMouseDownTheta = camTheta;
@@ -24,12 +39,7 @@ function onDocumentMouseMove( event ) {
 		camPhi = ( ( dy ) * 0.01 ) + onMouseDownPhi;
 	}
 
-	///update camera
-	camera.position.x = camRadius * Math.sin( camTheta ) * Math.cos( camPhi );
-	camera.position.y = camRadius * Math.sin( camPhi );
-	camera.position.z = camRadius * Math.cos( camTheta ) * Math.cos( camPhi );
-
-	camera.lookAt(new THREE.Vector3(0,1,0));	
+	updateCamera();
 
 	renderer.render(scene, camera);
 }
@@ -43,22 +53,25 @@ function onDocumentMouseWheel( event ) {
 	camRadius -= event.wheelDeltaY*.01;
 }
 
+/* handle screen resizing */
+$(window).resize(function() {
+	var width = $container.width()-5, height = $(window).height()-5;
+	renderer.setSize(width, height);
+});
+
 /* --------------------------- */
 /* ANIMATION INIT ON PAGE LOAD */
 /* --------------------------- */
 
 var $container = $('#canvasContainer');
-var width = $container.width(), height = $(window).height()-5;
+var width = $container.width()-5, height = $(window).height()-5;
 
 if (renderMode == '3D') {
 
 	camera = new THREE.PerspectiveCamera( 75, width / height, 1, 10000 );
-	camera.position.x = camRadius * Math.sin( camTheta ) * Math.cos( camPhi );
-	camera.position.y = camRadius * Math.sin( camPhi );
-	camera.position.z = camRadius * Math.cos( camTheta ) * Math.cos( camPhi );
 
-	camera.lookAt(new THREE.Vector3(0,1,0));
-
+	updateCamera();
+	
 	scene = new THREE.Scene();
 
 	/* lights */
@@ -108,10 +121,17 @@ if (renderMode == '3D') {
 
 /* called by Go button on page */
 
+/* on page load instantiate siteswap object, clicking go just re-initializes it with a new siteswap */
+var s = new Siteswap();
+
 function go() {
 
+	/* read inputs from UI */
+	var beatDuration = parseFloat($('#beatDuration').val());
+	var dwellDuration = parseFloat($('#dwellDuration').val());
+
 	try {
-		var s = new Siteswap($('#siteswapInput').val());
+		s.init($('#siteswap').val());
 		$('#error').hide();
 	} catch(e) {		
 		$('#error').show();
@@ -155,8 +175,6 @@ function go() {
 
 	/* create prop orbits */
 	var numSteps = 1000;
-	var beatDuration = .2;
-	var dwellRatio = .5;
 
 	for (var step = 0; step < numSteps; step++) {
 		
@@ -166,7 +184,7 @@ function go() {
 		/* find the current state of each prop */
 		for(var prop = 0; prop < s.numProps; prop++) {
 			
-			var tossJuggler, tossHand, catchJuggler, catchHand, tossBeat, catchBeat;
+			var tossJuggler, tossHand, catchJuggler, catchHand, tossBeat, catchBeat, numBounces, bounceType;
 			
 			if (s.propOrbits[prop].length == 1) {
 				tossBeat = s.propOrbits[prop][0].beat;
@@ -174,7 +192,9 @@ function go() {
 				tossHand = s.propOrbits[prop][0].hand;
 				catchBeat = s.propOrbits[prop][0].beat;
 				catchJuggler = s.propOrbits[prop][0].juggler;
-				catchHand = s.propOrbits[prop][0].hand;			
+				catchHand = s.propOrbits[prop][0].hand;	
+				numBounces = s.propOrbits[prop][0].numBounces;
+				bounceType = s.propOrbits[prop][0].bounceType;
 			}
 			var orbitBeatFound = false;
 			for (var i = 0; i < s.propOrbits[prop].length-1; i++) {
@@ -185,6 +205,8 @@ function go() {
 					catchBeat = s.propOrbits[prop][i+1].beat;
 					catchJuggler = s.propOrbits[prop][i+1].juggler;
 					catchHand = s.propOrbits[prop][i+1].hand;
+					numBounces = s.propOrbits[prop][i].numBounces;
+					bounceType = s.propOrbits[prop][i].bounceType;
 					orbitBeatFound = true;
 				} else if (!orbitBeatFound && i == s.propOrbits[prop].length-2) { 
 					tossBeat = s.propOrbits[prop][i+1].beat;
@@ -193,10 +215,12 @@ function go() {
 					catchBeat = s.propOrbits[prop][0].beat;
 					catchJuggler = s.propOrbits[prop][0].juggler;
 					catchHand = s.propOrbits[prop][0].hand;
+					numBounces = s.propOrbits[prop][i+1].numBounces;
+					bounceType = s.propOrbits[prop][i+1].bounceType;
 				}
 			}
 
-			var tossTime = tossBeat*beatDuration+beatDuration*dwellRatio;
+			var tossTime = tossBeat*beatDuration+dwellDuration;
 			var catchTime = catchBeat*beatDuration;
 			if (tossTime >= catchTime && catchTime >= currentTime) { 
 				tossTime -= (beatDuration*s.states.length);
@@ -207,39 +231,26 @@ function go() {
 
 			if (currentTime < tossTime) {
 				/* interpolate dwell path */
-				var t = 1-(tossTime - currentTime)/(beatDuration*dwellRatio);
+				var t = 1-(tossTime - currentTime)/dwellDuration;
 				propOrbits[prop].push(jugglers[tossJuggler].interpolateDwellPath(tossHand,t));
 			} else {
 
 				/*
 				calculate position at current time
-
-
-				x(t) = x(0) + v_x*t 
-				v_x = (x(T) - x(0))/T
-
-				y(t) = y(0) + v_y(0)*t + .5*G*t*t
-				v_y = (y(T) - y(0) - .5*G*T*T)/T
-
-				where x(0) is current position, x(T) is target position, and T is the time in the air
 				*/
 
 				var T = catchTime - tossTime;
-				var x0 = jugglers[tossJuggler].interpolateDwellPath(tossHand,1).x;
-				var xT = jugglers[catchJuggler].interpolateDwellPath(catchHand,0).x;
-				var y0 = jugglers[tossJuggler].interpolateDwellPath(tossHand,1).y;
-				var yT = jugglers[catchJuggler].interpolateDwellPath(catchHand,0).y;
-				var z0 = jugglers[tossJuggler].interpolateDwellPath(tossHand,1).z;
-				var zT = jugglers[catchJuggler].interpolateDwellPath(catchHand,0).z;
-
 				var t = currentTime - tossTime;
 
-				var xt = x0 + (xT - x0)/T*t;
-				var zt = z0 + (zT - z0)/T*t;
-				var vy = (yT - y0 - .5*G*T*T)/T;
-				var yt = y0 + vy*t + .5*G*t*t;
-
-				propOrbits[prop].push({x: xt, y: yt, z: zt});
+				propOrbits[prop].push(
+					interpolateFlightPath(
+						jugglers[tossJuggler].interpolateDwellPath(tossHand,1), /* p0 */
+						jugglers[catchJuggler].interpolateDwellPath(catchHand,0), /* p1 */
+						T,
+						t,
+						{numBounces:numBounces, bounceType:bounceType}
+					)
+				);
 
 			}
 
@@ -292,12 +303,7 @@ function go() {
 			meshes[i].position.z = propOrbits[i][step].z;
 		}
 
-		///update camera
-		camera.position.x = camRadius * Math.sin( camTheta ) * Math.cos( camPhi );
-		camera.position.y = camRadius * Math.sin( camPhi );
-		camera.position.z = camRadius * Math.cos( camTheta ) * Math.cos( camPhi );
-
-		camera.lookAt(new THREE.Vector3(0,1,0));	
+		updateCamera();
 
 		try {
 			renderer.render(scene, camera);
@@ -312,4 +318,3 @@ function go() {
 	}
 
 }
-
