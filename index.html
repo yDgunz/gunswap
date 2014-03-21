@@ -33,38 +33,32 @@
 			<button type="button" onclick="$('#settingsContainer').slideToggle();" class="btn btn-primary"><span class="glyphicon glyphicon-cog"></span></button>
 		</div>
 	
-		<div id="settingsContainer" style="background-color:#eee;padding:10px;margin:10px;border:1px solid white;">
+		<div id="settingsContainer" style="display:none;background-color:#eee;padding:10px;margin:10px;border:1px solid white;">
 			<div class="row">
 				
 				<div id="timingInputsContainer" class="col-md-4">
 					<div class="row" style="padding:5px;">
 						<div class="col-md-4">
-							Beat
+							Beat Duration
 						</div>
-						<div class="col-md-4">
+						<div class="col-md-8">
 							<div class="input-group"><input id="beatDuration" class="form-control input-sm" value=".2"></input><span class="input-group-addon input-sm">s</span></div>
-						</div>
-						<div class="col-md-4">
-							<div class="input-group"><input id="beatsPerSecond" class="form-control input-sm" value="5"></input><span class="input-group-addon input-sm">bps</span></div>
 						</div>
 					</div>
 					<div class="row" style="padding:5px;">
 						<div class="col-md-4">
-								Dwell
+								Dwell Duration
 							</div>
-						<div class="col-md-4">
+						<div class="col-md-8">
 								<div class="input-group"><input id="dwellDuration" class="form-control input-sm" value=".1"></input><span class="input-group-addon input-sm">s</span></div>
-						</div>
-						<div class="col-md-4">
-							<div class="input-group"><input id="dwellRatio" class="form-control input-sm" value="50"></input><span class="input-group-addon input-sm">%</span></div>
 						</div>
 					</div>
 					<div class="row" style="padding:5px;">
 						<div class="col-md-4">
 								Gravity
 							</div>
-						<div class="col-md-4">
-								<div class="input-group"><input id="beatDuration" class="form-control input-sm" value="9.8"></input><span class="input-group-addon input-sm">m/s<sup>2</sup></span></div>
+						<div class="col-md-8">
+								<div class="input-group"><input id="gravity" class="form-control input-sm" value="9.8"></input><span class="input-group-addon input-sm">m/s<sup>2</sup></span></div>
 						</div>
 					</div>
 				</div>
@@ -79,6 +73,14 @@
 								<option>Ball</option>
 								<option>Club</option>
 							</select>
+						</div>
+					</div>
+					<div class="row" style="padding:5px;">
+						<div class="col-md-4">
+							Radius
+						</div>
+						<div class="col-md-8">
+							<div class="input-group"><input id="propRadius" class="form-control input-sm" value=".05"></input><span class="input-group-addon input-sm">m</span></div>
 						</div>
 					</div>
 					<div class="row" style="padding:5px;">

@@ -1,12 +1,29 @@
-var paused = false;
-var renderMode = '3D';
-var camera, scene, renderer;
-var meshes = [], floor;
-var camTheta = 0, camPhi = .4, camRadius = 5; // camera starting point
-var isMouseDown = false, onMouseDownTheta, onMouseDownPhi, onMouseDownPosition; // helpers for mouse interaction
-var cameraMode = 'sky'
+/* -------------- */
+/* ANIMATION VARS */
+/* -------------- */
 
-//got the camera rotation code from: http://www.mrdoob.com/projects/voxels/#A/
+var paused = false,
+	renderMode = '3D',
+	camera, 
+	scene, 
+	renderer,
+	/* camera starting point */
+	camTheta = 3.6, 
+	camPhi = .4, 
+	camRadius = 5,
+	/* helpers for mouse interaction */
+	isMouseDown = false, 
+	onMouseDownTheta, 
+	onMouseDownPhi, 
+	onMouseDownPosition,
+	cameraMode = 'sky',
+	propMeshes = [],
+	jugglerMeshes = [];
+
+/* ----------------- */
+/* ANIMATION HELPERS */
+/* ----------------- */
+
 function updateCamera() {
 	if (cameraMode == 'sky') {
 		camera.position.x = camRadius * Math.sin( camTheta ) * Math.cos( camPhi );
@@ -21,6 +38,7 @@ function updateCamera() {
 	}
 }
 
+/* got the camera rotation code from: http://www.mrdoob.com/projects/voxels/#A/ */
 function onDocumentMouseDown( event ) {
 	isMouseDown = true;
 	onMouseDownTheta = camTheta;
@@ -40,7 +58,6 @@ function onDocumentMouseMove( event ) {
 	}
 
 	updateCamera();
-
 	renderer.render(scene, camera);
 }
 
@@ -68,8 +85,9 @@ var width = $container.width()-5, height = $(window).height()-5;
 
 if (renderMode == '3D') {
 
-	camera = new THREE.PerspectiveCamera( 75, width / height, 1, 10000 );
+	/* build the 3D scene */
 
+	camera = new THREE.PerspectiveCamera( 75, width / height, 1, 10000 );
 	updateCamera();
 	
 	scene = new THREE.Scene();
@@ -83,13 +101,6 @@ if (renderMode == '3D') {
 	var floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshLambertMaterial( { color: 0xaaaaaa } ));
 	floor.rotation.x += 3*Math.PI/2
 	scene.add(floor);
-
-	/*
-	var backWall = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshLambertMaterial( { color: 0xaaaaaa } ));
-	backWall.position.z -= 1;
-	backWall.position.y += 5;
-	scene.add(backWall);
-	*/
 
 	/* create the renderer and add it to the canvas container */
 	/* if browser is mobile, render using canvas */
@@ -126,184 +137,131 @@ var s = new Siteswap();
 
 function go() {
 
-	/* read inputs from UI */
-	var beatDuration = parseFloat($('#beatDuration').val());
-	var dwellDuration = parseFloat($('#dwellDuration').val());
+	paused = true; // stop animation
 
+	/* read inputs from UI */
+	var config = 
+		{
+			siteswap: $('#siteswap').val(),
+			beatDuration: parseFloat($('#beatDuration').val()),
+			dwellDuration: parseFloat($('#dwellDuration').val()),
+			gravity: $('#gravity').val(),
+			propRadius: $('#propRadius').val()
+		};
+
+	/* try to init the siteswap. if failure occurs, display accordingly */
 	try {
-		s.init($('#siteswap').val());
+
+		s.init(config);
 		$('#error').hide();
+	
+		/* clear out all meshes from scene */
+		while (propMeshes.length > 0) {
+			var tmp = propMeshes[0];		
+			scene.remove(tmp);
+			propMeshes.splice(0,1);
+		}
+		while (jugglerMeshes.length > 0) {
+			var tmp = jugglerMeshes[0];
+			scene.remove(tmp);
+			jugglerMeshes.splice(0,1);
+		}
+
+		/* create each prop and add to empty propMeshes array */
+		for (var i = 0; i < s.numProps; i++) {
+
+			var mesh = new THREE.Mesh( new THREE.SphereGeometry( config.propRadius, 20 ), 
+			new THREE.MeshPhongMaterial( { color: 'red' } ) );
+			mesh.castShadow = true;
+
+			scene.add( mesh );
+			propMeshes.push( mesh );
+		}
+		/* create each juggler and add to empty jugglerMeshes array */
+		for (var i = 0; i < s.numJugglers; i++) {
+			
+			/* create juggler mesh at 0,0,0 */
+
+			var jugglerLegsG = new THREE.Geometry();
+			jugglerLegsG.vertices.push(new THREE.Vector3(-.125,0,0));
+			jugglerLegsG.vertices.push(new THREE.Vector3(0,.8,0));
+			jugglerLegsG.vertices.push(new THREE.Vector3(.125,0,0));
+			var jugglerLegs = new THREE.Line(jugglerLegsG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));
+
+			var jugglerTorsoG = new THREE.Geometry();
+			jugglerTorsoG.vertices.push(new THREE.Vector3(0,.8,0));
+			jugglerTorsoG.vertices.push(new THREE.Vector3(0,1.5,0));
+			var jugglerTorso = new THREE.Line(jugglerTorsoG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));
+
+			var jugglerShouldersG = new THREE.Geometry();
+			jugglerShouldersG.vertices.push(new THREE.Vector3(-.225,1.425,0));
+			jugglerShouldersG.vertices.push(new THREE.Vector3(.225,1.425,0));
+			var jugglerShoulders = new THREE.Line(jugglerShouldersG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));	
+
+			var jugglerLeftArmG = new THREE.Geometry();
+			jugglerLeftArmG.vertices.push(new THREE.Vector3(-.225,1.425,0));
+			jugglerLeftArmG.vertices.push(new THREE.Vector3(-.225,1.0125,0));
+			jugglerLeftArmG.vertices.push(new THREE.Vector3(-.225,1.0125,-.4125));
+			var jugglerLeftArm = new THREE.Line(jugglerLeftArmG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));	
+
+			var jugglerRightArmG = new THREE.Geometry();
+			jugglerRightArmG.vertices.push(new THREE.Vector3(.225,1.425,0));
+			jugglerRightArmG.vertices.push(new THREE.Vector3(.225,1.0125,0));
+			jugglerRightArmG.vertices.push(new THREE.Vector3(.225,1.0125,-.4125));
+			var jugglerRightArm = new THREE.Line(jugglerRightArmG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));	
+			jugglerRightArmG.dynamic = true;
+			jugglerRightArmG.verticesNeedUpdate = true;
+
+			var jugglerHead = new THREE.Mesh( new THREE.SphereGeometry( .1125, 20 ), new THREE.MeshPhongMaterial( { color: 'blank' } ) );
+			jugglerHead.position = new THREE.Vector3(0,1.6125,0);
+
+			var jugglerMesh = new THREE.Object3D();
+			jugglerMesh.add( jugglerLegs );
+			jugglerMesh.add( jugglerTorso );
+			jugglerMesh.add( jugglerShoulders );
+			jugglerMesh.add( jugglerLeftArm );
+			jugglerMesh.add( jugglerRightArm );
+			jugglerMesh.add( jugglerHead );
+
+			/* move and rotate accordingly */
+			jugglerMesh.position.x = s.jugglers[i].position.x;
+			jugglerMesh.position.z = s.jugglers[i].position.z;
+			jugglerMesh.rotation.y = s.jugglers[i].rotation;
+
+			scene.add(jugglerMesh);
+			jugglerMeshes.push(jugglerMesh);
+
+		}
+
+		paused = false;
+		var startTime = 0;
+		animate();
+
 	} catch(e) {		
 		$('#error').show();
 		$('#errorMessage').html(e);
 	}
 
-	/* should really refactor the DOM references out of the Siteswap class */
-	s.debugStatesText();
-
-	/* initialize jugglers */
-	var jugglers = [];
-	for (var i = 0; i < s.numJugglers; i++) {
-		jugglers.push(
-			new Juggler({
-				position: {x:0,y:1,z:i}, 
-				rotation: 0, 
-				width:1,
-				dwellPath: [
-					/* left */
-					{
-						radius: .2,
-						catchRotation: Math.PI,
-						tossRotation: 2*Math.PI
-					},
-					/* right */
-					{
-						radius: .2,
-						catchRotation: 2*Math.PI,
-						tossRotation: Math.PI
-					}
-				]
-			})
-		);
-	}
-
-	/* initialize prop orbits */
-	propOrbits = [];
-	for (var i = 0; i < s.numProps; i++) {
-		propOrbits.push([]);
-	}
-
-	/* create prop orbits */
-	var numSteps = 1000;
-
-	for (var step = 0; step < numSteps; step++) {
-		
-		var currentBeat = Math.floor(step*s.states.length/numSteps);
-		var currentTime = beatDuration*step*s.states.length/numSteps;
-
-		/* find the current state of each prop */
-		for(var prop = 0; prop < s.numProps; prop++) {
-			
-			var tossJuggler, tossHand, catchJuggler, catchHand, tossBeat, catchBeat, numBounces, bounceType;
-			
-			if (s.propOrbits[prop].length == 1) {
-				tossBeat = s.propOrbits[prop][0].beat;
-				tossJuggler = s.propOrbits[prop][0].juggler;
-				tossHand = s.propOrbits[prop][0].hand;
-				catchBeat = s.propOrbits[prop][0].beat;
-				catchJuggler = s.propOrbits[prop][0].juggler;
-				catchHand = s.propOrbits[prop][0].hand;	
-				numBounces = s.propOrbits[prop][0].numBounces;
-				bounceType = s.propOrbits[prop][0].bounceType;
-			}
-			var orbitBeatFound = false;
-			for (var i = 0; i < s.propOrbits[prop].length-1; i++) {
-				if (!orbitBeatFound && s.propOrbits[prop][i].beat <= currentBeat && s.propOrbits[prop][i+1].beat > currentBeat) {
-					tossBeat = s.propOrbits[prop][i].beat;
-					tossJuggler = s.propOrbits[prop][i].juggler;
-					tossHand = s.propOrbits[prop][i].hand;
-					catchBeat = s.propOrbits[prop][i+1].beat;
-					catchJuggler = s.propOrbits[prop][i+1].juggler;
-					catchHand = s.propOrbits[prop][i+1].hand;
-					numBounces = s.propOrbits[prop][i].numBounces;
-					bounceType = s.propOrbits[prop][i].bounceType;
-					orbitBeatFound = true;
-				} else if (!orbitBeatFound && i == s.propOrbits[prop].length-2) { 
-					tossBeat = s.propOrbits[prop][i+1].beat;
-					tossJuggler = s.propOrbits[prop][i+1].juggler;
-					tossHand = s.propOrbits[prop][i+1].hand;
-					catchBeat = s.propOrbits[prop][0].beat;
-					catchJuggler = s.propOrbits[prop][0].juggler;
-					catchHand = s.propOrbits[prop][0].hand;
-					numBounces = s.propOrbits[prop][i+1].numBounces;
-					bounceType = s.propOrbits[prop][i+1].bounceType;
-				}
-			}
-
-			var tossTime = tossBeat*beatDuration+dwellDuration;
-			var catchTime = catchBeat*beatDuration;
-			if (tossTime >= catchTime && catchTime >= currentTime) { 
-				tossTime -= (beatDuration*s.states.length);
-			}
-			if (tossTime >= catchTime && catchTime < currentTime) {
-				catchTime += (beatDuration*s.states.length);	
-			}
-
-			if (currentTime < tossTime) {
-				/* interpolate dwell path */
-				var t = 1-(tossTime - currentTime)/dwellDuration;
-				propOrbits[prop].push(jugglers[tossJuggler].interpolateDwellPath(tossHand,t));
-			} else {
-
-				/*
-				calculate position at current time
-				*/
-
-				var T = catchTime - tossTime;
-				var t = currentTime - tossTime;
-
-				propOrbits[prop].push(
-					interpolateFlightPath(
-						jugglers[tossJuggler].interpolateDwellPath(tossHand,1), /* p0 */
-						jugglers[catchJuggler].interpolateDwellPath(catchHand,0), /* p1 */
-						T,
-						t,
-						{numBounces:numBounces, bounceType:bounceType}
-					)
-				);
-
-			}
-
-		}
-	}
-
-
-	/* clear out all meshes from scene */
-	while (meshes.length > 0) {
-		var tmp = meshes[0];		
-		scene.remove(tmp);
-		meshes.splice(0,1);
-	}
-
-	/* create each prop and add to empty meshes array */
-	for (var i = 0; i < s.numProps; i++) {
-
-		var mesh = new THREE.Mesh( new THREE.SphereGeometry( .1, 20 ), 
-		new THREE.MeshPhongMaterial( { color: 'red' } ) );
-		mesh.castShadow = true;
-
-		/* synchronize the prop mesh and the prop object */
-		mesh.position.x = 0;
-		mesh.position.y = 0;
-		mesh.position.z = 0;
-
-		mesh.rotation.x = 0;
-		mesh.rotation.y = 0;
-		mesh.rotation.z = 0;
-
-
-		scene.add( mesh );
-		meshes.push( mesh );
-	}
-
-	var startTime = 0;
-	animate();
-
 	function animate() {
+		
 		if (startTime == 0) {
 			startTime = (new Date()).getTime();
 		}
 
-		var t = (((new Date()).getTime() - startTime)/1000) % (s.states.length*beatDuration);
-		var step = Math.floor(t/(s.states.length*beatDuration)*1000);
+		/* find time in the pattern and translate that to a discrete step in the prop position arrays */
+		var t = (((new Date()).getTime() - startTime)/1000) % (s.states.length*config.beatDuration);
+		var step = Math.floor(t/(s.states.length*config.beatDuration)*1000);
 
-		for (var i = 0; i < meshes.length; i++) {
-			meshes[i].position.x = propOrbits[i][step].x;
-			meshes[i].position.y = propOrbits[i][step].y;
-			meshes[i].position.z = propOrbits[i][step].z;
+		/* update prop mesh positions */
+		for (var i = 0; i < propMeshes.length; i++) {
+			propMeshes[i].position.x = s.propPositions[i][step].x;
+			propMeshes[i].position.y = s.propPositions[i][step].y;
+			propMeshes[i].position.z = s.propPositions[i][step].z;
 		}
 
 		updateCamera();
+
+		jugglerRightArmG.verticesNeedUpdate = true;
 
 		try {
 			renderer.render(scene, camera);

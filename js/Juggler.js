@@ -5,7 +5,6 @@
 function Juggler(config) {
 	this.position = config.position;
 	this.rotation = config.rotation;
-	this.width = config.width;
 	this.dwellPath = config.dwellPath;
 
 	this.interpolateDwellPath = function(hand,t) {
@@ -19,9 +18,9 @@ function Juggler(config) {
 		};
 
 		return {
-			x: this.position.x + ((hand == LEFT ? -1 : 1)*this.width/2+dwellPosition.x)*Math.cos(this.rotation),
-			y: this.position.y + dwellPosition.y,
-			z: this.position.z + ((hand == LEFT ? -1 : 1)*this.width/2+dwellPosition.x)*Math.sin(this.rotation)
+			x: this.position.x - .4125*Math.sin(this.rotation) + ((hand == LEFT ? -1 : 1)*.225+dwellPosition.x)*Math.cos(this.rotation),
+			y: 1.0125 + dwellPosition.y,
+			z: this.position.z - .4125*Math.cos(this.rotation) + ((hand == LEFT ? -1 : 1)*.225/2+dwellPosition.x)*Math.sin(this.rotation)
 		};
 
 	}

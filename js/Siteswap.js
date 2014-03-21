@@ -4,17 +4,29 @@
 
 function Siteswap() {	
 
-	this.init = function(siteswap) {
-		this.siteswap = siteswap;
+	this.init = function(config) {
 
-		/* first check if the siteswap is a passing siteswap, that will inform the pattern for a valid toss */
+		/* ---------------------------- */
+		/* READ INPUTS AND SET DEFAULTS */
+		/* ---------------------------- */
+		this.siteswap = config.siteswap;
+
+		/* config validation */
+		if (config.dwellDuration >= config.beatDuration) {
+			throw 'Dwell duration must be less than beat duration'
+		}
+
+		/* ------------------------------------------------- */
+		/* VALIDATE PATTERN FORMAT AND BREAK INTO TOSS ARRAY */		
+		/* ------------------------------------------------- */
+
 		this.numJugglers = 1;
-		var isPassingPattern = /<[^ ]+>/.test(siteswap);
+		var isPassingPattern = /<[^ ]+>/.test(this.siteswap);
 
 		var numJugglerMismatch = false;
 
 		if (isPassingPattern) {
-			var passingBeatArray = siteswap.match(/<[^ <>]+>/g);
+			var passingBeatArray = this.siteswap.match(/<[^ <>]+>/g);
 			this.numJugglers = passingBeatArray[0].split("|").length;
 
 			/* 
@@ -53,10 +65,10 @@ function Siteswap() {
 		var validPassRe = new RegExp(validPass,"g");
 		var validSiteswapRe = new RegExp(validSiteswap,"g");	
 
-		if (siteswap.match(validSiteswapRe) && !numJugglerMismatch) {
+		if (this.siteswap.match(validSiteswapRe) && !numJugglerMismatch) {
 			
 			/* get the array of each beats' tosses */
-			this.beatArr = isPassingPattern ? siteswap.match(validPassRe) : siteswap.match(validBeatRe);
+			this.beatArr = isPassingPattern ? this.siteswap.match(validPassRe) : this.siteswap.match(validBeatRe);
 			
 			/* figure out how many props */
 			var tmp = 0;
@@ -254,7 +266,126 @@ function Siteswap() {
 			throw 'Invalid siteswap format';
 		}
 	
-		/* get all the tosses for a given beat's siteswap */
+		/* ----------------------- */
+		/* GENERATE PROP POSITIONS */
+		/* ----------------------- */
+
+		/* initialize jugglers */
+		this.jugglers = [];
+		for (var i = 0; i < this.numJugglers; i++) {
+			this.jugglers.push(
+				new Juggler({
+					position: {x:0,z:-2*i}, 
+					rotation: i*Math.PI, 
+					dwellPath: [
+						/* left */
+						{
+							radius: .2,
+							catchRotation: Math.PI,
+							tossRotation: 2*Math.PI
+						},
+						/* right */
+						{
+							radius: .2,
+							catchRotation: 2*Math.PI,
+							tossRotation: Math.PI
+						}
+					]
+				})
+			);
+		}
+
+		/* initialize prop orbits */
+		this.propPositions = [];
+		for (var i = 0; i < this.numProps; i++) {
+			this.propPositions.push([]);
+		}
+
+		/* create prop orbits */
+		var numSteps = 1000;
+
+		for (var step = 0; step < numSteps; step++) {
+			
+			var currentBeat = Math.floor(step*this.states.length/numSteps);
+			var currentTime = config.beatDuration*step*this.states.length/numSteps;
+
+			/* find the current state of each prop */
+			for(var prop = 0; prop < this.numProps; prop++) {
+				
+				var tossJuggler, tossHand, catchJuggler, catchHand, tossBeat, catchBeat, numBounces, bounceType;
+				
+				if (this.propOrbits[prop].length == 1) {
+					tossBeat = this.propOrbits[prop][0].beat;
+					tossJuggler = this.propOrbits[prop][0].juggler;
+					tossHand = this.propOrbits[prop][0].hand;
+					catchBeat = this.propOrbits[prop][0].beat;
+					catchJuggler = this.propOrbits[prop][0].juggler;
+					catchHand = this.propOrbits[prop][0].hand;	
+					numBounces = this.propOrbits[prop][0].numBounces;
+					bounceType = this.propOrbits[prop][0].bounceType;
+				}
+				var orbitBeatFound = false;
+				for (var i = 0; i < this.propOrbits[prop].length-1; i++) {
+					if (!orbitBeatFound && this.propOrbits[prop][i].beat <= currentBeat && this.propOrbits[prop][i+1].beat > currentBeat) {
+						tossBeat = this.propOrbits[prop][i].beat;
+						tossJuggler = this.propOrbits[prop][i].juggler;
+						tossHand = this.propOrbits[prop][i].hand;
+						catchBeat = this.propOrbits[prop][i+1].beat;
+						catchJuggler = this.propOrbits[prop][i+1].juggler;
+						catchHand = this.propOrbits[prop][i+1].hand;
+						numBounces = this.propOrbits[prop][i].numBounces;
+						bounceType = this.propOrbits[prop][i].bounceType;
+						orbitBeatFound = true;
+					} else if (!orbitBeatFound && i == this.propOrbits[prop].length-2) { 
+						tossBeat = this.propOrbits[prop][i+1].beat;
+						tossJuggler = this.propOrbits[prop][i+1].juggler;
+						tossHand = this.propOrbits[prop][i+1].hand;
+						catchBeat = this.propOrbits[prop][0].beat;
+						catchJuggler = this.propOrbits[prop][0].juggler;
+						catchHand = this.propOrbits[prop][0].hand;
+						numBounces = this.propOrbits[prop][i+1].numBounces;
+						bounceType = this.propOrbits[prop][i+1].bounceType;
+					}
+				}
+
+				var tossTime = tossBeat*config.beatDuration+config.dwellDuration;
+				var catchTime = catchBeat*config.beatDuration;
+				if (tossTime >= catchTime && catchTime >= currentTime) { 
+					tossTime -= (config.beatDuration*this.states.length);
+				}
+				if (tossTime >= catchTime && catchTime < currentTime) {
+					catchTime += (config.beatDuration*this.states.length);	
+				}
+
+				if (currentTime < tossTime) {
+					/* interpolate dwell path */
+					var t = 1-(tossTime - currentTime)/config.dwellDuration;
+					this.propPositions[prop].push(this.jugglers[tossJuggler].interpolateDwellPath(tossHand,t));
+				} else {
+
+					/*
+					calculate position at current time
+					*/
+
+					var T = catchTime - tossTime;
+					var t = currentTime - tossTime;
+
+					this.propPositions[prop].push(
+						interpolateFlightPath(
+							this.jugglers[tossJuggler].interpolateDwellPath(tossHand,1), /* p0 */
+							this.jugglers[catchJuggler].interpolateDwellPath(catchHand,0), /* p1 */
+							T,
+							t,
+							{numBounces:numBounces, bounceType:bounceType, R:config.propRadius}
+						)
+					);
+
+				}
+
+			}
+		}
+
+		/* helper to get all the tosses for a given beat's siteswap */
 		function getTosses(tosses, siteswap, juggler, sync, hand) {
 			if (siteswap.match(validPassRe)) {
 				var patterns = siteswap.match(validBeatRe);
@@ -316,55 +447,6 @@ function Siteswap() {
 				);
 			}
 		}
-
-	}
-
-	this.debugStatesHTML = function() {
-		$('#states').empty();
-
-		$('#states').append("<table border='1'>");
-		var tbl = '';
-		/* juggler header */
-		tbl += '<tr>';
-		for (var i = 0; i < this.states[0].length; i++) {
-			tbl += '<td colspan=' + this.states[0][0][0].length*2 + '>Juggler ' + i + '</td>';
-		}
-		tbl += '</tr><tr>';
-		for (var i = 0; i < this.states[0].length; i++) {
-			tbl += '<td colspan=' + this.states[0][0][0].length + '>Left</td><td colspan=' + this.states[0][0][0].length + '>Right</td>';
-		}
-		tbl += '</tr>'
-		for (var state = 0; state < this.states.length; state++) { // states
-			tbl += '<tr>';
-			for (var juggler = 0; juggler < this.states[state].length; juggler++) { // jugglers
-				for (var hand = 0; hand < this.states[state][juggler].length; hand++) { //hands
-					for (var i = 0; i < this.states[state][juggler][hand].length; i++) { //landing schedule
-						if (this.states[state][juggler][hand][i] == undefined) {
-							tbl += '<td>x</td>';
-						} else {
-							tbl += '<td>'
-							for (var prop = 0; prop < this.states[state][juggler][hand][i].length; prop++) {
-								tbl += (this.states[state][juggler][hand][i][prop] + (prop == this.states[state][juggler][hand][i].length-1 ? '' : ', '));
-							}
-						}						
-					}
-				}
-			}
-			tbl += '</tr>';			
-		}
-		$('#states table').append(tbl);
-
-		$('#propOrbits').empty();
-		$('#propOrbits').append("<table border='1'>");
-		tbl = '';
-		for (var prop = 0; prop < this.propOrbits.length; prop++) {
-			tbl += '<tr><td>Prop ' + prop + '</td>';
-			for (var i = 0; i < this.propOrbits[prop].length; i++) {
-				tbl += ('<td>Beat: ' + this.propOrbits[prop][i].beat + ', Hand: ' + this.propOrbits[prop][i].hand + '</td>');
-			}
-			tbl += '</tr>';
-		}
-		$('#propOrbits table').append(tbl);
 
 	}
 
