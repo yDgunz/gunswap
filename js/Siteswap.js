@@ -295,10 +295,16 @@ function Siteswap() {
 			);
 		}
 
-		/* initialize prop orbits */
+		/* initialize prop positions */
 		this.propPositions = [];
 		for (var i = 0; i < this.numProps; i++) {
 			this.propPositions.push([]);
+		}
+
+		/* initialize juggler hand positions */
+		this.jugglerHandPositions = [];
+		for (var i = 0; i < this.numJugglers; i++) {
+			this.jugglerHandPositions.push([[],[]]);
 		}
 
 		/* create prop orbits */
@@ -306,6 +312,11 @@ function Siteswap() {
 
 		for (var step = 0; step < numSteps; step++) {
 			
+			var tmpJugglerHandPositions = [];
+			for (var i = 0; i < this.numJugglers; i++) {
+				tmpJugglerHandPositions.push([undefined,undefined]);
+			}
+
 			var currentBeat = Math.floor(step*this.states.length/numSteps);
 			var currentTime = config.beatDuration*step*this.states.length/numSteps;
 
@@ -360,7 +371,12 @@ function Siteswap() {
 				if (currentTime < tossTime) {
 					/* interpolate dwell path */
 					var t = 1-(tossTime - currentTime)/config.dwellDuration;
-					this.propPositions[prop].push(this.jugglers[tossJuggler].interpolateDwellPath(tossHand,t));
+					var pos = this.jugglers[tossJuggler].interpolateDwellPath(tossHand,t);
+					this.propPositions[prop].push(pos);
+					/* assign juggler hand positions */
+					if (tmpJugglerHandPositions[tossJuggler][tossHand] == undefined) {
+						tmpJugglerHandPositions[tossJuggler][tossHand] = pos;
+					}
 				} else {
 
 					/*
@@ -383,6 +399,67 @@ function Siteswap() {
 				}
 
 			}
+
+			/* set hand positions that weren't set */
+			for (var juggler = 0; juggler < this.numJugglers; juggler++) {
+				for (var hand = 0; hand <= 1; hand++) {
+					if(tmpJugglerHandPositions[juggler][hand] == undefined) {
+						/* find the next beat a prop is going to be in this hand and linearly move to the catch position */
+						var nextBeat = undefined; 
+						var minBeat = undefined;
+						var lastBeat = undefined;
+						var maxBeat = undefined;
+						for (var prop = 0; prop < this.propOrbits.length; prop++) {
+							for (var orbit = 0; orbit < this.propOrbits[prop].length; orbit++) {
+								if (this.propOrbits[prop][orbit].juggler == juggler && this.propOrbits[prop][orbit].hand == hand) {
+									// min beat
+									if (minBeat == undefined || this.propOrbits[prop][orbit].beat < minBeat) {
+										minBeat = this.propOrbits[prop][orbit].beat;
+									}
+									// next beat
+									if (this.propOrbits[prop][orbit].beat > currentBeat && (nextBeat == undefined || this.propOrbits[prop][orbit].beat < nextBeat)) {
+										nextBeat = this.propOrbits[prop][orbit].beat;
+									}
+									// max beat
+									if (maxBeat == undefined || this.propOrbits[prop][orbit].beat > maxBeat) {
+										maxBeat = this.propOrbits[prop][orbit].beat;
+									}
+									// last beat
+									if (this.propOrbits[prop][orbit].beat <= currentBeat && (lastBeat == undefined || this.propOrbits[prop][orbit].beat > lastBeat)) {
+										lastBeat = this.propOrbits[prop][orbit].beat;
+									}
+								}
+							}
+						}
+						if (nextBeat == undefined) {
+							nextBeat = minBeat;
+						}
+						if (lastBeat == undefined) {
+							lastBeat = maxBeat;
+						}
+
+						var nextCatchTime = nextBeat*config.beatDuration;
+						if (nextCatchTime < currentTime) {
+							nextCatchTime += (config.beatDuration*this.states.length);
+						}
+						var lastThrowTime = lastBeat*config.beatDuration+config.dwellDuration;
+						if (lastThrowTime > currentTime) {
+							lastThrowTime -= (config.beatDuration*this.states.length);
+						}
+
+						var throwPos = this.jugglers[juggler].interpolateDwellPath(hand,1);
+						var catchPos = this.jugglers[juggler].interpolateDwellPath(hand,0);
+
+						var x = throwPos.x + (catchPos.x-throwPos.x)/(nextCatchTime-lastThrowTime)*(currentTime-lastThrowTime);
+						var y = throwPos.y + (catchPos.y-throwPos.y)/(nextCatchTime-lastThrowTime)*(currentTime-lastThrowTime);
+						var z = throwPos.z + (catchPos.z-throwPos.z)/(nextCatchTime-lastThrowTime)*(currentTime-lastThrowTime);
+
+						tmpJugglerHandPositions[juggler][hand] = {x:x,y:y,z:z};
+					}
+					this.jugglerHandPositions[juggler][hand].push(tmpJugglerHandPositions[juggler][hand]);
+				}
+			}
+
 		}
 
 		/* helper to get all the tosses for a given beat's siteswap */

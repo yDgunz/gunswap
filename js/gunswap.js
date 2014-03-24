@@ -18,7 +18,9 @@ var paused = false,
 	onMouseDownPosition,
 	cameraMode = 'sky',
 	propMeshes = [],
-	jugglerMeshes = [];
+	jugglerMeshes = [],
+	jugglerHandVertices,
+	animationSpeed;
 
 /* ----------------- */
 /* ANIMATION HELPERS */
@@ -31,10 +33,12 @@ function updateCamera() {
 		camera.position.z = camRadius * Math.cos( camTheta ) * Math.cos( camPhi );
 		camera.lookAt(new THREE.Vector3(0,1,0));
 	} else if (cameraMode == 'juggler') {
+		/* need to update x and y to reflect the position of the juggler you are possessing */
 		camera.position.x = 0;
-		camera.position.y = 1.3;
-		camera.position.z = -.5;
-		camera.lookAt(new THREE.Vector3(0,3,1));
+		camera.position.y = 1.6125;
+		camera.position.z = 0;
+		//camera.lookAt(new THREE.Vector3(Math.sin(camTheta),3,Math.cos(camTheta)));
+		camera.lookAt(new THREE.Vector3(0,3,-1));
 	}
 }
 
@@ -149,6 +153,8 @@ function go() {
 			propRadius: $('#propRadius').val()
 		};
 
+	animationSpeed = parseFloat($('#animationSpeed').val())/100;
+
 	/* try to init the siteswap. if failure occurs, display accordingly */
 	try {
 
@@ -166,6 +172,7 @@ function go() {
 			scene.remove(tmp);
 			jugglerMeshes.splice(0,1);
 		}
+		jugglerHandVertices = [];
 
 		/* create each prop and add to empty propMeshes array */
 		for (var i = 0; i < s.numProps; i++) {
@@ -179,41 +186,45 @@ function go() {
 		}
 		/* create each juggler and add to empty jugglerMeshes array */
 		for (var i = 0; i < s.numJugglers; i++) {
+
+			jugglerHandVertices.push([[],[]]);
 			
 			/* create juggler mesh at 0,0,0 */
 
 			var jugglerLegsG = new THREE.Geometry();
-			jugglerLegsG.vertices.push(new THREE.Vector3(-.125,0,0));
-			jugglerLegsG.vertices.push(new THREE.Vector3(0,.8,0));
-			jugglerLegsG.vertices.push(new THREE.Vector3(.125,0,0));
+			jugglerLegsG.vertices.push(new THREE.Vector3(s.jugglers[i].position.x+Math.cos(s.jugglers[i].rotation)*-.125,0,s.jugglers[i].position.z+Math.sin(s.jugglers[i].rotation)*0));
+			jugglerLegsG.vertices.push(new THREE.Vector3(s.jugglers[i].position.x+Math.cos(s.jugglers[i].rotation)*0,.8,s.jugglers[i].position.z+Math.sin(s.jugglers[i].rotation)*0));
+			jugglerLegsG.vertices.push(new THREE.Vector3(s.jugglers[i].position.x+Math.cos(s.jugglers[i].rotation)*.125,0,s.jugglers[i].position.z+Math.sin(s.jugglers[i].rotation)*0));
 			var jugglerLegs = new THREE.Line(jugglerLegsG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));
 
 			var jugglerTorsoG = new THREE.Geometry();
-			jugglerTorsoG.vertices.push(new THREE.Vector3(0,.8,0));
-			jugglerTorsoG.vertices.push(new THREE.Vector3(0,1.5,0));
+			jugglerTorsoG.vertices.push(new THREE.Vector3(s.jugglers[i].position.x+Math.cos(s.jugglers[i].rotation)*0,.8,s.jugglers[i].position.z+Math.sin(s.jugglers[i].rotation)*0));
+			jugglerTorsoG.vertices.push(new THREE.Vector3(s.jugglers[i].position.x+Math.cos(s.jugglers[i].rotation)*0,1.5,s.jugglers[i].position.z+Math.sin(s.jugglers[i].rotation)*0));
 			var jugglerTorso = new THREE.Line(jugglerTorsoG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));
 
 			var jugglerShouldersG = new THREE.Geometry();
-			jugglerShouldersG.vertices.push(new THREE.Vector3(-.225,1.425,0));
-			jugglerShouldersG.vertices.push(new THREE.Vector3(.225,1.425,0));
+			jugglerShouldersG.vertices.push(new THREE.Vector3(s.jugglers[i].position.x+Math.cos(s.jugglers[i].rotation)*-.225,1.425,s.jugglers[i].position.z+Math.sin(s.jugglers[i].rotation)*0));
+			jugglerShouldersG.vertices.push(new THREE.Vector3(s.jugglers[i].position.x+Math.cos(s.jugglers[i].rotation)*.225,1.425,s.jugglers[i].position.z+Math.sin(s.jugglers[i].rotation)*0));
 			var jugglerShoulders = new THREE.Line(jugglerShouldersG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));	
 
 			var jugglerLeftArmG = new THREE.Geometry();
-			jugglerLeftArmG.vertices.push(new THREE.Vector3(-.225,1.425,0));
-			jugglerLeftArmG.vertices.push(new THREE.Vector3(-.225,1.0125,0));
-			jugglerLeftArmG.vertices.push(new THREE.Vector3(-.225,1.0125,-.4125));
+			jugglerLeftArmG.vertices.push(new THREE.Vector3(s.jugglers[i].position.x+Math.cos(s.jugglers[i].rotation)*-.225,1.425,s.jugglers[i].position.z+Math.sin(s.jugglers[i].rotation)*0));
+			jugglerLeftArmG.vertices.push(new THREE.Vector3(s.jugglers[i].position.x+Math.cos(s.jugglers[i].rotation)*-.225,1.0125,s.jugglers[i].position.z+Math.sin(s.jugglers[i].rotation)*0));
+			jugglerHandVertices[i][LEFT] = new THREE.Vector3(s.jugglers[i].position.x+Math.cos(s.jugglers[i].rotation)*-.225,1.0125,s.jugglers[i].position.z+Math.sin(s.jugglers[i].rotation)*-.4125);
+			jugglerLeftArmG.vertices.push(jugglerHandVertices[i][LEFT]);
+			jugglerLeftArmG.dynamic = true;
 			var jugglerLeftArm = new THREE.Line(jugglerLeftArmG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));	
 
 			var jugglerRightArmG = new THREE.Geometry();
-			jugglerRightArmG.vertices.push(new THREE.Vector3(.225,1.425,0));
-			jugglerRightArmG.vertices.push(new THREE.Vector3(.225,1.0125,0));
-			jugglerRightArmG.vertices.push(new THREE.Vector3(.225,1.0125,-.4125));
-			var jugglerRightArm = new THREE.Line(jugglerRightArmG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));	
+			jugglerRightArmG.vertices.push(new THREE.Vector3(s.jugglers[i].position.x+Math.cos(s.jugglers[i].rotation)*.225,1.425,s.jugglers[i].position.z+Math.sin(s.jugglers[i].rotation)*0));
+			jugglerRightArmG.vertices.push(new THREE.Vector3(s.jugglers[i].position.x+Math.cos(s.jugglers[i].rotation)*.225,1.0125,s.jugglers[i].position.z+Math.sin(s.jugglers[i].rotation)*0));
+			jugglerHandVertices[i][RIGHT] = new THREE.Vector3(s.jugglers[i].position.x+Math.cos(s.jugglers[i].rotation)*.225,1.0125,s.jugglers[i].position.z+Math.sin(s.jugglers[i].rotation)*-.4125);
+			jugglerRightArmG.vertices.push(jugglerHandVertices[i][RIGHT]);
 			jugglerRightArmG.dynamic = true;
-			jugglerRightArmG.verticesNeedUpdate = true;
+			var jugglerRightArm = new THREE.Line(jugglerRightArmG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));				
 
 			var jugglerHead = new THREE.Mesh( new THREE.SphereGeometry( .1125, 20 ), new THREE.MeshPhongMaterial( { color: 'blank' } ) );
-			jugglerHead.position = new THREE.Vector3(0,1.6125,0);
+			jugglerHead.position = new THREE.Vector3(s.jugglers[i].position.x+Math.cos(s.jugglers[i].rotation)*0,1.6125,s.jugglers[i].position.z+Math.sin(s.jugglers[i].rotation)*0);
 
 			var jugglerMesh = new THREE.Object3D();
 			jugglerMesh.add( jugglerLegs );
@@ -222,11 +233,6 @@ function go() {
 			jugglerMesh.add( jugglerLeftArm );
 			jugglerMesh.add( jugglerRightArm );
 			jugglerMesh.add( jugglerHead );
-
-			/* move and rotate accordingly */
-			jugglerMesh.position.x = s.jugglers[i].position.x;
-			jugglerMesh.position.z = s.jugglers[i].position.z;
-			jugglerMesh.rotation.y = s.jugglers[i].rotation;
 
 			scene.add(jugglerMesh);
 			jugglerMeshes.push(jugglerMesh);
@@ -249,7 +255,7 @@ function go() {
 		}
 
 		/* find time in the pattern and translate that to a discrete step in the prop position arrays */
-		var t = (((new Date()).getTime() - startTime)/1000) % (s.states.length*config.beatDuration);
+		var t = (((new Date()).getTime() - startTime)/1000)*animationSpeed % (s.states.length*config.beatDuration);
 		var step = Math.floor(t/(s.states.length*config.beatDuration)*1000);
 
 		/* update prop mesh positions */
@@ -259,9 +265,26 @@ function go() {
 			propMeshes[i].position.z = s.propPositions[i][step].z;
 		}
 
+		/* 
+			update juggler hand positions
+		*/
+		for (var i = 0; i < jugglerHandVertices.length; i++) {
+			jugglerHandVertices[i][LEFT].x = s.jugglerHandPositions[i][LEFT][step].x;
+			jugglerHandVertices[i][LEFT].y = s.jugglerHandPositions[i][LEFT][step].y;
+			jugglerHandVertices[i][LEFT].z = s.jugglerHandPositions[i][LEFT][step].z;
+			jugglerHandVertices[i][RIGHT].x = s.jugglerHandPositions[i][RIGHT][step].x;
+			jugglerHandVertices[i][RIGHT].y = s.jugglerHandPositions[i][RIGHT][step].y;
+			jugglerHandVertices[i][RIGHT].z = s.jugglerHandPositions[i][RIGHT][step].z;
+		}
+
 		updateCamera();
 
-		jugglerRightArmG.verticesNeedUpdate = true;
+		/* mark geometry vertices as needs update */
+		for (var i = 0; i < jugglerMeshes.length; i++) {
+			for (var j = 0; j < jugglerMeshes[i].children.length; j++) {
+				jugglerMeshes[i].children[j].geometry.verticesNeedUpdate = true;
+			} 
+		}
 
 		try {
 			renderer.render(scene, camera);
