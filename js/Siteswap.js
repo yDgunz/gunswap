@@ -392,7 +392,11 @@ function Siteswap() {
 							this.jugglers[catchJuggler].interpolateDwellPath(catchHand,0), /* p1 */
 							T,
 							t,
-							{numBounces:numBounces, bounceType:bounceType, R:config.propRadius}
+							{
+								numBounces: numBounces, 
+								bounceType: bounceType, 
+								R: config.propRadius, 
+								C: config.propC}
 						)
 					);
 

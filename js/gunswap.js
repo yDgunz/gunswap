@@ -3,12 +3,11 @@
 /* -------------- */
 
 var paused = false,
-	renderMode = '3D',
 	camera, 
 	scene, 
 	renderer,
 	/* camera starting point */
-	camTheta = 3.6, 
+	camTheta = 3.14, 
 	camPhi = .4, 
 	camRadius = 5,
 	/* helpers for mouse interaction */
@@ -38,7 +37,7 @@ function updateCamera() {
 		camera.position.y = 1.6125;
 		camera.position.z = 0;
 		//camera.lookAt(new THREE.Vector3(Math.sin(camTheta),3,Math.cos(camTheta)));
-		camera.lookAt(new THREE.Vector3(0,3,-1));
+		camera.lookAt(new THREE.Vector3(Math.sin(camTheta)*Math.cos(camPhi),1.6125-Math.sin(camPhi),Math.cos(camTheta)*Math.cos(camPhi)));
 	}
 }
 
@@ -87,52 +86,41 @@ $(window).resize(function() {
 var $container = $('#canvasContainer');
 var width = $container.width()-5, height = $(window).height()-5;
 
-if (renderMode == '3D') {
 
-	/* build the 3D scene */
+camera = new THREE.PerspectiveCamera( 75, width / height, .05, 100 );
+updateCamera();
 
-	camera = new THREE.PerspectiveCamera( 75, width / height, 1, 10000 );
-	updateCamera();
-	
-	scene = new THREE.Scene();
+scene = new THREE.Scene();
 
-	/* lights */
-	var pointLight = new THREE.PointLight( 0xffffff );
-	pointLight.position.set(0,4,0);
-	scene.add( pointLight );
+/* lights */
+var pointLight = new THREE.PointLight( 0xffffff );
+pointLight.position.set(0,4,0);
+scene.add( pointLight );
 
-	/* draw floor */
-	var floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshLambertMaterial( { color: 0xaaaaaa } ));
-	floor.rotation.x += 3*Math.PI/2
-	scene.add(floor);
+/* draw floor */
+var floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshLambertMaterial( { color: 0xaaaaaa } ));
+floor.rotation.x += 3*Math.PI/2
+scene.add(floor);
 
-	/* create the renderer and add it to the canvas container */
-	/* if browser is mobile, render using canvas */
-	if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-		renderer = new THREE.CanvasRenderer();	
-	} else {
-		renderer = new THREE.WebGLRenderer( {antialias: true} );
-	}
-	renderer.setSize( width, height );
-
-	$container.empty();
-	$container.append(renderer.domElement);
-
-	//add the event listeners for mouse interaction
-	renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
-	renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
-	renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
-	renderer.domElement.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
-	
-	onMouseDownPosition = new THREE.Vector2();
-
+/* create the renderer and add it to the canvas container */
+/* if browser is mobile, render using canvas */
+if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+	renderer = new THREE.CanvasRenderer();	
 } else {
-	/* 2D rendering mode */
-
-	$container.empty();
-	$container.append('<canvas id="canvas" width=' + width + ' height=' + height + '></canvas>');
-
+	renderer = new THREE.WebGLRenderer( {antialias: true} );
 }
+renderer.setSize( width, height );
+
+$container.empty();
+$container.append(renderer.domElement);
+
+//add the event listeners for mouse interaction
+renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
+renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
+renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
+renderer.domElement.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
+
+onMouseDownPosition = new THREE.Vector2();
 
 /* called by Go button on page */
 
@@ -150,10 +138,12 @@ function go() {
 			beatDuration: parseFloat($('#beatDuration').val()),
 			dwellDuration: parseFloat($('#dwellDuration').val()),
 			gravity: $('#gravity').val(),
-			propRadius: $('#propRadius').val()
+			propRadius: $('#propRadius').val(),
+			propC: parseFloat($('#propC').val())/100
 		};
 
 	animationSpeed = parseFloat($('#animationSpeed').val())/100;
+	cameraMode = $('#cameraMode').val();
 
 	/* try to init the siteswap. if failure occurs, display accordingly */
 	try {
@@ -162,23 +152,16 @@ function go() {
 		$('#error').hide();
 	
 		/* clear out all meshes from scene */
-		while (propMeshes.length > 0) {
-			var tmp = propMeshes[0];		
-			scene.remove(tmp);
-			propMeshes.splice(0,1);
-		}
-		while (jugglerMeshes.length > 0) {
-			var tmp = jugglerMeshes[0];
-			scene.remove(tmp);
-			jugglerMeshes.splice(0,1);
-		}
+		propMeshes.map(function(a) { scene.remove(a); });
+		propMeshes = [];
+		jugglerMeshes.map(function(a) { scene.remove(a); });
+		jugglerMeshes = [];
 		jugglerHandVertices = [];
 
 		/* create each prop and add to empty propMeshes array */
 		for (var i = 0; i < s.numProps; i++) {
 
-			var mesh = new THREE.Mesh( new THREE.SphereGeometry( config.propRadius, 20 ), 
-			new THREE.MeshPhongMaterial( { color: 'red' } ) );
+			var mesh = new THREE.Mesh( new THREE.SphereGeometry( config.propRadius, 20 ), new THREE.MeshPhongMaterial( { color: 'red' } ) );
 			mesh.castShadow = true;
 
 			scene.add( mesh );
@@ -265,9 +248,7 @@ function go() {
 			propMeshes[i].position.z = s.propPositions[i][step].z;
 		}
 
-		/* 
-			update juggler hand positions
-		*/
+		/* update juggler hand positions */
 		for (var i = 0; i < jugglerHandVertices.length; i++) {
 			jugglerHandVertices[i][LEFT].x = s.jugglerHandPositions[i][LEFT][step].x;
 			jugglerHandVertices[i][LEFT].y = s.jugglerHandPositions[i][LEFT][step].y;

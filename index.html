@@ -14,12 +14,109 @@
 <body>
 
 	<div style="position:absolute;top:10px;right:10px;">
-		<button class="btn btn-info">Blog</button>
-		<button class="btn btn-info">About</button>
+		<a class="btn btn-info" href="http://gunswap.blogspot.com/" target="_blank">Blog</a>
+		<a class="btn btn-info" onclick="$('#helpAccordion').slideToggle();">Toggle Help</a>
 	</div>
 
 	<div id="canvasContainer"></div>
 	
+<div class="panel-group" id="helpAccordion" style="position:absolute;right:10px;top:50px;width:33%;">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#helpAccordion" href="#quickHelp">
+						Quick help
+					</a>
+				</h4>
+			</div>
+			<div id="quickHelp" class="panel-collapse collapse in">
+				<div class="panel-body">
+					Gunswap is a web-based juggling animator. Patterns are defined using standard siteswap notation with support for synchronous, multiplex, bouncing and passing. Some examples to get you started:
+					<ul>
+						<li><a onclick="$('#siteswap').val('5');go();" href="#">5</a> - 5 ball cascade</li>
+						<li><a onclick="$('#siteswap').val('7531');go();" href="#">7531</a> - 4 ball tower</li>
+						<li><a onclick="$('#siteswap').val('91');go();" href="#">91</a> - 5 ball shower</li>
+						<li><a onclick="$('#siteswap').val('(4,4)');go();" href="#">(4,4)</a> - 4 ball sync fountain</li>
+						<li><a onclick="$('#siteswap').val('(4,2x)(2x,4)');go();" href="#">(4,2x)(2x,4)</a> - 3 ball box</li>
+						<li><a onclick="$('#siteswap').val('24[54]');go();" href="#">24[54]</a> - 5 ball multiplex</li>
+						<li><a onclick="$('#siteswap').val('5BL');go();" href="#">5BL</a> - 5 ball lift bounce</li>
+						<li><a onclick="$('#siteswap').val('<3|3><3p|3p>');go();" href="#">&lt;3|3&gt;&lt;3p|3p&gt;</a> - 6 ball 2 juggler passing</li>
+						<li><a onclick="$('#siteswap').val('<5|5><5pBF|5pBF>');go();" href="#">&lt;5|5&gt;&lt;5pBF|5pBF&gt;</a> - 6 ball 2 juggler passing w/ force bounce</li>
+						<li><a onclick="$('#siteswap').val('<7|5|3>');go();" href="#">&lt;7|5|3&gt;</a> - 3 jugglers no passing</li>
+					</ul>
+				</div> 
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#helpAccordion" href="#whatIsSiteswap">
+						What is siteswap?
+					</a>
+				</h4>
+			</div>
+			<div id="whatIsSiteswap" class="panel-collapse collapse">
+				<div class="panel-body">
+					Siteswap is a notation for describing juggling patterns. <a href="http://www.siteswap.org/">siteswap.org</a> has a bunch of great links explaining it. This particular application was developed referencing the <a href="http://jugglinglab.sourceforge.net/html/ssnotation.html">Juggling Lab documentation</a>, though it does not support the Juggling Lab extensions to siteswap.
+				</div> 
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#helpAccordion" href="#additionalResources">
+						Additional resources
+					</a>
+				</h4>
+			</div>
+			<div id="additionalResources" class="panel-collapse collapse">
+				<div class="panel-body">
+					Gunswap is hardly the first siteswap animator out there. Here are some other great siteswap animators:
+					<ul>
+						<li><a href="http://jugglinglab.sourceforge.net/">Juggling Lab</a></li>
+						<li><a href="http://juggloid.com/">Juggloid</a></li>
+						<li><a href="http://koelnvention.de/w/?page_id=151">JoePass</a></li>
+					</ul>
+					I'm sure there are more. Please let me know if I missed any!
+				</div> 
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#helpAccordion" href="#acknowledgements">
+						Acknowledgements
+					</a>
+				</h4>
+			</div>
+			<div id="acknowledgements" class="panel-collapse collapse">
+				<div class="panel-body">
+					Gunswap makes extensive use of some really awesome open source projects:
+					<ul>
+						<li><a href="http://threejs.org/">Three.js</a> - for 3D graphics</li>
+						<li><a href="http://getbootstrap.com">Bootstrap</a> - to make UI controls pretty</li>
+						<li><a href="http://jquery.com/">jQuery</a> - for anything and everything</li>
+						<li><a href="https://qunitjs.com/">QUnit</a> - for testing</li>
+						<li><a href="https://github.com/">GitHub</a> - for hosting</li>
+					</ul>
+				</div> 
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#helpAccordion" href="#about">
+						About
+					</a>
+				</h4>
+			</div>
+			<div id="about" class="panel-collapse collapse">
+				<div class="panel-body">
+					Gunswap is just beginning! Check out <a href="http://gunswap.blogspot.com/">http://gunswap.blogspot.com/</a> for updates on development.
+				</div> 
+			</div>
+		</div>
+	</div>	
 
 	<div id="inputsDiv" style="position:absolute;bottom:5px;width:100%;">
 		
@@ -38,89 +135,59 @@
 				
 				<div id="timingInputsContainer" class="col-md-4">
 					<div class="row" style="padding:5px;">
-						<div class="col-md-4">
+						<div class="col-md-6">
 							Beat Duration
 						</div>
-						<div class="col-md-8">
+						<div class="col-md-6">
 							<div class="input-group"><input id="beatDuration" class="form-control input-sm" value=".25"></input><span class="input-group-addon input-sm">s</span></div>
 						</div>
 					</div>
 					<div class="row" style="padding:5px;">
-						<div class="col-md-4">
+						<div class="col-md-6">
 								Dwell Duration
 							</div>
-						<div class="col-md-8">
+						<div class="col-md-6">
 								<div class="input-group"><input id="dwellDuration" class="form-control input-sm" value=".2"></input><span class="input-group-addon input-sm">s</span></div>
-						</div>
-					</div>
-					<div class="row" style="padding:5px;">
-						<div class="col-md-4">
-								Gravity
-							</div>
-						<div class="col-md-8">
-								<div class="input-group"><input id="gravity" class="form-control input-sm" value="9.8"></input><span class="input-group-addon input-sm">m/s<sup>2</sup></span></div>
 						</div>
 					</div>
 				</div>
 				
 				<div id="propInputsContainer" class="col-md-4">
 					<div class="row" style="padding:5px;">
-						<div class="col-md-4">
-							Prop Type
+						<div class="col-md-6">
+							Prop Radius
 						</div>
-						<div class="col-md-8">
-							<select class="form-control">
-								<option>Ball</option>
-								<option>Club</option>
-							</select>
-						</div>
-					</div>
-					<div class="row" style="padding:5px;">
-						<div class="col-md-4">
-							Radius
-						</div>
-						<div class="col-md-8">
+						<div class="col-md-6">
 							<div class="input-group"><input id="propRadius" class="form-control input-sm" value=".05"></input><span class="input-group-addon input-sm">m</span></div>
 						</div>
 					</div>
 					<div class="row" style="padding:5px;">
-						<div class="col-md-4">
-							Bounciness
+						<div class="col-md-6">
+							Prop Bounciness
 						</div>
-						<div class="col-md-4">
-							<div class="input-group"><input id="beatDuration" class="form-control input-sm" value="95"></input><span class="input-group-addon input-sm">%</span></div>
+						<div class="col-md-6">
+							<div class="input-group"><input id="propC" class="form-control input-sm" value="95"></input><span class="input-group-addon input-sm">%</span></div>
 						</div>
 					</div>
 				</div>
 
 				<div id="animationInputsContainer" class="col-md-4">
 					<div class="row" style="padding:5px;">
-						<div class="col-md-4">
-							Render Mode
-						</div>
-						<div class="col-md-8">
-							<select class="form-control">
-								<option>2D</option>
-								<option>3D</option>
-							</select>
-						</div>
-					</div>
-					<div class="row" style="padding:5px;">
-						<div class="col-md-4">
+						<div class="col-md-6">
 							Camera Mode
 						</div>
-						<div class="col-md-8">
-							<select class="form-control">
-								<option>Sky</option>
-								<option>First Person</option>
+						<div class="col-md-6">
+							<select id="cameraMode" class="form-control">
+								<option value="sky">Sky</option>
+								<option value="juggler">First Person</option>
 							</select>
 						</div>
 					</div>
 					<div class="row" style="padding:5px;">
-						<div class="col-md-4">
+						<div class="col-md-6">
 							Animation Speed
 						</div>
-						<div class="col-md-4">
+						<div class="col-md-6">
 							<div class="input-group"><input id="animationSpeed" class="form-control input-sm" value="100"></input><span class="input-group-addon input-sm">%</span></div>
 						</div>
 					</div>
