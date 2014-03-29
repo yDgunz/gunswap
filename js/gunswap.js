@@ -79,6 +79,15 @@ $(window).resize(function() {
 	renderer.setSize(width, height);
 });
 
+/* -------------------- */
+/* LOAD KNOWN SITESWAPS */
+/* -------------------- */
+
+var siteswapsFile = new XMLHttpRequest();
+siteswapsFile.open('GET', 'siteswaps.csv', false);
+siteswapsFile.send();
+siteswapsFile.responseText.split('\n').map(function (a) { $('#knownSiteswapList').append('<li><a onclick="$(\'#siteswap\').val(\'' + a + '\');go();" href="#">' + a + '</a></li>'); });
+
 /* --------------------------- */
 /* ANIMATION INIT ON PAGE LOAD */
 /* --------------------------- */

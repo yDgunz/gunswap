@@ -508,7 +508,11 @@ function Siteswap() {
 					bounceType = "L";
 				}
 
-				var crossing = (siteswap.length > 1 && (siteswap[1] == "x" && numBeats % 2 == 0) || (siteswap[1] != "x" && numBeats % 2 == 1)) || numBeats % 2 == 1 ? true : false;
+				var crossing = numBeats % 2 == 1 ? true : false;
+				// if the second character is an "x" then crossing is flipped
+				if (siteswap.length > 1 && siteswap[1] == "x") {
+					crossing = !crossing;
+				}
 
 				if (sync) {
 					numBeats = numBeats/2;

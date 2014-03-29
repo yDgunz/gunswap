@@ -66,89 +66,6 @@ function arraysEqual(a,b) {
 	return true;
 }
 
-/* get all prop orbits */
-var allPropOrbits = [];
-
-function getAllPropOrbits(currentBeat,numBeats,numJugglers,orbit) {
-	for (var beat = currentBeat; beat < numBeats; beat++) {
-		for (var juggler = 0; juggler < numJugglers; juggler++) {
-			var newOrbit = cloneState(orbit);
-			newOrbit.push({beat: beat, juggler: juggler, hand: LEFT});
-			allPropOrbits.push(newOrbit);
-			getAllPropOrbits(beat+1,numBeats,numJugglers,newOrbit);
-			newOrbit = cloneState(orbit);
-			newOrbit.push({beat: beat, juggler: juggler, hand: RIGHT});
-			allPropOrbits.push(newOrbit);
-			getAllPropOrbits(beat+1,numBeats,numJugglers,newOrbit);
-		}
-	}
-	return null;
-}
-
-var allSiteswapOrbits = [];
-function getAllSiteswapOrbits(currentSiteswapOrbits,numProps) {
-	for (var i = 0; i < allPropOrbits.length; i++) {
-		var tmpSiteswapOrbits = cloneState(currentSiteswapOrbits);
-		tmpSiteswapOrbits.push(allPropOrbits[i]);
-		if (tmpSiteswapOrbits.length == numProps) {
-			allSiteswapOrbits.push(tmpSiteswapOrbits);
-		} else {
-			getAllSiteswapOrbits(tmpSiteswapOrbits,numProps);
-		}
-	}
-	return null;
-}
-
-function getTossArrayFromOrbit(orbits,numBeats) {
-	var tossArr = [];
-	for (var prop = 0; prop < orbits.length; prop++) {
-		for (var toss = 0; toss < orbits[prop].length; toss++) {
-			var nextTossIx = (toss == orbits[prop].length-1 ? 0 : toss+1);
-			if (tossArr[orbits[prop][toss].beat] == undefined) {
-				tossArr[orbits[prop][toss].beat] = [];
-			}
-			tossArr[orbits[prop][toss].beat].push({
-				juggler: orbits[prop][toss].juggler,
-				numBeats: (nextTossIx == 0 ? numBeats - orbits[prop][toss].beat + orbits[prop][nextTossIx].beat : orbits[prop][nextTossIx].beat - orbits[prop][toss].beat),
-				hand: orbits[prop][toss].juggler,
-				crossing: (orbits[prop][toss] != orbits[prop][nextTossIx])				
-			});
-		}
-	}
-	return tossArr;
-}
-
-function getSiteswapFromTossArray(tossArr) {
-	var siteswap = "";
-	for (var beat = 0; beat < tossArr.length; beat++) {
-		var handTosses = [[],[]];
-		for (var toss = 0; toss < tossArr[beat].length; toss++) {
-			handTosses[tossArr[beat][toss].hand].push(tossArr[beat][toss]);
-		}
-		/* vanilla */
-		if (handTosses[LEFT].length == 1 && handTosses[RIGHT].length == 0) {
-			siteswap += ("L"+handTosses[LEFT][0].numBeats+((handTosses[LEFT][0].numBeats%2==0 && handTosses[LEFT][0].crossing) || (handTosses[LEFT][0].numBeats%2==1 && !handTosses[LEFT][0].crossing) ? "x" : ""));
-		} else if (handTosses[LEFT].length == 0 && handTosses[RIGHT].length == 1) {
-			siteswap += ("R"+handTosses[RIGHT][0].numBeats+((handTosses[RIGHT][0].numBeats%2==0 && handTosses[RIGHT][0].crossing) || (handTosses[RIGHT][0].numBeats%2==1 && !handTosses[RIGHT][0].crossing) ? "x" : ""));
-		} 
-		/* multiplex */
-		else if (handTosses[LEFT].length > 1 && handTosses[RIGHT].length == 0) {
-			siteswap += "L[";
-			for (var toss = 0; toss < handTosses[LEFT].length; toss++) {
-				siteswap += (handTosses[LEFT][toss].numBeats+((handTosses[LEFT][toss].numBeats%2==0 && handTosses[LEFT][toss].crossing) || (handTosses[LEFT][toss].numBeats%2==1 && !handTosses[LEFT][toss].crossing) ? "x" : ""));
-			}
-			siteswap += "]";
-		} else if (handTosses[RIGHT].length > 1 && handTosses[LEFT].length == 0) {
-			siteswap += "R[";
-			for (var toss = 0; toss < handTosses[RIGHT].length; toss++) {
-				siteswap += (handTosses[RIGHT][toss].numBeats+((handTosses[RIGHT][toss].numBeats%2==0 && handTosses[RIGHT][toss].crossing) || (handTosses[RIGHT][toss].numBeats%2==1 && !handTosses[RIGHT][toss].crossing) ? "x" : ""));
-			}
-			siteswap += "]";
-		}
-	}
-	return siteswap;
-}
-
 /* interpolate flight path */
 var flightPathCache = {};
 function interpolateFlightPath(p0, p1, T, t, config) {
@@ -241,17 +158,9 @@ function interpolateFlightPath(p0, p1, T, t, config) {
 
 			}
 
-			var dbg = true;
-			if (dbg && tries % 20 == 0) {
-				console.log('v0 ' + v0 + ' y ' + y[y.length-1] + ' vy ' + vy + ' bounces ' + bounces);
-			}
-
 			if (bounces == config.numBounces && Math.abs(p1.y-y[y.length-1]) <= config.eps && ( ( (config.bounceType == "HF" || config.bounceType == "L") && vy >= 0) || ( (config.bounceType == "F" || config.bounceType == "HL") && vy <= 0) )) {
 				done = true;
-				flightPathCache[inputKey] = y;
-				if (dbg) {
-					console.log('v0 ' + v0 + ' y ' + y[y.length-1] + ' vy ' + vy + ' bounces ' + bounces);
-				}				
+				flightPathCache[inputKey] = y;				
 			} else {
 
 				/* check to see if this just isn't going to happen */
