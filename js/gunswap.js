@@ -9,7 +9,7 @@ var paused = false,
 	/* camera starting point */
 	camTheta = 3.14, 
 	camPhi = .4, 
-	camRadius = 5,
+	camRadius = 6,
 	/* helpers for mouse interaction */
 	isMouseDown = false, 
 	onMouseDownTheta, 
@@ -19,11 +19,27 @@ var paused = false,
 	propMeshes = [],
 	jugglerMeshes = [],
 	jugglerHandVertices,
-	animationSpeed;
+	animationSpeed = 1;
 
 /* ----------------- */
 /* ANIMATION HELPERS */
 /* ----------------- */
+
+function zoomIn() {
+	camRadius-=.1;
+}
+
+function zoomOut() {
+	camRadius+=.1;
+}
+
+function updateAnimationSpeed() {
+	animationSpeed = parseFloat($('#animationSpeed').val())/100;
+}
+
+function updateCameraMode() {
+	cameraMode = $('#cameraMode').val();
+}
 
 function updateCamera() {
 	if (cameraMode == 'sky') {
@@ -73,20 +89,29 @@ function onDocumentMouseWheel( event ) {
 	camRadius -= event.wheelDeltaY*.01;
 }
 
+function readInputs() {
+	return {
+			siteswap: $('#siteswap').val(),
+			beatDuration: parseFloat($('#beatDuration').val()),
+			dwellDuration: parseFloat($('#dwellDuration').val()),
+			propType: $('#propType').val(),
+			propRadius: .05, /* $('#propRadius').val(), */ /* disabling this input for now. doesn't really add value */
+			propC: .95, /*parseFloat($('#propC').val())/100*/ /* disabling this input for now. doesn't really add value */
+			dwellPathType: $('#dwellPathType').val()
+		};
+}
+
 /* handle screen resizing */
 $(window).resize(function() {
 	var width = $container.width()-5, height = $(window).height()-5;
 	renderer.setSize(width, height);
 });
 
-/* -------------------- */
-/* LOAD KNOWN SITESWAPS */
-/* -------------------- */
+/* ------------- */
+/* LOAD EXPLORER */
+/* ------------- */
 
-var siteswapsFile = new XMLHttpRequest();
-siteswapsFile.open('GET', 'siteswaps.csv', false);
-siteswapsFile.send();
-siteswapsFile.responseText.split('\n').map(function (a) { $('#knownSiteswapList').append('<li><a onclick="$(\'#siteswap\').val(\'' + a + '\');go();" href="#">' + a + '</a></li>'); });
+updateExplorer();
 
 /* --------------------------- */
 /* ANIMATION INIT ON PAGE LOAD */
@@ -95,6 +120,8 @@ siteswapsFile.responseText.split('\n').map(function (a) { $('#knownSiteswapList'
 var $container = $('#canvasContainer');
 var width = $container.width()-5, height = $(window).height()-5;
 
+$('#explorerContainer').height(600);
+$('#savedContainer').height(600);
 
 camera = new THREE.PerspectiveCamera( 75, width / height, .05, 100 );
 updateCamera();
@@ -141,18 +168,7 @@ function go() {
 	paused = true; // stop animation
 
 	/* read inputs from UI */
-	var config = 
-		{
-			siteswap: $('#siteswap').val(),
-			beatDuration: parseFloat($('#beatDuration').val()),
-			dwellDuration: parseFloat($('#dwellDuration').val()),
-			gravity: $('#gravity').val(),
-			propRadius: $('#propRadius').val(),
-			propC: parseFloat($('#propC').val())/100
-		};
-
-	animationSpeed = parseFloat($('#animationSpeed').val())/100;
-	cameraMode = $('#cameraMode').val();
+	var config = readInputs();
 
 	/* try to init the siteswap. if failure occurs, display accordingly */
 	try {
@@ -170,11 +186,43 @@ function go() {
 		/* create each prop and add to empty propMeshes array */
 		for (var i = 0; i < s.numProps; i++) {
 
-			var mesh = new THREE.Mesh( new THREE.SphereGeometry( config.propRadius, 20 ), new THREE.MeshPhongMaterial( { color: 'red' } ) );
-			mesh.castShadow = true;
+			if (config.propType == "ball") {
+				var mesh = new THREE.Mesh( new THREE.SphereGeometry( config.propRadius, 20 ), new THREE.MeshPhongMaterial( { color: 'red' } ) );
+				mesh.castShadow = true;
+			}
+			else if (config.propType == "club") {
+				var clubKnob = new THREE.CylinderGeometry( .008, .02, .02, 5, 4 );
+				clubKnob.vertices.map(function(v) { v.y += .01; });
+				var clubHandle = new THREE.CylinderGeometry( .015, .008, .18, 5, 4 );
+				clubHandle.vertices.map(function(v) { v.y += .11; });
+				var clubBody1 = new THREE.CylinderGeometry( .04, .015, .18, 5, 4 );
+				clubBody1.vertices.map(function(v) { v.y += .29});
+				var clubBody2 = new THREE.CylinderGeometry( .02, .04, .11, 5, 4 );
+				clubBody2.vertices.map(function(v) { v.y += .43});
+				THREE.GeometryUtils.merge(clubKnob,clubHandle);
+				THREE.GeometryUtils.merge(clubKnob,clubBody1);
+				THREE.GeometryUtils.merge(clubKnob,clubBody2);
+				// move entire club down so center of gravity is at fattest point
+				clubKnob.vertices.map(function(v) { v.y -= .38});
+				var material = new THREE.MeshLambertMaterial( {color: 'red'} );
+				var mesh = new THREE.Mesh(clubKnob,material);
+			}
+			else if (config.propType == "ring") {
+				// ring meshes
+				var points = [];
+				points.push( new THREE.Vector3( .14, 0, .01 ) );
+				points.push( new THREE.Vector3( .18, 0, .01 ) );
+				points.push( new THREE.Vector3( .18, 0, -.01 ) );
+				points.push( new THREE.Vector3( .14, 0, -.01 ) );
+				points.push( new THREE.Vector3( .14, 0, .01 ) );
+				var ringGeometry = new THREE.LatheGeometry( points );
+				var ringMaterial = new THREE.MeshLambertMaterial( { color: 'red' } );
+				var mesh = new THREE.Mesh( ringGeometry, ringMaterial );				
+			}
 
 			scene.add( mesh );
 			propMeshes.push( mesh );
+			
 		}
 		/* create each juggler and add to empty jugglerMeshes array */
 		for (var i = 0; i < s.numJugglers; i++) {
@@ -255,6 +303,15 @@ function go() {
 			propMeshes[i].position.x = s.propPositions[i][step].x;
 			propMeshes[i].position.y = s.propPositions[i][step].y;
 			propMeshes[i].position.z = s.propPositions[i][step].z;
+
+			propMeshes[i].rotation.x = s.propRotations[i][step].x;
+			propMeshes[i].rotation.y = s.propRotations[i][step].y;
+			propMeshes[i].rotation.z = s.propRotations[i][step].z;
+
+			// override rotation for rings
+			if (config.propType == "ring") {
+				propMeshes[i].rotation.y+=Math.PI/2;
+			}
 		}
 
 		/* update juggler hand positions */
@@ -288,4 +345,43 @@ function go() {
 
 	}
 
+}
+
+function saveSiteswap() {
+	var savedSiteswaps = JSON.parse(localStorage.getItem("savedSiteswaps"));
+	if (savedSiteswaps == null) {
+		savedSiteswaps = [];
+	}
+	savedSiteswaps.push(readInputs());
+	localStorage.setItem("savedSiteswaps",JSON.stringify(savedSiteswaps));
+	updateSavedSiteswaps();
+}
+
+/* call on load */
+updateSavedSiteswaps();
+function updateSavedSiteswaps() {
+	
+	var $saved = $('#savedSiteswaps tbody');
+	$saved.empty();
+
+	var siteswaps = JSON.parse(localStorage.getItem("savedSiteswaps"));
+	if (siteswaps != null) {
+		siteswaps.map(function(s,ix) {
+			$saved.append('<tr><td><a href="#" onclick="playSavedSiteswap(' + ix + ');">' + s.siteswap + '</a></td><td>' + s.dwellPathType + '</td><td>' + s.propType + '</td></tr>');
+		});
+	}
+	
+}
+
+function playSavedSiteswap(ix) {
+
+	var s = JSON.parse(localStorage.getItem("savedSiteswaps"))[ix];
+
+	$('#siteswap').val(s.siteswap);
+	$('#beatDuration').val(s.beatDuration);
+	$('#dwellDuration').val(s.dwellDuration);
+	$('#propType').val(s.propType);
+	$('#dwellPathType').val(s.dwellPathType);
+
+	go();
 }

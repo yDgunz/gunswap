@@ -270,27 +270,66 @@ function Siteswap() {
 		/* GENERATE PROP POSITIONS */
 		/* ----------------------- */
 
+		/* get dwell path type from config */
+		var dwellPath;
+		if (config.dwellPathType == 'cascade') {
+			dwellPath = 
+				[
+					/* left */
+					{
+						radius: .15,
+						catchRotation: Math.PI,
+						tossRotation: 2*Math.PI
+					},
+					/* right */
+					{
+						radius: .15,
+						catchRotation: 2*Math.PI,
+						tossRotation: Math.PI
+					}
+				];
+		} else if (config.dwellPathType == 'reverse cascade') {
+			dwellPath = 
+				[
+					/* left */
+					{
+						radius: .15,
+						catchRotation: 2*Math.PI,
+						tossRotation: Math.PI
+					},
+					/* right */
+					{
+						radius: .15,
+						catchRotation: Math.PI,
+						tossRotation: 2*Math.PI
+					}
+				];
+		} else if (config.dwellPathType == 'shower') {
+			dwellPath = 
+				[
+					/* left */
+					{
+						radius: .15,
+						catchRotation: Math.PI,
+						tossRotation: 2*Math.PI
+					},
+					/* right */
+					{
+						radius: .15,
+						catchRotation: Math.PI,
+						tossRotation: 2*Math.PI
+					}
+				];
+		}
+
 		/* initialize jugglers */
-		this.jugglers = [];
+		this.jugglers = [];		
 		for (var i = 0; i < this.numJugglers; i++) {
 			this.jugglers.push(
 				new Juggler({
 					position: {x:0,z:-2*i}, 
 					rotation: i*Math.PI, 
-					dwellPath: [
-						/* left */
-						{
-							radius: .2,
-							catchRotation: Math.PI,
-							tossRotation: 2*Math.PI
-						},
-						/* right */
-						{
-							radius: .2,
-							catchRotation: 2*Math.PI,
-							tossRotation: Math.PI
-						}
-					]
+					dwellPath: dwellPath
 				})
 			);
 		}
@@ -299,6 +338,12 @@ function Siteswap() {
 		this.propPositions = [];
 		for (var i = 0; i < this.numProps; i++) {
 			this.propPositions.push([]);
+		}
+
+		/* init prop rotations */
+		this.propRotations = [];
+		for (var i = 0; i < this.numProps; i++) {
+			this.propRotations.push([]);
 		}
 
 		/* initialize juggler hand positions */
@@ -377,6 +422,8 @@ function Siteswap() {
 					if (tmpJugglerHandPositions[tossJuggler][tossHand] == undefined) {
 						tmpJugglerHandPositions[tossJuggler][tossHand] = pos;
 					}
+					/* default in hand rotation */
+					this.propRotations[prop].push({ x: 3*Math.PI/2, y: 0, z:0 });
 				} else {
 
 					/*
@@ -399,6 +446,12 @@ function Siteswap() {
 								C: config.propC}
 						)
 					);
+
+					var catchRotation = 7*Math.PI/2;
+					var tossRotation = 3*Math.PI/2;
+					var currentRotation = tossRotation + (t/T)*(catchRotation - tossRotation);
+
+					this.propRotations[prop].push({x: currentRotation, y: 0, z: 0});
 
 				}
 

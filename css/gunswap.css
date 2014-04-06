@@ -1,4 +1,6 @@
-#knownSiteswapsContainer {
-	height: 200px;
+#explorerContainer {
+	overflow-y: auto;
+}
+#savedContainer {
 	overflow-y: auto;
 }
