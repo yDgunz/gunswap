@@ -7,20 +7,17 @@
 	<script src="js/bootstrap.min.js"></script>
 	
 	<link href="css/bootstrap.min.css" rel="stylesheet">
-	<link href="css/gunswap.css" rel="stylesheet">
 
 </head>
 
 <body>
 
-<div class="row" style="padding:10px;">
+<div class="row">
 
 	<div class="col-md-4">
 	
 		<ul class="nav nav-tabs">
 			<li class="active"><a href="#editor" data-toggle="tab">Editor</a></li>
-			<li><a href="#explorer" data-toggle="tab">Explorer</a></li>
-			<li><a href="#saved" data-toggle="tab">Saved</a></li>
 			<li><a href="#help" data-toggle="tab">Help</a></li>
 			<li><a href="#about" data-toggle="tab">About</a></li>			
 		</ul>
@@ -29,7 +26,6 @@
 				<br/>
 				<div style="text-align:center;">
 					<button id="go" class="btn btn-success btn-lg" onclick="go();">Juggle!</button>
-					<button id="go" class="btn" onclick="saveSiteswap();">Save</button>
 				</div>					
 				<br/>
 				<div id="error" class="alert alert-danger" style="display:none;"><span id="errorMessage"></span></div>
@@ -63,7 +59,7 @@
 					<div class="form-group">
 						<label for="beatDuration" class="col-sm-3 control-label input-sm">Beat</label>
 						<div class="col-sm-9">
-							<input type="range" class="form-control input-sm" id="beatDuration" min=".05" max=".5" value=".2" step=".005"></input>
+							<input type="range" class="form-control input-sm" id="beatDuration" min=".05" max=".5" value=".25" step=".005"></input>
 						</div>
 					</div>
 					<div class="form-group">
@@ -120,63 +116,6 @@
 					<li><a href="https://github.com/">GitHub</a> - for hosting</li>
 				</ul>
 			</div>
-
-			<div id="explorer" class="tab-pane">
-				<br/>
-				<form class="form-horizontal" role="form">
-					<div class="form-group">
-						<div class="col-sm-6">
-							<input id="explorerInput" type="text" value="" class="form-control input-lg" placeholder="Start siteswap..." onkeyup="updateExplorer();"></input>
-						</div>
-						<div class="col-sm-3">
-							<label for="explorerPrimeOnly" class="control-label">Prime only</label>							
-						</div>
-						<div class="col-sm-3">
-							<input id="explorerPrimeOnly" type="checkbox" class="form-control" onchange="updateExplorer();" checked></input>
-						</div>
-					</div>
-					<div class="form-group">
-						<div class="col-sm-3">
-							<label for="explorerNumProps" class="control-label">Props</label>
-						</div>
-						<div class="col-sm-3">
-							<input id="explorerNumProps" type="number" class="form-control" onchange="updateExplorer();" value="5"></input>
-						</div>
-						<div class="col-sm-3">
-							<label for="explorerAnyNumProps" class="control-label">Any number</label>							
-						</div>
-						<div class="col-sm-3">
-							<input id="explorerAnyNumProps" type="checkbox" class="form-control" checked onchange="updateExplorer();"></input>
-						</div>
-					</div>
-					<div class="form-group">
-						<div class="col-sm-3">
-							<label for="explorerMaxBeats" class="control-label">Max beats</label>
-						</div>
-						<div class="col-sm-3">
-							<input id="explorerMaxBeats" type="number" class="form-control" onchange="updateExplorer();" value="5"></input>
-						</div>
-						<div class="col-sm-3">
-							<label for="explorerMaxToss" class="control-label">Max toss</label>
-						</div>
-						<div class="col-sm-3">
-							<input id="explorerMaxToss" type="number" class="form-control" onchange="updateExplorer();" value="5"></input>
-						</div>
-					</div>
-				</form>
-				<div id="explorerContainer">
-					<table id="explorerSiteswaps" class="table table-condensed table-hover" style="text-align:center;">
-						<thead>
-							<tr>
-								<th style="text-align:center;">Siteswap</th>
-								<th style="text-align:center;">Num Props</th>
-							</tr>
-						</thead>
-						<tbody>					
-						</tbody>
-					</table>
-				</div>
-			</div>
 		
 		</div>
 
@@ -208,18 +147,15 @@
 			</form>
 		</div>
 
-		<div id="canvasContainer"></div>
+		<div id="siteswapAnimator">
+		</div>
 	
 	</div>
 
 </div>			
 
-	<script src="js/constants.js"></script>
-	<script src="js/helpers.js"></script>
 	<script src="js/Siteswap.js"></script>
-	<script src="js/Juggler.js"></script>
-	<script src="js/SiteswapGenerator.js"></script>
-	<script src="js/gunswap.js"></script>
+	<script src="js/SiteswapAnimator.js"></script>
 
 </body>
 
