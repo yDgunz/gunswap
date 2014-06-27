@@ -1,4 +1,4 @@
-var Siteswap = require('./Siteswap');
+var Siteswap = require('./js/Siteswap');
 var assert = require("assert");
 
 describe('Syntax', function(){
