@@ -204,11 +204,14 @@ describe('Spin modifiers', function() {
 		it('"5S0-X-Y3S11S-Z" should spin 0, 1 and 2 times', function() {
 			var s = Siteswap.CreateSiteswap('5S0-X-Y3S11S-Z',{validationOnly: true});
 			assert.equal(s.tosses[0][0].numSpins,0);
-			assert.equal(s.tosses[0][0].spinType,"-X-Y");
+			assert.equal(s.tosses[0][0].tossOrientation,"-X");
+			assert.equal(s.tosses[0][0].spinOrientation,"-Y");
 			assert.equal(s.tosses[1][0].numSpins,1);
-			assert.equal(s.tosses[1][0].spinType,"");
+			assert.equal(s.tosses[1][0].tossOrientation,undefined);
+			assert.equal(s.tosses[1][0].spinOrientation,undefined);
 			assert.equal(s.tosses[2][0].numSpins,0);
-			assert.equal(s.tosses[2][0].spinType,"-Z");
+			assert.equal(s.tosses[2][0].tossOrientation,"-Z");
+			assert.equal(s.tosses[2][0].spinOrientation,undefined);
 		});		
 	});
 
