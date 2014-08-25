@@ -50,7 +50,7 @@ describe('Syntax', function(){
 
 	describe('Pass', function(){
 		it('should return true for pass', function(){
-			var s = Siteswap.CreateSiteswap('<5p|5p>',{validationOnly: true});
+			var s = Siteswap.CreateSiteswap('<5P|5P>',{validationOnly: true});
 			assert.equal(s.pass, true);
 		});
 	});
@@ -65,13 +65,13 @@ describe('Pattern properties', function(){
 			assert.equal(s.numJugglers, 1);
 		});
 
-		it('"<5p|5p>" should return 2 for number of jugglers', function(){    	
-			var s = Siteswap.CreateSiteswap('<5p|5p>',{validationOnly: true});
+		it('"<5P|5P>" should return 2 for number of jugglers', function(){    	
+			var s = Siteswap.CreateSiteswap('<5P|5P>',{validationOnly: true});
 			assert.equal(s.numJugglers, 2);
 		});
 
-		it('"<5p2|5p3|5p1>" should return 3 for number of jugglers', function(){    	
-			var s = Siteswap.CreateSiteswap('<5p2|5p3|5p1>',{validationOnly: true});
+		it('"<5P2|5P3|5P1>" should return 3 for number of jugglers', function(){    	
+			var s = Siteswap.CreateSiteswap('<5P2|5P3|5P1>',{validationOnly: true});
 			assert.equal(s.numJugglers, 3);
 		});
 	});
@@ -142,8 +142,8 @@ describe('Valid pattern check', function(){
 	});
 
 	describe('Valid passing pattern', function(){
-		it('"<5|5><5p|5p>" should be valid', function(){    	
-			var s = Siteswap.CreateSiteswap('<5|5><5p|5p>',{validationOnly: true});
+		it('"<5|5><5P|5P>" should be valid', function(){    	
+			var s = Siteswap.CreateSiteswap('<5|5><5P|5P>',{validationOnly: true});
 			assert.equal(s.validPattern, true);
 		});
 	});
@@ -174,10 +174,42 @@ describe('Invalid pattern check', function(){
 	});
 
 	describe('Invalid passing pattern', function(){
-		it('"<5p|5><5p|5p>" should be invalid', function(){    	
-			var s = Siteswap.CreateSiteswap('<5p|5><5p|5p>',{validationOnly: true});
+		it('"<5P|5><5P|5P>" should be invalid', function(){    	
+			var s = Siteswap.CreateSiteswap('<5P|5><5P|5P>',{validationOnly: true});
 			assert.equal(s.validPattern, false);
 		});
+	});
+
+});
+
+describe('Spin modifiers', function() {
+
+	describe('Default spins', function() {
+		it('"531" should spin 2, 1 and 0 times', function() {
+			var s = Siteswap.CreateSiteswap('531',{validationOnly: true});
+			assert.equal(s.tosses[0][0].numSpins,2);
+			assert.equal(s.tosses[1][0].numSpins,1);
+			assert.equal(s.tosses[2][0].numSpins,0);
+		});
+	});
+
+	describe('User defined spins', function () {
+		it('"5S03S11S2" should spin 0, 1 and 2 times', function() {
+			var s = Siteswap.CreateSiteswap('5S03S11S2',{validationOnly: true});
+			assert.equal(s.tosses[0][0].numSpins,0);
+			assert.equal(s.tosses[1][0].numSpins,1);
+			assert.equal(s.tosses[2][0].numSpins,2);
+		});
+
+		it('"5S0-X-Y3S11S-Z" should spin 0, 1 and 2 times', function() {
+			var s = Siteswap.CreateSiteswap('5S0-X-Y3S11S-Z',{validationOnly: true});
+			assert.equal(s.tosses[0][0].numSpins,0);
+			assert.equal(s.tosses[0][0].spinType,"-X-Y");
+			assert.equal(s.tosses[1][0].numSpins,1);
+			assert.equal(s.tosses[1][0].spinType,"");
+			assert.equal(s.tosses[2][0].numSpins,0);
+			assert.equal(s.tosses[2][0].spinType,"-Z");
+		});		
 	});
 
 });

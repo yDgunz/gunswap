@@ -7,9 +7,9 @@ var
 	scene, 
 	renderer,
 	/* camera starting point */
-	camTheta = 3.14, 
-	camPhi = .4, 
-	camRadius = 6,
+	camTheta = Math.PI+.8, 
+	camPhi = .7, 
+	camRadius = 5,
 	/* helpers for mouse interaction */
 	isMouseDown = false, 
 	onMouseDownTheta, 
@@ -22,78 +22,158 @@ var
 	jugglerHandVertices,
 	animationSpeed = 1,
 	startTime,
-	siteswap;
+	siteswap,
+	renderMode = '3D',
+	context;
 
 init();
 
 /* function to play a new siteswap */
 function go() {
 
+	$('#errorMessage').empty();
+	$('#errorMessage').hide();
+
 	var inputs = readInputs();
+
+	/* create dwell path based on inputs */
+	var dwellPath;
+	if (inputs.dwellPathType == 'cascade') {
+		dwellPath = 
+			[
+				/* left */
+				{
+					radius: .15,
+					catchRotation: Math.PI,
+					tossRotation: 2*Math.PI
+				},
+				/* right */
+				{
+					radius: .15,
+					catchRotation: 2*Math.PI,
+					tossRotation: Math.PI
+				}
+			];
+	} else if (inputs.dwellPathType == 'reverse cascade') {
+		dwellPath = 
+			[
+				/* left */
+				{
+					radius: .15,
+					catchRotation: 2*Math.PI,
+					tossRotation: Math.PI
+				},
+				/* right */
+				{
+					radius: .15,
+					catchRotation: Math.PI,
+					tossRotation: 2*Math.PI
+				}
+			];
+	} else if (inputs.dwellPathType == 'shower') {
+		dwellPath = 
+			[
+				/* left */
+				{
+					radius: .15,
+					catchRotation: Math.PI,
+					tossRotation: 2*Math.PI
+				},
+				/* right */
+				{
+					radius: .15,
+					catchRotation: Math.PI,
+					tossRotation: 2*Math.PI
+				}
+			];
+	}
 
 	siteswap = SiteswapJS.CreateSiteswap(inputs.siteswap, 
 		{
 			beatDuration: 	inputs.beatDuration,
 			dwellDuration: 	inputs.dwellDuration,
-			propRadius: 	inputs.propRadius
+			propRadius: 	inputs.propRadius,
+			dwellPath: 		dwellPath
 		});
 
-	propType = inputs.propType;
-
-	/* clear out all meshes from scene */
-	propMeshes.map(function(a) { scene.remove(a); });
-	propMeshes = [];
-	jugglerMeshes.map(function(a) { scene.remove(a); });
-	jugglerMeshes = [];
-	jugglerHandVertices = [];
-
-	drawJugglers();
-
-	/* create each prop and add to empty propMeshes array */
-	for (var i = 0; i < siteswap.numProps; i++) {
-
-		if (propType == "ball") {
-			var mesh = new THREE.Mesh( new THREE.SphereGeometry( siteswap.propRadius, 20 ), new THREE.MeshPhongMaterial( { color: 'red' } ) );
-			mesh.castShadow = true;
-		}
-		else if (propType == "club") {
-			var clubKnob = new THREE.CylinderGeometry( .008, .02, .02, 5, 4 );
-			clubKnob.vertices.map(function(v) { v.y += .01; });
-			var clubHandle = new THREE.CylinderGeometry( .015, .008, .18, 5, 4 );
-			clubHandle.vertices.map(function(v) { v.y += .11; });
-			var clubBody1 = new THREE.CylinderGeometry( .04, .015, .18, 5, 4 );
-			clubBody1.vertices.map(function(v) { v.y += .29});
-			var clubBody2 = new THREE.CylinderGeometry( .02, .04, .11, 5, 4 );
-			clubBody2.vertices.map(function(v) { v.y += .43});
-			THREE.GeometryUtils.merge(clubKnob,clubHandle);
-			THREE.GeometryUtils.merge(clubKnob,clubBody1);
-			THREE.GeometryUtils.merge(clubKnob,clubBody2);
-			// move entire club down so center of gravity is at fattest point
-			clubKnob.vertices.map(function(v) { v.y -= .38});
-			var material = new THREE.MeshLambertMaterial( {color: 'red'} );
-			var mesh = new THREE.Mesh(clubKnob,material);
-		}
-		else if (propType == "ring") {
-			// ring meshes
-			var points = [];
-			points.push( new THREE.Vector3( .14, 0, .01 ) );
-			points.push( new THREE.Vector3( .18, 0, .01 ) );
-			points.push( new THREE.Vector3( .18, 0, -.01 ) );
-			points.push( new THREE.Vector3( .14, 0, -.01 ) );
-			points.push( new THREE.Vector3( .14, 0, .01 ) );
-			var ringGeometry = new THREE.LatheGeometry( points );
-			var ringMaterial = new THREE.MeshLambertMaterial( { color: 'red' } );
-			var mesh = new THREE.Mesh( ringGeometry, ringMaterial );				
-		}
-
-		scene.add( mesh );
-		propMeshes.push( mesh );
+	if (siteswap.errorMessage) {
 		
-	}
+		$('#errorMessage').html("ERROR: " + siteswap.errorMessage);
+		$('#errorMessage').show();
 
-	paused = false;
-	startTime = 0;
-	animate();
+	} else {
+
+		propType = inputs.propType;
+
+		/* show warnings for doing passing/bouncing with rings/clubs */
+		if (propType == 'club' && siteswap.passing) {
+			$('#errorMessage').html("WARNING: Passing patterns with clubs may look weird. Still working out kinks with club orientation.");
+			$('#errorMessage').show();
+		}
+
+		if (propType == 'ring' && siteswap.passing) {
+			$('#errorMessage').html("WARNING: Passing patterns with rings may look weird. Still working out kinks with ring orientation.");
+			$('#errorMessage').show();
+		}
+
+		/* clear out all meshes from scene */
+		propMeshes.map(function(a) { scene.remove(a); });
+		propMeshes = [];
+		jugglerMeshes.map(function(a) { scene.remove(a); });
+		jugglerMeshes = [];
+		jugglerHandVertices = [];
+
+		drawJugglers();
+
+		/* create each prop and add to empty propMeshes array */
+		for (var i = 0; i < siteswap.numProps; i++) {
+
+			if (propType == "ball") {
+				var mesh = new THREE.Mesh( new THREE.SphereGeometry( siteswap.propRadius, 20 ), new THREE.MeshPhongMaterial( { color: 'red' } ) );
+				mesh.castShadow = true;
+			}
+			else if (propType == "club") {
+				var clubKnob = new THREE.CylinderGeometry( .008, .02, .02, 5, 4 );
+				clubKnob.vertices.map(function(v) { v.y += .01; });
+				var clubHandle = new THREE.CylinderGeometry( .015, .008, .18, 5, 4 );
+				clubHandle.vertices.map(function(v) { v.y += .11; });
+				var clubBody1 = new THREE.CylinderGeometry( .04, .015, .18, 5, 4 );
+				clubBody1.vertices.map(function(v) { v.y += .29});
+				var clubBody2 = new THREE.CylinderGeometry( .02, .04, .11, 5, 4 );
+				clubBody2.vertices.map(function(v) { v.y += .43});
+				THREE.GeometryUtils.merge(clubKnob,clubHandle);
+				THREE.GeometryUtils.merge(clubKnob,clubBody1);
+				THREE.GeometryUtils.merge(clubKnob,clubBody2);
+				// move entire club down so center of gravity is at fattest point
+				clubKnob.vertices.map(function(v) { v.y -= .38});
+				var material = new THREE.MeshLambertMaterial( {color: 'red'} );
+				var mesh = new THREE.Mesh(clubKnob,material);
+				//rotate to correct starting orientation
+				mesh.rotation.x = Math.PI/2;
+			}
+			else if (propType == "ring") {
+				// ring meshes
+				var points = [];
+				points.push( new THREE.Vector3( .14, 0, .01 ) );
+				points.push( new THREE.Vector3( .18, 0, .01 ) );
+				points.push( new THREE.Vector3( .18, 0, -.01 ) );
+				points.push( new THREE.Vector3( .14, 0, -.01 ) );
+				points.push( new THREE.Vector3( .14, 0, .01 ) );
+				var ringGeometry = new THREE.LatheGeometry( points );
+				var ringMaterial = new THREE.MeshLambertMaterial( { color: 'red' } );
+				var mesh = new THREE.Mesh( ringGeometry, ringMaterial );				
+			}
+
+			scene.add( mesh );
+			propMeshes.push( mesh );
+			
+		}
+
+		paused = false;
+		startTime = 0;
+		animate();
+
+	}
 
 }
 
@@ -107,20 +187,65 @@ function animate() {
 	var t = (((new Date()).getTime() - startTime)/1000)*animationSpeed % (siteswap.states.length*siteswap.beatDuration);
 	var step = Math.floor(t/(siteswap.states.length*siteswap.beatDuration)*1000);
 
-	/* update prop mesh positions */
+	/* update prop mesh positions and rotations */
 	for (var i = 0; i < propMeshes.length; i++) {
 		propMeshes[i].position.x = siteswap.propPositions[i][step].x;
 		propMeshes[i].position.y = siteswap.propPositions[i][step].y;
 		propMeshes[i].position.z = siteswap.propPositions[i][step].z;
 
-		propMeshes[i].rotation.x = siteswap.propRotations[i][step].x;
-		propMeshes[i].rotation.y = siteswap.propRotations[i][step].y;
-		propMeshes[i].rotation.z = siteswap.propRotations[i][step].z;
+		/* reset rotation */
+		propMeshes[i].quaternion.set(1,0,0,0);
 
-		// override rotation for rings
-		if (propType == "ring") {
-			propMeshes[i].rotation.y+=Math.PI/2;
+		/* set to toss orientation */
+		var q = new THREE.Quaternion();
+		if (siteswap.propRotations[i][step].tossOrientation == 'X') {
+			if (propType == 'club')
+				q.setFromAxisAngle(new THREE.Vector3(0,0,1), Math.PI/2);
+		} else if (siteswap.propRotations[i][step].tossOrientation == '-X') {
+			if (propType == 'club')
+				q.setFromAxisAngle(new THREE.Vector3(0,0,-1), Math.PI/2);
+		} else if (siteswap.propRotations[i][step].tossOrientation == 'Y') {
+			if (propType == 'club')
+				q.setFromAxisAngle(new THREE.Vector3(0,0,1), Math.PI);
+			else if (propType == 'ring')
+				q.setFromAxisAngle(new THREE.Vector3(1,0,0), Math.PI/2);
+		} else if (siteswap.propRotations[i][step].tossOrientation == '-Y') {
+			if (propType == 'ring')
+				q.setFromAxisAngle(new THREE.Vector3(1,0,0), Math.PI/2);
+		} else if (siteswap.propRotations[i][step].tossOrientation == 'Z') {
+			if (propType == 'club')
+				q.setFromAxisAngle(new THREE.Vector3(1,0,0), Math.PI/2);
+			else if (propType == 'ring')
+				q.setFromAxisAngle(new THREE.Vector3(0,1,0), Math.PI/2);
+		} else if (siteswap.propRotations[i][step].tossOrientation == '-Z') {
+			if (propType == 'club')
+				q.setFromAxisAngle(new THREE.Vector3(-1,0,0), Math.PI/2);
+			else if (propType == 'ring')
+				q.setFromAxisAngle(new THREE.Vector3(0,1,0), Math.PI/2);
+		} else { // defaults
+			if (propType == 'club')
+				q.setFromAxisAngle(new THREE.Vector3(1,0,0), Math.PI/2);
+			else if (propType == 'ring')
+				q.setFromAxisAngle(new THREE.Vector3(0,1,0), Math.PI/2);
 		}
+		propMeshes[i].quaternion.multiplyQuaternions(q, propMeshes[i].quaternion);
+
+		/* rotate along spin axis */
+		q = new THREE.Quaternion();
+		if (siteswap.propRotations[i][step].spinOrientation == 'X' || siteswap.propRotations[i][step].spinOrientation == undefined) {
+			q.setFromAxisAngle(new THREE.Vector3(1,0,0), siteswap.propRotations[i][step].rotation);
+		} else if (siteswap.propRotations[i][step].spinOrientation == '-X') {
+			q.setFromAxisAngle(new THREE.Vector3(-1,0,0), siteswap.propRotations[i][step].rotation);
+		} else if (siteswap.propRotations[i][step].spinOrientation == 'Y') {
+			q.setFromAxisAngle(new THREE.Vector3(0,1,0), siteswap.propRotations[i][step].rotation);
+		} else if (siteswap.propRotations[i][step].spinOrientation == '-Y') {
+			q.setFromAxisAngle(new THREE.Vector3(0,-1,0), siteswap.propRotations[i][step].rotation);
+		} else if (siteswap.propRotations[i][step].spinOrientation == 'Z') {
+			q.setFromAxisAngle(new THREE.Vector3(0,0,1), siteswap.propRotations[i][step].rotation);
+		} else if (siteswap.propRotations[i][step].spinOrientation == '-Z') {
+			q.setFromAxisAngle(new THREE.Vector3(0,0,-1), siteswap.propRotations[i][step].rotation);
+		}
+		propMeshes[i].quaternion.multiplyQuaternions(q, propMeshes[i].quaternion);
 
 	}
 
@@ -159,50 +284,62 @@ function init() {
 	
 	/* find container for animator */
 	$container = $('#siteswapAnimator');
-	if ($container === null) {
-		throw 'Could not find div with id ' + divId;
-	}
 
 	width = $container.width()-10;
 	height = $(window).height()-10;
 
-	camera = new THREE.PerspectiveCamera( 75, width / height, .05, 100 );
-	updateCamera();
+	if (renderMode == '2D') {
 
-	scene = new THREE.Scene();
+		$container.append('<canvas id="siteswapAnimatorCanvas"></canvas>');
+		canvas = $container.find('canvas')[0];
+		canvas.height = height;
+		canvas.width = width;
+		context = canvas.getContext('2d');
 
-	/* lights */
-	var pointLight = new THREE.PointLight( 0xffffff );
-	pointLight.position.set(0,4,0);
-	scene.add( pointLight );
+		context.clearRect(0,0,width,height);
 
-	/* draw floor */
-	var floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/grass.jpg') } ));
-	floor.rotation.x += 3*Math.PI/2
-	scene.add(floor);
+	} else if (renderMode == '3D') {
+		camera = new THREE.PerspectiveCamera( 75, width / height, .05, 100 );
+		updateCamera();
 
-	/* create the renderer and add it to the canvas container */
-	/* if browser is mobile, render using canvas */
-	if( !window.WebGLRenderingContext ) {
-		renderer = new THREE.CanvasRenderer();	
-	} else {
-		renderer = new THREE.WebGLRenderer( {antialias: true} );
+		scene = new THREE.Scene();
+
+		/* lights */
+		var pointLight = new THREE.PointLight( 0xffffff );
+		pointLight.position.set(0,4,0);
+		scene.add( pointLight );
+
+		/* draw floor */
+		var floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/grass.jpg') } ));
+		floor.rotation.x += 3*Math.PI/2
+		scene.add(floor);
+
+		/* create the renderer and add it to the canvas container */
+		/* if browser is mobile, render using canvas */
+		if( !window.WebGLRenderingContext ) {
+			renderer = new THREE.CanvasRenderer();	
+		} else {
+			renderer = new THREE.WebGLRenderer( {antialias: true} );
+		}
+		
+		renderer.setSize( width, height );
+
+		$container.empty();
+		$container.append(renderer.domElement);
+
+		//add the event listeners for mouse interaction
+		renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
+		renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
+		renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
+		renderer.domElement.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
+
+		onMouseDownPosition = new THREE.Vector2();
+
+		renderer.setClearColor( 0xffffff, 1);
+
+		renderer.render(scene,camera);
 	}
-	
-	renderer.setSize( width, height );
 
-	$container.empty();
-	$container.append(renderer.domElement);
-
-	//add the event listeners for mouse interaction
-	renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
-	renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
-	renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
-	renderer.domElement.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
-
-	onMouseDownPosition = new THREE.Vector2();
-
-	renderer.render(scene,camera);
 }
 
 function zoomIn() { camRadius-=.1; }
@@ -303,7 +440,7 @@ function drawJugglers() {
 		jugglerRightArmG.dynamic = true;
 		var jugglerRightArm = new THREE.Line(jugglerRightArmG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));				
 
-		var jugglerHead = new THREE.Mesh( new THREE.SphereGeometry( .1125, 20 ), new THREE.MeshPhongMaterial( { color: 'blank' } ) );
+		var jugglerHead = new THREE.Mesh( new THREE.SphereGeometry( .1125, 20 ), new THREE.MeshPhongMaterial( { color: 'black' } ) );
 		jugglerHead.position = new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.6125,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0);
 
 		var jugglerMesh = new THREE.Object3D();
