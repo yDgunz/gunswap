@@ -45,6 +45,8 @@
 									<option value="cascade">Cascade</option>
 									<option value="reverse cascade">Reverse Cascade</option>
 									<option value="shower">Shower</option>
+									<option value="cascade bezier">Cascade (Bezier)</option>
+									<option value="factory">Factory</option>
 								</select>
 							</div>
 						</div>
@@ -52,8 +54,8 @@
 							<label for="propType" class="col-sm-3 control-label input-sm">Prop Type</label>
 							<div class="col-sm-9">
 								<select id="propType" class="form-control input-sm">								
-									<option value="club">Clubs</option>
 									<option value="ball">Balls</option>
+									<option value="club">Clubs</option>									
 									<option value="ring">Rings</option>
 								</select>
 							</div>
@@ -65,9 +67,9 @@
 							</div>
 						</div>
 						<div class="form-group">
-							<label for="dwellDuration" class="col-sm-3 control-label input-sm">Dwell</label>
+							<label for="dwellDuration" class="col-sm-3 control-label input-sm">Dwell Ratio</label>
 							<div class="col-sm-9">
-								<input type="range" class="form-control input-sm" id="dwellDuration" min=".05" max=".5" value=".1" step=".005"></input>
+								<input type="range" class="form-control input-sm" id="dwellRatio" min=".01" max=".99" value=".5" step=".01"></input>
 							</div>
 						</div>
 					</form>

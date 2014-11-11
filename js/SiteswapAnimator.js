@@ -7,8 +7,8 @@ var
 	scene, 
 	renderer,
 	/* camera starting point */
-	camTheta = Math.PI+.8, 
-	camPhi = .7, 
+	camTheta = Math.PI+.2, 
+	camPhi = .4, 
 	camRadius = 5,
 	/* helpers for mouse interaction */
 	isMouseDown = false, 
@@ -28,6 +28,19 @@ var
 
 init();
 
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+if (getParameterByName('siteswap') !== "") {
+	$('#siteswap').val(decodeURIComponent(getParameterByName('siteswap')));
+}
+
+go();
+
 /* function to play a new siteswap */
 function go() {
 
@@ -40,58 +53,89 @@ function go() {
 	var dwellPath;
 	if (inputs.dwellPathType == 'cascade') {
 		dwellPath = 
-			[
-				/* left */
-				{
-					radius: .15,
-					catchRotation: Math.PI,
-					tossRotation: 2*Math.PI
-				},
-				/* right */
-				{
-					radius: .15,
-					catchRotation: 2*Math.PI,
-					tossRotation: Math.PI
-				}
-			];
+			{
+				type: "circular",
+				path: [
+					/* left */
+					{
+						radius: .15,
+						catchRotation: Math.PI,
+						tossRotation: 2*Math.PI
+					},
+					/* right */
+					{
+						radius: .15,
+						catchRotation: 2*Math.PI,
+						tossRotation: Math.PI
+					}
+				]
+			};
 	} else if (inputs.dwellPathType == 'reverse cascade') {
 		dwellPath = 
-			[
-				/* left */
-				{
-					radius: .15,
-					catchRotation: 2*Math.PI,
-					tossRotation: Math.PI
-				},
-				/* right */
-				{
-					radius: .15,
-					catchRotation: Math.PI,
-					tossRotation: 2*Math.PI
-				}
-			];
+			{
+				type:"circular",
+				path: [
+					/* left */
+					{
+						radius: .15,
+						catchRotation: 2*Math.PI,
+						tossRotation: Math.PI
+					},
+					/* right */
+					{
+						radius: .15,
+						catchRotation: Math.PI,
+						tossRotation: 2*Math.PI
+					}
+				]
+			};
 	} else if (inputs.dwellPathType == 'shower') {
 		dwellPath = 
-			[
-				/* left */
-				{
-					radius: .15,
-					catchRotation: Math.PI,
-					tossRotation: 2*Math.PI
-				},
-				/* right */
-				{
-					radius: .15,
-					catchRotation: Math.PI,
-					tossRotation: 2*Math.PI
-				}
-			];
+			{
+				type:"circular",
+				path: [
+					/* left */
+					{
+						radius: .15,
+						catchRotation: Math.PI,
+						tossRotation: 2*Math.PI
+					},
+					/* right */
+					{
+						radius: .15,
+						catchRotation: Math.PI,
+						tossRotation: 2*Math.PI
+					}
+				]
+			};
+	} else if (inputs.dwellPathType == 'cascade bezier') {
+		dwellPath = 
+			{
+				type:"bezier",
+				path: [
+					/* left */
+					[{x:-.2,y:0,z:0},{x:.2,y:0,z:0}],
+					/* right */
+					[{x:.2,y:0,z:0},{x:-.2,y:0,z:0}]
+				]
+			};
+	} else if (inputs.dwellPathType == 'factory') {
+		dwellPath = 
+			{
+				type:"bezier",
+				path: [
+					/* left */
+					[{x:0,y:.4,z:0},{x:.6,y:.4,z:0}],
+					/* right */
+					[{x:.2,y:-.1,z:0},{x:-.2,y:-.1,z:0}]
+				]
+			};
 	}
 
 	siteswap = SiteswapJS.CreateSiteswap(inputs.siteswap, 
 		{
 			beatDuration: 	inputs.beatDuration,
-			dwellDuration: 	inputs.dwellDuration,
+			dwellRatio: 	inputs.dwellRatio,
 			propRadius: 	inputs.propRadius,
 			dwellPath: 		dwellPath
 		});
@@ -461,7 +505,7 @@ function readInputs() {
 	return {
 			siteswap: $('#siteswap').val(),
 			beatDuration: parseFloat($('#beatDuration').val()),
-			dwellDuration: parseFloat($('#dwellDuration').val()),
+			dwellRatio: parseFloat($('#dwellRatio').val()),
 			propType: $('#propType').val(),
 			propRadius: .05,
 			propC: .95,

@@ -15,8 +15,8 @@ function sumThrows(str) {
 	for (var i = 0; i < str.length; i++) {
 		if(parseInt(str[i])) {
 			total += parseInt(str[i]);					
-		} else if (str.charCodeAt(i) >= 97 && str.charCodeAt(i) <= 111) {
-			// handle "a" through "o" (where "a" = 10)
+		} else if (str.charCodeAt(i) >= 97 && str.charCodeAt(i) <= 119) {
+			// handle "a" through "z" (where "a" = 10)
 			total += str.charCodeAt(0)-87;
 		}
 
@@ -65,6 +65,12 @@ function arraysEqual(a,b) {
 	}
 	return true;
 }
+
+if (!Array.prototype.last){
+    Array.prototype.last = function(){
+        return this[this.length - 1];
+    };
+};
 
 /* core functions */
 function CreateSiteswap(siteswapStr, options) {
@@ -130,26 +136,29 @@ function CreateSiteswap(siteswapStr, options) {
 
 		siteswap.validationOnly = (options.validationOnly === undefined ? false : options.validationOnly);
 		siteswap.numSteps = (options.numSteps === undefined ? 1000 : options.numSteps);
-		siteswap.beatDuration = (options.beatDuration === undefined ? .2 : options.beatDuration);
-		siteswap.dwellDuration = (options.dwellDuration === undefined ? .1 : options.dwellDuration);
+		siteswap.beatDuration = (options.beatDuration === undefined ? .2 : options.beatDuration);		
+		siteswap.dwellDuration = (options.dwellRatio === undefined ? .1 : siteswap.beatDuration*options.dwellRatio);
 		siteswap.propRadius = (options.propRadius === undefined ? .05 : options.propRadius);
 		siteswap.propC = (options.propC === undefined ? .95 : options.propC);
 
 		if (options.dwellPath === undefined) {
-			siteswap.dwellPath = [
-				/* left */
-				{
-					radius: .15,
-					catchRotation: Math.PI,
-					tossRotation: 2*Math.PI
-				},
-				/* right */
-				{
-					radius: .15,
-					catchRotation: 2*Math.PI,
-					tossRotation: Math.PI
-				}
-			]			
+			siteswap.dwellPath = {
+				type: "circular",
+				path: [
+					/* left */
+					{
+						radius: .15,
+						catchRotation: Math.PI,
+						tossRotation: 2*Math.PI
+					},
+					/* right */
+					{
+						radius: .15,
+						catchRotation: 2*Math.PI,
+						tossRotation: Math.PI
+					}
+				]
+			}
 		} else {
 			siteswap.dwellPath = options.dwellPath;
 		}
@@ -231,8 +240,8 @@ function CreateSiteswap(siteswapStr, options) {
 				getTosses(tosses,s,juggler);
 			});
 		} else {
-			/* will work from "a" to "o" (p is reserved for passing) */
-			var numBeats = (siteswapStr[0].charCodeAt(0) >= 97 && siteswapStr[0].charCodeAt(0) <= 111) ? siteswapStr[0].charCodeAt(0)-87 : parseInt(siteswapStr[0]);
+			/* will work from "a" to "z" */
+			var numBeats = (siteswapStr[0].charCodeAt(0) >= 97 && siteswapStr[0].charCodeAt(0) <= 119) ? siteswapStr[0].charCodeAt(0)-87 : parseInt(siteswapStr[0]);
 			var targetJuggler = juggler;
 
 			var pIx = siteswapStr.indexOf("P");
@@ -565,10 +574,11 @@ function CreateSiteswap(siteswapStr, options) {
 				/* find the current state of each prop */
 				for(var prop = 0; prop < siteswap.numProps; prop++) {					
 
-					var curToss, nextToss;
+					var prevToss, curToss, nextToss;
 					
 					if (siteswap.propOrbits[prop].length == 1) {
 						
+						prevToss = siteswap.propOrbits[prop][0];
 						curToss = siteswap.propOrbits[prop][0];
 						nextToss = siteswap.propOrbits[prop][0];
 
@@ -577,6 +587,11 @@ function CreateSiteswap(siteswapStr, options) {
 					for (var i = 0; i < siteswap.propOrbits[prop].length-1; i++) {
 						if (!orbitBeatFound && siteswap.propOrbits[prop][i].beat <= currentBeat && siteswap.propOrbits[prop][i+1].beat > currentBeat) {
 							
+							if (i == 0) {
+								prevToss = siteswap.propOrbits[prop][siteswap.propOrbits[prop].length-1];
+							} else {
+								prevToss = siteswap.propOrbits[prop][i-1];
+							}
 							curToss = siteswap.propOrbits[prop][i];
 							nextToss = siteswap.propOrbits[prop][i+1];
 
@@ -584,6 +599,7 @@ function CreateSiteswap(siteswapStr, options) {
 
 						} else if (!orbitBeatFound && i == siteswap.propOrbits[prop].length-2) { 
 
+							prevToss = siteswap.propOrbits[prop][i];
 							curToss = siteswap.propOrbits[prop][i+1];
 							nextToss = siteswap.propOrbits[prop][0];
 
@@ -601,9 +617,42 @@ function CreateSiteswap(siteswapStr, options) {
 
 					if (currentTime < tossTime) {
 						/* interpolate dwell path */
+						var launch = interpolateFlightPath(
+								interpolateDwellPath(siteswap.jugglers[curToss.juggler],curToss.hand,1), /* p0 */
+								interpolateDwellPath(siteswap.jugglers[nextToss.juggler],nextToss.hand,0), /* p1 */
+								1,
+								0,
+								{
+									numBounces: curToss.numBounces, 
+									bounceType: curToss.bounceType, 
+									R: siteswap.propRadius, 
+									C: siteswap.propC
+								}
+							);
+						var land = interpolateFlightPath(
+								interpolateDwellPath(siteswap.jugglers[prevToss.juggler],prevToss.hand,1), /* p0 */
+								interpolateDwellPath(siteswap.jugglers[curToss.juggler],curToss.hand,0), /* p1 */
+								1,
+								1,
+								{
+									numBounces: prevToss.numBounces, 
+									bounceType: prevToss.bounceType, 
+									R: siteswap.propRadius, 
+									C: siteswap.propC
+								}
+							);
+
 						var t = 1-(tossTime - currentTime)/siteswap.dwellDuration;
-						var pos = interpolateDwellPath(siteswap.jugglers[curToss.juggler],curToss.hand,t);
+						var pos = interpolateDwellPath(
+							siteswap.jugglers[curToss.juggler]
+							, curToss.hand
+							, t
+							, land
+							, launch
+						);
+						
 						propPositions[prop].push(pos);
+						
 						/* assign juggler hand positions */
 						if (tmpJugglerHandPositions[curToss.juggler][curToss.hand] == undefined) {
 							tmpJugglerHandPositions[curToss.juggler][curToss.hand] = pos;
@@ -764,7 +813,9 @@ function CreateSiteswap(siteswapStr, options) {
 		*/
 
 		var xt = p0.x + (p1.x-p0.x)*t/T;
+		var dx = (p1.x-p0.x)/T;
 		var zt = p0.z + (p1.z-p0.z)*t/T;
+		var dz = (p1.z-p0.z)/T;
 
 		var inputKey = JSON.stringify({p0:p0,p1:p1,T:T,options:options});
 
@@ -773,7 +824,10 @@ function CreateSiteswap(siteswapStr, options) {
 			return  {
 				x: xt,
 				y: p0.y + (p1.y - p0.y - .5*options.G*T*T)*t/T + .5*options.G*t*t,
-				z: zt
+				z: zt,
+				dx: dx,
+				dy: (p1.y - p0.y -.5*options.G*T*T)/T + options.G*t,
+				dz: dz
 			};
 
 		} else if (flightPathCache[inputKey] == undefined) {
@@ -789,33 +843,33 @@ function CreateSiteswap(siteswapStr, options) {
 			while (!done && tries <= options.tries) {
 
 				var y = [p0.y];
-				var vy = v0;
+				var vy = [v0];
 				var bounces = 0;
 
 				for (var tSim = 0; tSim < T; tSim += options.dt) {
 
 					/* update position and velocity */
-					y.push(y[y.length-1] + vy*options.dt);
-					vy += options.G*options.dt;
+					y.push(y[y.length-1] + vy[vy.length-1]*options.dt);
+					vy.push(vy[vy.length-1] + options.G*options.dt);
 
 					/* if the prop is at the floor, velocity changes and loses momentum according to C */
-					if (y[y.length-1] - options.R <= 0 && vy <= 0) {
-						vy = -options.C*vy;
+					if (y[y.length-1] - options.R <= 0 && vy[vy.length-1] <= 0) {
+						vy[vy.length-1] = -options.C*vy[vy.length-1];
 						bounces++;
 					}
 
 				}
 
-				if (bounces == options.numBounces && Math.abs(p1.y-y[y.length-1]) <= options.eps && ( ( (options.bounceType == "HF" || options.bounceType == "L") && vy >= 0) || ( (options.bounceType == "F" || options.bounceType == "HL") && vy <= 0) )) {
+				if (bounces == options.numBounces && Math.abs(p1.y-y[y.length-1]) <= options.eps && ( ( (options.bounceType == "HF" || options.bounceType == "L") && vy[vy.length-1] >= 0) || ( (options.bounceType == "F" || options.bounceType == "HL") && vy[vy.length-1] <= 0) )) {
 					done = true;
-					flightPathCache[inputKey] = y;				
+					flightPathCache[inputKey] = {y:y, dy: vy};		
 				} else {
 
 					/* check to see if this just isn't going to happen */
 					if ( (options.bounceType == "HL" || options.bounceType == "L" || options.bounceType == "F" || (options.bounceType == "HF" && options.numBounces > 1)) && bounces < options.numBounces ) {
-						throw 'Not enough time for all bounces'
+						throw {message: 'Not enough time for all bounces'};
 					} else if (options.bounceType == "HF" && options.numBounces == 1 && y[y.length-1] > p1.y+options.eps) {
-						throw 'Too much time for hyperforce and single bounce'
+						throw {message: 'Too much time for hyperforce and single bounce'};
 					}
 
 					if (options.bounceType == "HL" || options.bounceType == "L") {
@@ -831,24 +885,103 @@ function CreateSiteswap(siteswapStr, options) {
 
 			if (!done) {
 				/* TODO - improve error to explain why the bounce path couldn't be calculated */
-				throw 'Unable to calculate bounce path';
+				throw {message: 'Unable to calculate bounce path'};
 			}
 
 		}
 
 		var flightPath = flightPathCache[inputKey];
-		return {x:xt, y:flightPath[Math.floor((flightPath.length-1)*t/T)], z: zt};
+		return {
+			x: xt, 
+			y: flightPath.y[Math.floor((flightPath.y.length-1)*t/T)],
+			z: zt,
+			dx: dx,
+			dy: flightPath.dy[Math.floor((flightPath.dy.length-1)*t/T)],
+			dz: dz
+		};
 	}
 
-	function interpolateDwellPath(juggler,hand,t) {
-		/* t goes from 0 to 1 */
-		var currentRotation = siteswap.dwellPath[hand].catchRotation + (siteswap.dwellPath[hand].tossRotation - siteswap.dwellPath[hand].catchRotation)*t;
+	function interpolateDwellPath(juggler,hand,T,land,launch) {
 		
-		var dwellPosition = {
-			x: siteswap.dwellPath[hand].radius*Math.cos(currentRotation),
-			y: siteswap.dwellPath[hand].radius*Math.sin(currentRotation),
-			z: 0
-		};
+		// T goes from 0 to 1
+
+		/* dwellPath object looks like this */
+		/*
+			[
+				[{x1,y1,z1},{x2,y2,z2},...]
+				,[{x1,y1,z1},{x2,y2,z2},...]
+			]			
+		*/
+
+		var dwellPosition;
+
+		if (siteswap.dwellPath.type == "circular") {
+			var currentRotation = siteswap.dwellPath.path[hand].catchRotation + (siteswap.dwellPath.path[hand].tossRotation - siteswap.dwellPath.path[hand].catchRotation)*T;
+		
+			dwellPosition = {
+				x: siteswap.dwellPath.path[hand].radius*Math.cos(currentRotation),
+				y: siteswap.dwellPath.path[hand].radius*Math.sin(currentRotation),
+				z: 0
+			};
+		} else if (siteswap.dwellPath.type = "bezier") {
+
+			if (T == 0) {
+				dwellPosition = siteswap.dwellPath.path[hand][0];
+			} else if (T == 1) {
+				dwellPosition = siteswap.dwellPath.path[hand][siteswap.dwellPath.path[hand].length-1];
+			} else {
+				var P = siteswap.dwellPath.path[hand];
+				var controlScale = 0.05;
+				var C = [{x: P[0].x+land.dx*controlScale, y: P[0].y+land.dy*controlScale, z: P[0].z+land.dz*controlScale},{x: P.last().x-launch.dx*controlScale, y: P.last().y-launch.dy*controlScale, z: P.last().z-launch.dz*controlScale}];		
+				var eps = .00001;
+
+				var c = [];
+				var path = [];
+
+				for (var i = 0; i < P.length-1; i++) {
+					var p0 = P[i];
+					var p1 = P[i+1];
+
+					var c0, c1;
+
+					if (i == 0) {
+						c0 = C[0];
+					} else {
+						var c1prev = c[c.length-1];
+						var c0 = { x: p0.x + (p0.x - c1prev.x), y: p0.y + (p0.y - c1prev.y), z: p0.z + (p0.z - c1prev.z) };
+						c.push(c0);
+					}
+
+					if (i+1 == P.length-1) {
+						c1 = C[1];
+					} else {
+						var m0 = { x: (P[i].x+P[i+1].x)/2, y: (P[i].y+P[i+1].y)/2, z: (P[i].z+P[i+1].z)/2 };
+						var m1 = { x: (P[i+1].x+P[i+2].x)/2, y: (P[i+1].y+P[i+2].y)/2, z: (P[i+1].z+P[i+2].z)/2 };
+						var l0 = Math.sqrt( Math.pow(P[i].x - P[i+1].x,2) + Math.pow(P[i].y - P[i+1].y,2) + Math.pow(P[i].z - P[i+1].z,2) );
+						var l1 = Math.sqrt( Math.pow(P[i+1].x - P[i+2].x,2) + Math.pow(P[i+1].y - P[i+2].y,2) + Math.pow(P[i+1].z - P[i+2].z,2) );
+						var t = l0/(l0+l1);
+						var q = { x: (1-t)*m0.x + t*m1.x, y: (1-t)*m0.y + t*m1.y, z: (1-t)*m0.z + t*m1.z };
+						c1 = { x: p1.x + (m0.x-q.x), y: p1.y + (m0.y-q.y), z: p1.z + (m0.z-q.z) };
+						c.push(c1);
+					}
+
+					for (var t = 0; t <= 1+eps; t += .02) {
+						path.push(
+							{
+								x: Math.pow(1-t,3)*p0.x + 3*Math.pow(1-t,2)*t*c0.x + 3*(1-t)*Math.pow(t,2)*c1.x + Math.pow(t,3)*p1.x,
+								y: Math.pow(1-t,3)*p0.y + 3*Math.pow(1-t,2)*t*c0.y + 3*(1-t)*Math.pow(t,2)*c1.y + Math.pow(t,3)*p1.y,
+								z: Math.pow(1-t,3)*p0.z + 3*Math.pow(1-t,2)*t*c0.z + 3*(1-t)*Math.pow(t,2)*c1.z + Math.pow(t,3)*p1.z
+							}
+						);
+					}
+				}
+
+				var dwellPositionIx = Math.floor(T*path.length); 
+				dwellPosition = path[dwellPositionIx < 0 ? 0 : dwellPositionIx];
+
+			}
+
+		}
 
 		return {
 			x: juggler.position.x - .4125*Math.sin(juggler.rotation) + ((hand == LEFT ? -1 : 1)*.225+dwellPosition.x)*Math.cos(juggler.rotation),
