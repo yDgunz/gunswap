@@ -39,6 +39,18 @@
 							</div>
 						</div>
 						<div class="form-group">
+							<label for="beatDuration" class="col-sm-3 control-label input-sm">Beat</label>
+							<div class="col-sm-9">
+								<input type="range" class="form-control input-sm" id="beatDuration" min=".05" max=".5" value=".25" step=".005"></input>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="dwellDuration" class="col-sm-3 control-label input-sm">Dwell Ratio</label>
+							<div class="col-sm-9">
+								<input type="range" class="form-control input-sm" id="dwellRatio" min=".01" max=".99" value=".5" step=".01"></input>
+							</div>
+						</div>						
+						<div class="form-group">
 							<label for="dwellPathType" class="col-sm-3 control-label input-sm">Hand Movement</label>
 							<div class="col-sm-9">
 								<select id="dwellPathType" class="form-control input-sm">
@@ -59,36 +71,14 @@
 									<option value="ring">Rings</option>
 								</select>
 							</div>
-						</div>										
-						<div class="form-group">
-							<label for="beatDuration" class="col-sm-3 control-label input-sm">Beat</label>
-							<div class="col-sm-9">
-								<input type="range" class="form-control input-sm" id="beatDuration" min=".05" max=".5" value=".25" step=".005"></input>
-							</div>
 						</div>
 						<div class="form-group">
-							<label for="dwellDuration" class="col-sm-3 control-label input-sm">Dwell Ratio</label>
+							<label for="motionBlur" class="col-sm-3 control-label input-sm">Motion Blur</label>
 							<div class="col-sm-9">
-								<input type="range" class="form-control input-sm" id="dwellRatio" min=".01" max=".99" value=".5" step=".01"></input>
+								<input type="checkbox" class="input-sm" id="motionBlur"></input>
 							</div>
-						</div>
+						</div>																
 					</form>
-				</div>
-
-				<div id="saved" class="tab-pane">
-					<div id="savedContainer">
-						<table id="savedSiteswaps" class="table table-condensed table-hover" style="text-align:center;">
-							<thead>
-								<tr>
-									<th style="text-align:center;">Siteswap</th>
-									<th style="text-align:center;">Hand Movement</th>
-									<th style="text-align:center;">Prop Type</th>
-								</tr>
-							</thead>
-							<tbody>					
-							</tbody>
-						</table>
-					</div>
 				</div>
 
 				<div id="help" class="tab-pane">
@@ -154,7 +144,7 @@
 				</form>
 			</div>
 
-			<div id="siteswapAnimator">
+			<div id="animatorContainer">
 			</div>
 		
 		</div>
@@ -163,8 +153,10 @@
 
 </div>
 
+	<script src="js/util.js"></script>
 	<script src="js/Siteswap.js"></script>
 	<script src="js/SiteswapAnimator.js"></script>
+	<script src="js/index.js"></script>
 
 </body>
 
