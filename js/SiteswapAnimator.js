@@ -12,7 +12,7 @@ function SiteswapAnimator(containerId) {
 		renderer,
 		/* camera starting point */
 		camTheta = Math.PI+.2, 
-		camPhi = .4, 
+		camPhi = .2, 
 		camRadius = 5,
 		/* helpers for mouse interaction */
 		isMouseDown = false, 
@@ -56,9 +56,9 @@ function SiteswapAnimator(containerId) {
 		scene.add( pointLight );
 
 		/* draw floor */
-		//var floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/grass.jpg') } ));
-		//floor.rotation.x += 3*Math.PI/2
-		//scene.add(floor);
+		var floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/grass.jpg') } ));
+		floor.rotation.x += 3*Math.PI/2
+		scene.add(floor);
 
 		/* create the renderer and add it to the canvas container */
 		/* if browser is mobile, render using canvas */
@@ -115,6 +115,17 @@ function SiteswapAnimator(containerId) {
 				$('#errorMessage').html("WARNING: Passing patterns with rings may look weird. Still working out kinks with ring orientation.");
 				$('#errorMessage').show();
 			}
+
+			/* find highest point in the pattern */
+			var highestPoint = 0;
+			for (var i = 0; i < siteswap.propPositions.length; i++) {
+				for (var j = 0; j < siteswap.propPositions[i].length; j++) {
+					if (siteswap.propPositions[i][j].y > highestPoint) {
+						highestPoint = siteswap.propPositions[i][j].y;
+					}
+				}
+			}
+			camRadius = highestPoint+1;
 
 			/* clear out all meshes from scene */
 			for (var i = 0; i < propMeshes.length; i++) {
@@ -210,16 +221,17 @@ function SiteswapAnimator(containerId) {
 		}
 
 		/* find time in the pattern and translate that to a discrete step in the prop position arrays */
-		var t = (((new Date()).getTime() - startTime)/1000)*animationSpeed % (siteswap.states.length*siteswap.beatDuration);
-		var step = Math.floor(t/(siteswap.states.length*siteswap.beatDuration)*1000);
+		var timeElapsed = ((new Date()).getTime() - startTime)*animationSpeed;
+		var t = timeElapsed % (siteswap.states.length*siteswap.beatDuration*1000); // need to *1000 b/c timeElapsed is in ms
+		var step = Math.floor(t/(siteswap.states.length*siteswap.beatDuration*1000)*siteswap.numSteps);
 
 		/* update prop mesh positions and rotations */
 		for (var i = 0; i < propMeshes.length; i++) {
 			for (var j = 0; j < propMeshes[i].length; j++) {
 
-				var stepIx = step-j*10; // the 10 here is the tail length factor
+				var stepIx = step-j*Math.floor(siteswap.numStepsPerBeat/8); // the 10 here is the tail length factor
 				if (stepIx < 0) {
-					stepIx += 1000; // these 1000's need to be refactored to reference the siteswap's numSteps property
+					stepIx += siteswap.numSteps; 
 				}
 
 				propMeshes[i][j].position.x = siteswap.propPositions[i][stepIx].x;

@@ -29,6 +29,7 @@ function CreateSiteswap(siteswapStr, options) {
 		jugglerHandPositions: 	undefined,
 		jugglers: 				undefined,
 		validationOnly:			undefined,
+		numStepsPerBeat:		undefined,		
 		numSteps: 				undefined,
 		beatDuration: 			undefined,
 		dwellDuration: 			undefined,
@@ -69,10 +70,10 @@ function CreateSiteswap(siteswapStr, options) {
 			options = {};
 		}
 
-		siteswap.validationOnly = (options.validationOnly === undefined ? false : options.validationOnly);
-		siteswap.numSteps = (options.numSteps === undefined ? 1000 : options.numSteps);
+		siteswap.validationOnly = (options.validationOnly === undefined ? false : options.validationOnly);		
 		siteswap.beatDuration = (options.beatDuration === undefined ? .2 : options.beatDuration);		
-		siteswap.dwellDuration = (options.dwellRatio === undefined ? .1 : siteswap.beatDuration*options.dwellRatio);
+		siteswap.dwellDuration = (options.dwellRatio === undefined ? siteswapStr.beatDuration*.5 : siteswap.beatDuration*options.dwellRatio);
+		siteswap.numStepsPerBeat = (options.numStepsPerBeat === undefined ? Math.floor(siteswap.beatDuration*100) : options.numStepsPerBeat);
 		siteswap.propType = (options.propType === undefined ? 'ball' : options.propType);
 		siteswap.propRadius = (options.propRadius === undefined ? .05 : options.propRadius);
 		siteswap.propC = (options.propC === undefined ? .95 : options.propC);
@@ -264,7 +265,8 @@ function CreateSiteswap(siteswapStr, options) {
 	function validatePattern() {
 
 		/* get the array of each siteswap.beats' tosses */
-		siteswap.beats = siteswap.pass ? siteswapStr.match(validPassRe) : siteswapStr.match(validBeatRe);
+		siteswap.beats = siteswap.pass ? siteswapStr.match(validPassRe) : siteswapStr.match(validBeatRe);		
+
 		/* add (0,0) after each synchronous throw - this prevents the halving issue */
 		for(var i = 0; i < siteswap.beats.length; i++) {
 			if (siteswap.beats[i].match(validSyncRe)) {
@@ -460,7 +462,7 @@ function CreateSiteswap(siteswapStr, options) {
 		}
 
 		/* if we've gotten to this point, the pattern is repeatable and thus valid */
-
+		siteswap.numSteps = siteswap.states.length*siteswap.numStepsPerBeat;
 		siteswap.validPattern = true;
 	}
 

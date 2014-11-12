@@ -13,6 +13,19 @@ window.onresize = function () {
 	animator.resize($('#animatorContainer').width()-10, $(window).height()-10);
 }
 
+function siteswapChanged() {
+	$('#errorMessage').empty();
+	$('#errorMessage').hide();
+
+	var siteswap = SiteswapJS.CreateSiteswap($('#siteswap').val(),{validationOnly: true});
+
+	if (siteswap.errorMessage) {
+		$('#errorMessage').html("WARNING: " + siteswap.errorMessage);
+		$('#errorMessage').show();
+	}
+
+}
+
 function readInputs() {
 	return {
 			siteswap: $('#siteswap').val(),
@@ -116,7 +129,7 @@ function go() {
 			};
 	}
 
-	siteswap = SiteswapJS.CreateSiteswap(inputs.siteswap, 
+	var siteswap = SiteswapJS.CreateSiteswap(inputs.siteswap, 
 		{
 			beatDuration: 	inputs.beatDuration,
 			dwellRatio: 	inputs.dwellRatio,
@@ -133,7 +146,7 @@ function zoomIn() { animator.zoomIn(); }
 function zoomOut() { animator.zoomOut(); }
 
 function updateAnimationSpeed() {
-	animationSpeed = parseFloat($('#animationSpeed').val())/100;
+	animationSpeed = parseFloat($('#animationSpeed').val());
 	animator.updateAnimationSpeed(animationSpeed);
 }
 

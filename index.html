@@ -35,11 +35,11 @@
 						<div class="form-group">
 							<label for="siteswap" class="col-sm-3 control-label input-lg">Siteswap</label>
 							<div class="col-sm-9">
-								<input id="siteswap" type="text" value="5" class="form-control input-lg"></input>
+								<input id="siteswap" type="text" value="5" class="form-control input-lg" onchange="siteswapChanged();"></input>
 							</div>
 						</div>
 						<div class="form-group">
-							<label for="beatDuration" class="col-sm-3 control-label input-sm">Beat</label>
+							<label for="beatDuration" class="col-sm-3 control-label input-sm">Beat Duration</label>
 							<div class="col-sm-9">
 								<input type="range" class="form-control input-sm" id="beatDuration" min=".05" max=".5" value=".25" step=".005"></input>
 							</div>
@@ -61,21 +61,25 @@
 									<option value="factory">Factory</option>
 								</select>
 							</div>
-						</div>
+						</div>						
 						<div class="form-group">
-							<label for="propType" class="col-sm-3 control-label input-sm">Prop Type</label>
-							<div class="col-sm-9">
-								<select id="propType" class="form-control input-sm">								
-									<option value="ball">Balls</option>
-									<option value="club">Clubs</option>									
-									<option value="ring">Rings</option>
-								</select>
+							<div id="basicPropInputs">
+								<label for="propType" class="col-sm-3 control-label input-sm">Prop Type</label>
+								<div class="col-sm-9">
+									<select id="propType" class="form-control input-sm">								
+										<option value="ball">Balls</option>
+										<option value="club">Clubs</option>									
+										<option value="ring">Rings</option>
+									</select>
+								</div>
+							</div>
+							<div id="advancedPropInputs">
 							</div>
 						</div>
 						<div class="form-group">
 							<label for="motionBlur" class="col-sm-3 control-label input-sm">Motion Blur</label>
 							<div class="col-sm-9">
-								<input type="checkbox" class="input-sm" id="motionBlur"></input>
+								<input type="checkbox" class="input-sm" id="motionBlur" checked></input>
 							</div>
 						</div>																
 					</form>
@@ -125,7 +129,7 @@
 					<div class="form-group">
 						<label for="siteswap" class="col-sm-3 control-label input-sm">Speed</label>
 						<div class="col-sm-9">
-							<input type="range" onchange="updateAnimationSpeed();" class="form-control input-sm" id="animationSpeed" min="1" max="100" value="100" step="1"></input>
+							<input type="range" onchange="updateAnimationSpeed();" class="form-control input-sm" id="animationSpeed" min="0" max="1" value="1" step=".01"></input>
 						</div>
 					</div>
 					<div class="form-group">
