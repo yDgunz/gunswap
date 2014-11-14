@@ -5,162 +5,131 @@
 	<script src="js/jquery-1.10.2.min.js"></script>
 	<script src="js/three.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
-	
+
 	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/gunswap.css" rel="stylesheet">
 
 </head>
 
 <body>
 
-<div class="container">
+<div id="outerContainer" style="padding:10px;">
+	<table id="container" style="width:100%">
+	<tr>
+	<td id="inputs" style="width:250px" valign="top">
 
-	<div class="row">
+		<div style="width:100%; text-align:center;">
+			<button id="go" class="btn btn-success btn-lg" onclick="go();">Juggle!</button>
+		</div>
 
-		<div class="col-md-4">
-		
-			<ul class="nav nav-tabs">
-				<li class="active"><a href="#editor" data-toggle="tab">Editor</a></li>
-				<li><a href="#help" data-toggle="tab">Help</a></li>
-				<li><a href="#about" data-toggle="tab">About</a></li>			
+		<div id="errorMessage" class="alert alert-danger" style="display:none;"></div>
+
+		Siteswap<br/> 
+		<input id="siteswap" type="text" value="5" class="form-control input-sm" onchange="siteswapChanged();"></input>
+		<br/>
+
+		Beat Duration (s)<br/>
+		<input type="range" class="form-control input-sm" id="beatDuration" min=".05" max=".5" value=".25" step=".005"></input>
+		<br/>
+
+		Dwell Ratio (%)<br/>
+		<input type="range" class="form-control input-sm" id="dwellRatio" min=".01" max=".99" value=".5" step=".01"></input>
+
+		Hand Movement<br/>
+		<select id="dwellPathType" class="form-control input-sm">
+			<option value="cascade">Cascade</option>
+			<option value="reverse cascade">Reverse Cascade</option>
+			<option value="shower">Shower</option>
+			<option value="cascade bezier">Cascade (Bezier)</option>
+			<option value="factory">Factory</option>
+		</select>
+
+		<br/>
+		Props
+		<input id="propInputType" type="checkbox" onchange="togglePropInputType();" checked></input>
+		apply to all
+		<br/>
+		<div id="singlePropInputs"></div>		
+		<div id="multiPropInputs" style="display:none;"></div>
+
+		<div id="propInputTemplate" style="display:none;">
+			<table style="width:100%">
+			<tr>
+				<td style="width:50%">
+					<select id="propTypeNNN" class="form-control input-sm">
+						<option value="ball">Ball</option>
+						<option value="club">Club</option>									
+						<option value="ring">Ring</option>
+					</select>
+				</td>
+				<td style="width:50%">
+					<select id="propColorNNN" class="form-control input-sm">
+						<option value="random">Random</option>						
+						<option value="red">Red</option>
+						<option value="blue">Blue</option>
+						<option value="white">White</option>
+						<option value="green">Green</option>
+						<option value="black">Black</option>
+					</select>				
+				</td>
+			</tr>
+			</table>			
+		</div>
+
+		<br/>
+		Motion Blur  <input type="checkbox" id="motionBlur"></input>	
+
+		<div id="help">
+			<br/>
+			Examples
+			<br/><br/>
+			<ul>
+				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('5');go();" href="#">5</a> - 5 ball cascade</li>
+				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('7531');go();" href="#">7531</a> - 4 ball tower</li>
+				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('91');go();" href="#">91</a> - 5 ball shower</li>
+				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('(4,4)');go();" href="#">(4,4)</a> - 4 ball sync fountain</li>
+				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('(4,2x)(2x,4)');go();" href="#">(4,2x)(2x,4)</a> - 3 ball box</li>
+				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('24[54]');go();" href="#">24[54]</a> - 5 ball multiplex</li>
+				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('5B1L');go();" href="#">5B1L</a> - 5 ball lift bounce</li>
+				<li><a onclick="$('#propType').val('club');$('#siteswap').val('5S05S3');go();" href="#">5S05S3</a> - 5 club alternating flats/triples</li>
+				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('<3|3><3P|3P>');go();" href="#">&lt;3|3&gt;&lt;3P|3P&gt;</a> - 6 ball 2 juggler passing</li>
+				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('<5|5><5PB1F|5PB1F>');go();" href="#">&lt;5|5&gt;&lt;5PB1F|5PB1F&gt;</a> - 6 ball 2 juggler passing w/ force bounce</li>
+				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('<7|5|3>');go();" href="#">&lt;7|5|3&gt;</a> - 3 jugglers no passing</li>
 			</ul>
-			<div class="tab-content">
-				<div id="editor" class="tab-pane active">								
-					<br/>
-					<div style="text-align:center;">
-						<button id="go" class="btn btn-success btn-lg" onclick="go();">Juggle!</button>
-					</div>					
-					<br/>
-					<div id="errorMessage" class="alert alert-danger" style="display:none;"></div>
-					<form class="form-horizontal" role="form">
-						<div class="form-group">
-							<label for="siteswap" class="col-sm-3 control-label input-lg">Siteswap</label>
-							<div class="col-sm-9">
-								<input id="siteswap" type="text" value="5" class="form-control input-lg" onchange="siteswapChanged();"></input>
-							</div>
-						</div>
-						<div class="form-group">
-							<label for="beatDuration" class="col-sm-3 control-label input-sm">Beat Duration</label>
-							<div class="col-sm-9">
-								<input type="range" class="form-control input-sm" id="beatDuration" min=".05" max=".5" value=".25" step=".005"></input>
-							</div>
-						</div>
-						<div class="form-group">
-							<label for="dwellDuration" class="col-sm-3 control-label input-sm">Dwell Ratio</label>
-							<div class="col-sm-9">
-								<input type="range" class="form-control input-sm" id="dwellRatio" min=".01" max=".99" value=".5" step=".01"></input>
-							</div>
-						</div>						
-						<div class="form-group">
-							<label for="dwellPathType" class="col-sm-3 control-label input-sm">Hand Movement</label>
-							<div class="col-sm-9">
-								<select id="dwellPathType" class="form-control input-sm">
-									<option value="cascade">Cascade</option>
-									<option value="reverse cascade">Reverse Cascade</option>
-									<option value="shower">Shower</option>
-									<option value="cascade bezier">Cascade (Bezier)</option>
-									<option value="factory">Factory</option>
-								</select>
-							</div>
-						</div>						
-						<div class="form-group">
-							<div id="basicPropInputs">
-								<label for="propType" class="col-sm-3 control-label input-sm">Prop Type</label>
-								<div class="col-sm-9">
-									<select id="propType" class="form-control input-sm">								
-										<option value="ball">Balls</option>
-										<option value="club">Clubs</option>									
-										<option value="ring">Rings</option>
-									</select>
-								</div>
-							</div>
-							<div id="advancedPropInputs">
-							</div>
-						</div>
-						<div class="form-group">
-							<label for="motionBlur" class="col-sm-3 control-label input-sm">Motion Blur</label>
-							<div class="col-sm-9">
-								<input type="checkbox" class="input-sm" id="motionBlur" checked></input>
-							</div>
-						</div>																
-					</form>
-				</div>
-
-				<div id="help" class="tab-pane">
-					<br/>
-					<p>Gunswap is a web-based juggling animator. Patterns are defined using standard siteswap notation with support for synchronous, multiplex, bouncing and passing. Some examples to get you started:</p>
-					<ul>
-						<li><a onclick="$('#propType').val('ball');$('#siteswap').val('5');go();" href="#">5</a> - 5 ball cascade</li>
-						<li><a onclick="$('#propType').val('ball');$('#siteswap').val('7531');go();" href="#">7531</a> - 4 ball tower</li>
-						<li><a onclick="$('#propType').val('ball');$('#siteswap').val('91');go();" href="#">91</a> - 5 ball shower</li>
-						<li><a onclick="$('#propType').val('ball');$('#siteswap').val('(4,4)');go();" href="#">(4,4)</a> - 4 ball sync fountain</li>
-						<li><a onclick="$('#propType').val('ball');$('#siteswap').val('(4,2x)(2x,4)');go();" href="#">(4,2x)(2x,4)</a> - 3 ball box</li>
-						<li><a onclick="$('#propType').val('ball');$('#siteswap').val('24[54]');go();" href="#">24[54]</a> - 5 ball multiplex</li>
-						<li><a onclick="$('#propType').val('ball');$('#siteswap').val('5B1L');go();" href="#">5B1L</a> - 5 ball lift bounce</li>
-						<li><a onclick="$('#propType').val('club');$('#siteswap').val('5S05S3');go();" href="#">5S05S3</a> - 5 club alternating flats/triples</li>
-						<li><a onclick="$('#propType').val('ball');$('#siteswap').val('<3|3><3P|3P>');go();" href="#">&lt;3|3&gt;&lt;3P|3P&gt;</a> - 6 ball 2 juggler passing</li>
-						<li><a onclick="$('#propType').val('ball');$('#siteswap').val('<5|5><5PB1F|5PB1F>');go();" href="#">&lt;5|5&gt;&lt;5PB1F|5PB1F&gt;</a> - 6 ball 2 juggler passing w/ force bounce</li>
-						<li><a onclick="$('#propType').val('ball');$('#siteswap').val('<7|5|3>');go();" href="#">&lt;7|5|3&gt;</a> - 3 jugglers no passing</li>
-					</ul>
-				</div>
-
-				<div id="about" class="tab-pane">
-					<br/>
-					<p>Check out <a href="http://gunswap.blogspot.com/">http://gunswap.blogspot.com/</a> for updates on development.</p>			
-					<p>Gunswap uses some really awesome open source projects:</p>
-					<ul>
-						<li><a href="http://threejs.org/">Three.js</a> - for 3D graphics</li>
-						<li><a href="http://getbootstrap.com">Bootstrap</a> - to make UI controls pretty</li>
-						<li><a href="http://jquery.com/">jQuery</a> - for anything and everything</li>
-						<li><a href="http://gruntjs.com/">Grunt</a> - to aid development/testing</li>
-						<li><a href="http://visionmedia.github.io/mocha/">Mocha</a> - for testing</li>
-						<li><a href="https://travis-ci.org/">Travis CI</a> - for continuous integration</li>	
-						<li><a href="https://github.com/">GitHub</a> - for hosting</li>
-					</ul>
-				</div>
-			
-			</div>
 
 		</div>
 
-		<div class="col-md-8">
-			
-			<div style="position:absolute;top:20px;">
-				<form class="form-inline" role="form">
-					<div class="form-group">
-						<label for="siteswap" class="col-sm-3 control-label input-sm">Speed</label>
-						<div class="col-sm-9">
-							<input type="range" onchange="updateAnimationSpeed();" class="form-control input-sm" id="animationSpeed" min="0" max="1" value="1" step=".01"></input>
-						</div>
-					</div>
-					<div class="form-group">
-						<label for="siteswap" class="col-sm-3 control-label input-sm">Camera</label>
-						<div class="col-sm-9">
-							<select id="cameraMode" class="form-control input-sm" onchange="updateCameraMode();">
-								<option value="sky">Sky</option>
-								<option value="juggler">Juggler</option>
-							</select>
-						</div>
-					</div>
-					<div class="btn-group">
-						<button type="button" class="btn btn-default" onclick="zoomIn();"><span class="glyphicon glyphicon-zoom-in"></span></button>
-						<button type="button" class="btn btn-default" onclick="zoomOut();"><span class="glyphicon glyphicon-zoom-out"></span></button>
-					</div>
-				</form>
+	</td>
+	<td>
+		<div style="position:absolute;top:10px;padding-left:10px;">
+			<div style="float:left;width:200px;">
+				<input type="range" onchange="updateAnimationSpeed();" class="form-control input-sm" id="animationSpeed" min="0" max="1" value="1" step=".01"></input>
 			</div>
-
-			<div id="animatorContainer">
+			<div style="float:left;width:100px;padding-left:10px;">
+				<select id="cameraMode" class="input-sm" onchange="updateCameraMode();">
+					<option value="sky">Sky</option>
+					<option value="juggler">Juggler</option>
+				</select>
 			</div>
-		
+			<div style="float:left;width:100px;padding-left:10px;">
+				<button type="button" class="btn btn-default" onclick="zoomIn();"><span class="glyphicon glyphicon-zoom-in"></span></button>
+				<button type="button" class="btn btn-default" onclick="zoomOut();"><span class="glyphicon glyphicon-zoom-out"></span></button>
+			</div>			
 		</div>
-
-	</div>			
-
+		<div style="position:absolute;top:10px;right:10px;">
+			<a href="http://gunswap.blogspot.com/" class="btn btn-info">Blog</a>
+		</div>
+		<div id="animatorContainer">
+		</div>
+	</td>	
+	</tr>	
+	</table>
 </div>
 
-	<script src="js/util.js"></script>
-	<script src="js/Siteswap.js"></script>
-	<script src="js/SiteswapAnimator.js"></script>
-	<script src="js/index.js"></script>
+<script src="js/util.js"></script>
+<script src="js/Siteswap.js"></script>
+<script src="js/SiteswapAnimator.js"></script>
+<script src="js/index.js"></script>
 
 </body>
 

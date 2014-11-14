@@ -33,9 +33,7 @@ function CreateSiteswap(siteswapStr, options) {
 		numSteps: 				undefined,
 		beatDuration: 			undefined,
 		dwellDuration: 			undefined,
-		propType: 				undefined, 
-		propRadius: 			undefined,
-		propC: 					undefined,
+		props:  				undefined,
 		dwellPath: 				undefined,
 		errorMessage:  			undefined
 	};
@@ -74,9 +72,12 @@ function CreateSiteswap(siteswapStr, options) {
 		siteswap.beatDuration = (options.beatDuration === undefined ? .2 : options.beatDuration);		
 		siteswap.dwellDuration = (options.dwellRatio === undefined ? siteswapStr.beatDuration*.5 : siteswap.beatDuration*options.dwellRatio);
 		siteswap.numStepsPerBeat = (options.numStepsPerBeat === undefined ? Math.floor(siteswap.beatDuration*100) : options.numStepsPerBeat);
-		siteswap.propType = (options.propType === undefined ? 'ball' : options.propType);
-		siteswap.propRadius = (options.propRadius === undefined ? .05 : options.propRadius);
-		siteswap.propC = (options.propC === undefined ? .95 : options.propC);
+		
+		if (options.props === undefined) {
+			siteswap.props = [{type: 'ball', radius: .05, C: .95}];
+		} else {
+			siteswap.props = options.props;
+		}
 
 		if (options.dwellPath === undefined) {
 			siteswap.dwellPath = {
@@ -299,6 +300,14 @@ function CreateSiteswap(siteswapStr, options) {
 		} else {		
 			siteswap.errorMessage = "Cannot determine number of props";
 			return;
+		}
+
+		/* make sure props array is correct length */
+		while (siteswap.props.length < siteswap.numProps) {
+			siteswap.props.push(cloneObject(siteswap.props.last()));
+		}
+		while (siteswap.props.length > siteswap.numProps) {
+			siteswap.props.pop();
 		}
 
 		siteswap.tosses = [];
@@ -563,8 +572,8 @@ function CreateSiteswap(siteswapStr, options) {
 								{
 									numBounces: curToss.numBounces, 
 									bounceType: curToss.bounceType, 
-									R: siteswap.propRadius, 
-									C: siteswap.propC
+									R: siteswap.props[prop].radius, 
+									C: siteswap.props[prop].C
 								}
 							);
 						var land = interpolateFlightPath(
@@ -575,8 +584,8 @@ function CreateSiteswap(siteswapStr, options) {
 								{
 									numBounces: prevToss.numBounces, 
 									bounceType: prevToss.bounceType, 
-									R: siteswap.propRadius, 
-									C: siteswap.propC
+									R: siteswap.props[prop].radius, 
+									C: siteswap.props[prop].C
 								}
 							);
 
@@ -615,8 +624,8 @@ function CreateSiteswap(siteswapStr, options) {
 								{
 									numBounces: curToss.numBounces, 
 									bounceType: curToss.bounceType, 
-									R: siteswap.propRadius, 
-									C: siteswap.propC
+									R: siteswap.props[prop].radius, 
+									C: siteswap.props[prop].C
 								}
 							)
 						);

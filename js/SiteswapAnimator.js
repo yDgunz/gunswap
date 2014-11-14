@@ -11,8 +11,8 @@ function SiteswapAnimator(containerId) {
 		scene, 
 		renderer,
 		/* camera starting point */
-		camTheta = Math.PI+.2, 
-		camPhi = .2, 
+		camTheta = Math.PI, 
+		camPhi = .3, 
 		camRadius = 5,
 		/* helpers for mouse interaction */
 		isMouseDown = false, 
@@ -27,12 +27,13 @@ function SiteswapAnimator(containerId) {
 		startTime,
 		siteswap,
 		renderMode = '3D',
-		context;
+		context,
+		randomColors = ['red','white','blue','green','black','yellow','purple'];
 
 	container = $('#' + containerId);
 
-	width = container.width()-10;
-	height = $(window).height()-10;
+	width = container.width()-25;
+	height = $(window).height()-40;
 
 	if (renderMode == '2D') {
 
@@ -51,9 +52,12 @@ function SiteswapAnimator(containerId) {
 		scene = new THREE.Scene();
 
 		/* lights */
-		var pointLight = new THREE.PointLight( 0xffffff );
-		pointLight.position.set(0,4,0);
-		scene.add( pointLight );
+		var ceilingLight = new THREE.PointLight( 0xffffff );
+		ceilingLight.position.set(0,20,0);
+		scene.add( ceilingLight );
+		var floorLight = new THREE.PointLight( 0xffffff );
+		floorLight.position.set(0,0,-2);
+		scene.add( floorLight );
 
 		/* draw floor */
 		var floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/grass.jpg') } ));
@@ -106,14 +110,14 @@ function SiteswapAnimator(containerId) {
 		} else {
 
 			/* show warnings for doing passing/bouncing with rings/clubs */
-			if (siteswap.propType == 'club' && siteswap.passing) {
-				$('#errorMessage').html("WARNING: Passing patterns with clubs may look weird. Still working out kinks with club orientation.");
-				$('#errorMessage').show();
-			}
-
-			if (siteswap.propType == 'ring' && siteswap.passing) {
-				$('#errorMessage').html("WARNING: Passing patterns with rings may look weird. Still working out kinks with ring orientation.");
-				$('#errorMessage').show();
+			if (siteswap.pass) {
+				for (var i = 0; i < siteswap.props.length; i++) {
+					if (siteswap.props[i].type == 'club' || siteswap.props[i].type == 'club') {
+						$('#errorMessage').html("WARNING: Passing patterns with clubs/rings may look weird. Still working out kinks with prop orientation.");
+						$('#errorMessage').show();
+						break;
+					}
+				}
 			}
 
 			/* find highest point in the pattern */
@@ -145,10 +149,10 @@ function SiteswapAnimator(containerId) {
 
 				var geometry;
 
-				if (siteswap.propType == "ball") {
-					geometry = new THREE.SphereGeometry( siteswap.propRadius, 20 );
+				if (siteswap.props[i].type == "ball") {
+					geometry = new THREE.SphereGeometry( siteswap.props[i].radius, 20 );
 				}
-				else if (siteswap.propType == "club") {
+				else if (siteswap.props[i].type == "club") {
 					geometry = new THREE.CylinderGeometry( .008, .02, .02, 5, 4 );
 					geometry.vertices.map(function(v) { v.y += .01; });
 					var clubHandle = new THREE.CylinderGeometry( .015, .008, .18, 5, 4 );
@@ -164,7 +168,7 @@ function SiteswapAnimator(containerId) {
 					geometry.vertices.map(function(v) { v.y -= .38});
 
 				}
-				else if (siteswap.propType == "ring") {
+				else if (siteswap.props[i].type == "ring") {
 					// ring meshes
 					var points = [];
 					points.push( new THREE.Vector3( .14, 0, .01 ) );
@@ -180,18 +184,23 @@ function SiteswapAnimator(containerId) {
 				} else {
 					var numTails = 0;
 				}
+				
 				var tmpPropMeshes = [];
+				
+				var propColor = (siteswap.props[i].color == "random" ? randomColors[Math.floor(Math.random()*randomColors.length)] : siteswap.props[i].color);
+
 				for (var j = 0; j <= numTails; j++) {
 
-					var material;
+					var material;					
+
 					if (j == 0) {
-						material = new THREE.MeshLambertMaterial( { color: 'red' } );
+						material = new THREE.MeshLambertMaterial( { color: propColor } );
 					} else {
-						material = new THREE.MeshLambertMaterial( { color: 'red', transparent: true, opacity: 1-1/(numTails+1)*j } );
+						material = new THREE.MeshLambertMaterial( { color: propColor, transparent: true, opacity: 1-1/(numTails+1)*j } );
 					}
 					var mesh = new THREE.Mesh( geometry, material );			
 
-					if (siteswap.propType == 'club') {
+					if (siteswap.props[i].type == 'club') {
 						//rotate to correct starting orientation
 						mesh.rotation.x = Math.PI/2;
 					}
@@ -244,33 +253,33 @@ function SiteswapAnimator(containerId) {
 				/* set to toss orientation */
 				var q = new THREE.Quaternion();
 				if (siteswap.propRotations[i][stepIx].tossOrientation == 'X') {
-					if (siteswap.propType == 'club')
+					if (siteswap.props[i].type == 'club')
 						q.setFromAxisAngle(new THREE.Vector3(0,0,1), Math.PI/2);
 				} else if (siteswap.propRotations[i][stepIx].tossOrientation == '-X') {
-					if (siteswap.propType == 'club')
+					if (siteswap.props[i].type == 'club')
 						q.setFromAxisAngle(new THREE.Vector3(0,0,-1), Math.PI/2);
 				} else if (siteswap.propRotations[i][stepIx].tossOrientation == 'Y') {
-					if (siteswap.propType == 'club')
+					if (siteswap.props[i].type == 'club')
 						q.setFromAxisAngle(new THREE.Vector3(0,0,1), Math.PI);
-					else if (siteswap.propType == 'ring')
+					else if (siteswap.props[i].type == 'ring')
 						q.setFromAxisAngle(new THREE.Vector3(1,0,0), Math.PI/2);
 				} else if (siteswap.propRotations[i][stepIx].tossOrientation == '-Y') {
-					if (siteswap.propType == 'ring')
+					if (siteswap.props[i].type == 'ring')
 						q.setFromAxisAngle(new THREE.Vector3(1,0,0), Math.PI/2);
 				} else if (siteswap.propRotations[i][stepIx].tossOrientation == 'Z') {
-					if (siteswap.propType == 'club')
+					if (siteswap.props[i].type == 'club')
 						q.setFromAxisAngle(new THREE.Vector3(1,0,0), Math.PI/2);
-					else if (siteswap.propType == 'ring')
+					else if (siteswap.props[i].type == 'ring')
 						q.setFromAxisAngle(new THREE.Vector3(0,1,0), Math.PI/2);
 				} else if (siteswap.propRotations[i][stepIx].tossOrientation == '-Z') {
-					if (siteswap.propType == 'club')
+					if (siteswap.props[i].type == 'club')
 						q.setFromAxisAngle(new THREE.Vector3(-1,0,0), Math.PI/2);
-					else if (siteswap.propType == 'ring')
+					else if (siteswap.props[i].type == 'ring')
 						q.setFromAxisAngle(new THREE.Vector3(0,1,0), Math.PI/2);
 				} else { // defaults
-					if (siteswap.propType == 'club')
+					if (siteswap.props[i].type == 'club')
 						q.setFromAxisAngle(new THREE.Vector3(1,0,0), Math.PI/2);
-					else if (siteswap.propType == 'ring')
+					else if (siteswap.props[i].type == 'ring')
 						q.setFromAxisAngle(new THREE.Vector3(0,1,0), Math.PI/2);
 				}
 				propMeshes[i][j].quaternion.multiplyQuaternions(q, propMeshes[i][j].quaternion);
