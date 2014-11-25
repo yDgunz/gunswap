@@ -82,14 +82,50 @@ function readInputs() {
 		});
 	}
 
+	var customDwellPathInput = $('#dwellPath').val();
+	var customDwellPathBeats = customDwellPathInput.split(').').map(function(a,ix,arr) { if (ix < arr.length-1) { return a+')'; } else { return a; } });
+	var dwellPath = [];
+	for (var i = 0; i < customDwellPathBeats.length; i++) {
+		var customDwellPathArr = customDwellPathBeats[i].match(/\(-?\d+(\.\d+)?(,-?\d+(\.\d+)?)?(,-?\d+(\.\d+)?)?\)/g);
+		if ( customDwellPathArr.reduce(function(a,b) { return a+b }).length == customDwellPathBeats[i].length ) {
+			dwellPath.push(
+				customDwellPathArr.map(function(a) {   
+					var xyz = a.match(/-?\d+(\.\d+)?/g);
+					return {
+						x: parseFloat(xyz[0])/100,
+						y: xyz[1] ? parseFloat(xyz[1])/100 : 0,
+						z: xyz[2] ? parseFloat(xyz[2])/100 : 0
+					}
+				}).reverse()
+			);
+	} else {
+		throw 'Invalid custom dwell path';
+	}
+	}	
+	
 	return {
 			siteswap: $('#siteswap').val(),
 			beatDuration: parseFloat($('#beatDuration').val()),
 			dwellRatio: parseFloat($('#dwellRatio').val()),
 			props: props,
-			dwellPathType: $('#dwellPathType').val(),
+			dwellPath: dwellPath,
 			motionBlur: $('#motionBlur')[0].checked
 		};
+}
+
+function handMovementChanged() {
+	var dwellPathType = $('#dwellPathType').val();
+	if (dwellPathType == 'cascade') {
+		$('#dwellPath').val('(10)(30)');
+	} else if (dwellPathType == 'reverse cascade') {
+		$('#dwellPath').val('(30)(10)');
+	} else if (dwellPathType == 'shower') {
+		$('#dwellPath').val('(10)(30).(30)(10)');
+	} else if (dwellPathType == 'mills mess') {
+		$('#dwellPath').val('(-30)(2.5).(30)(-2.5).(-30)(0)');
+	} else if (dwellPathType == 'windmill') {
+		$('#dwellPath').val('(20)(-20).(-20)(20)');
+	}
 }
 
 function go() {
@@ -99,95 +135,12 @@ function go() {
 
 	var inputs = readInputs();
 
-	/* create dwell path based on inputs */
-	var dwellPath;
-	if (inputs.dwellPathType == 'cascade') {
-		dwellPath = 
-			{
-				type: "circular",
-				path: [
-					/* left */
-					{
-						radius: .15,
-						catchRotation: Math.PI,
-						tossRotation: 2*Math.PI
-					},
-					/* right */
-					{
-						radius: .15,
-						catchRotation: 2*Math.PI,
-						tossRotation: Math.PI
-					}
-				]
-			};
-	} else if (inputs.dwellPathType == 'reverse cascade') {
-		dwellPath = 
-			{
-				type:"circular",
-				path: [
-					/* left */
-					{
-						radius: .15,
-						catchRotation: 2*Math.PI,
-						tossRotation: Math.PI
-					},
-					/* right */
-					{
-						radius: .15,
-						catchRotation: Math.PI,
-						tossRotation: 2*Math.PI
-					}
-				]
-			};
-	} else if (inputs.dwellPathType == 'shower') {
-		dwellPath = 
-			{
-				type:"circular",
-				path: [
-					/* left */
-					{
-						radius: .15,
-						catchRotation: Math.PI,
-						tossRotation: 2*Math.PI
-					},
-					/* right */
-					{
-						radius: .15,
-						catchRotation: Math.PI,
-						tossRotation: 2*Math.PI
-					}
-				]
-			};
-	} else if (inputs.dwellPathType == 'cascade bezier') {
-		dwellPath = 
-			{
-				type:"bezier",
-				path: [
-					/* left */
-					[{x:-.2,y:0,z:0},{x:.2,y:0,z:0}],
-					/* right */
-					[{x:.2,y:0,z:0},{x:-.2,y:0,z:0}]
-				]
-			};
-	} else if (inputs.dwellPathType == 'factory') {
-		dwellPath = 
-			{
-				type:"bezier",
-				path: [
-					/* left */
-					[{x:0,y:.4,z:0},{x:.6,y:.4,z:0}],
-					/* right */
-					[{x:.2,y:-.1,z:0},{x:-.2,y:-.1,z:0}]
-				]
-			};
-	}
-
 	var siteswap = SiteswapJS.CreateSiteswap(inputs.siteswap, 
 		{
 			beatDuration: 	inputs.beatDuration,
 			dwellRatio: 	inputs.dwellRatio,
 			props: 			inputs.props,
-			dwellPath: 		dwellPath
+			dwellPath: 		inputs.dwellPath
 		});
 
 	animator.go(siteswap, {motionBlur: inputs.motionBlur});

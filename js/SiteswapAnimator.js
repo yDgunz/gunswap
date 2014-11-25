@@ -1,3 +1,4 @@
+
 (function(exports){
 
 function SiteswapAnimator(containerId) {
@@ -23,7 +24,7 @@ function SiteswapAnimator(containerId) {
 		propMeshes = [],
 		jugglerMeshes = [],
 		jugglerHandVertices,
-		animationSpeed = 1,
+		animationSpeed = .75,
 		startTime,
 		siteswap,
 		renderMode = '3D',
@@ -60,9 +61,11 @@ function SiteswapAnimator(containerId) {
 		scene.add( floorLight );
 
 		/* draw floor */
+		/*
 		var floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/grass.jpg') } ));
 		floor.rotation.x += 3*Math.PI/2
 		scene.add(floor);
+		*/
 
 		/* create the renderer and add it to the canvas container */
 		/* if browser is mobile, render using canvas */
@@ -194,9 +197,10 @@ function SiteswapAnimator(containerId) {
 					var material;					
 
 					if (j == 0) {
-						material = new THREE.MeshLambertMaterial( { color: propColor } );
+						//material = new THREE.MeshLambertMaterial( { color: propColor } );
+						material = new THREE.MeshBasicMaterial( { color: propColor, wireframe: true } );
 					} else {
-						material = new THREE.MeshLambertMaterial( { color: propColor, transparent: true, opacity: 1-1/(numTails+1)*j } );
+						//material = new THREE.MeshLambertMaterial( { color: propColor, transparent: true, opacity: 1-1/(numTails+1)*j } );
 					}
 					var mesh = new THREE.Mesh( geometry, material );			
 

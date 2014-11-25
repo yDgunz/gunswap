@@ -29,20 +29,21 @@
 		<br/>
 
 		Beat Duration (s)<br/>
-		<input type="range" class="form-control input-sm" id="beatDuration" min=".05" max=".5" value=".25" step=".005"></input>
+		<input type="range" class="form-control input-sm" id="beatDuration" min=".05" max=".5" value=".24" step=".005"></input>
 		<br/>
 
 		Dwell Ratio (%)<br/>
-		<input type="range" class="form-control input-sm" id="dwellRatio" min=".01" max=".99" value=".5" step=".01"></input>
+		<input type="range" class="form-control input-sm" id="dwellRatio" min=".01" max=".99" value=".7" step=".01"></input>
 
 		Hand Movement<br/>
-		<select id="dwellPathType" class="form-control input-sm">
+		<select id="dwellPathType" class="form-control input-sm" onchange="handMovementChanged();">
 			<option value="cascade">Cascade</option>
 			<option value="reverse cascade">Reverse Cascade</option>
 			<option value="shower">Shower</option>
-			<option value="cascade bezier">Cascade (Bezier)</option>
-			<option value="factory">Factory</option>
+			<option value="mills mess">Mills Mess</option>
+			<option value="windmill">Windmill</option>
 		</select>
+		<input id="dwellPath" type="text" value="(10)(30)" class="form-control input-sm"></input>
 
 		<br/>
 		Props
@@ -63,13 +64,13 @@
 					</select>
 				</td>
 				<td style="width:50%">
-					<select id="propColorNNN" class="form-control input-sm">
-						<option value="random">Random</option>						
+					<select id="propColorNNN" class="form-control input-sm">						
 						<option value="red">Red</option>
 						<option value="blue">Blue</option>
 						<option value="white">White</option>
 						<option value="green">Green</option>
 						<option value="black">Black</option>
+						<option value="random">Random</option>
 					</select>				
 				</td>
 			</tr>
@@ -103,7 +104,7 @@
 	<td>
 		<div style="position:absolute;top:10px;padding-left:10px;">
 			<div style="float:left;width:200px;">
-				<input type="range" onchange="updateAnimationSpeed();" class="form-control input-sm" id="animationSpeed" min="0" max="1" value="1" step=".01"></input>
+				<input type="range" onchange="updateAnimationSpeed();" class="form-control input-sm" id="animationSpeed" min="0" max="1" value=".75" step=".01"></input>
 			</div>
 			<div style="float:left;width:100px;padding-left:10px;">
 				<select id="cameraMode" class="input-sm" onchange="updateCameraMode();">
