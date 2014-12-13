@@ -93,6 +93,7 @@ function CreateSiteswap(siteswapStr, options) {
 		propPositions: 			undefined,
 		propRotations:  		undefined,
 		jugglerHandPositions: 	undefined,
+		jugglerElbowPositions: 	undefined,
 		jugglers: 				undefined,
 		validationOnly:			undefined,
 		numStepsPerBeat:		undefined,		
@@ -136,7 +137,7 @@ function CreateSiteswap(siteswapStr, options) {
 
 		siteswap.validationOnly = (options.validationOnly === undefined ? false : options.validationOnly);		
 		siteswap.beatDuration = (options.beatDuration === undefined ? .2 : options.beatDuration);		
-		siteswap.dwellDuration = (options.dwellRatio === undefined ? siteswapStr.beatDuration*.5 : siteswap.beatDuration*options.dwellRatio);
+		siteswap.dwellDuration = (options.dwellRatio === undefined ? siteswap.beatDuration*.5 : siteswap.beatDuration*options.dwellRatio);
 		siteswap.numStepsPerBeat = (options.numStepsPerBeat === undefined ? Math.floor(siteswap.beatDuration*100) : options.numStepsPerBeat);
 		
 		if (options.props === undefined) {
@@ -147,7 +148,7 @@ function CreateSiteswap(siteswapStr, options) {
 
 		if (options.dwellPath === undefined) {
 
-			siteswap.dwellPath = [[{x:.15,y:0,z:0},{x:-.15,y:0,z:0}]];
+			siteswap.dwellPath = [[{x:0.3,y:0,z:0},{x:0.1,y:0,z:0}]];
 
 		} else {
 			siteswap.dwellPath = options.dwellPath;
@@ -547,7 +548,7 @@ function CreateSiteswap(siteswapStr, options) {
 
 	function generatePropPositions() {
 
-		//try {
+		try {
 
 			/* initialize jugglers */
 			siteswap.jugglers = [];		
@@ -576,6 +577,10 @@ function CreateSiteswap(siteswapStr, options) {
 			var jugglerHandPositions = [];
 			for (var i = 0; i < siteswap.numJugglers; i++) {
 				jugglerHandPositions.push([[],[]]);
+			}
+			var jugglerElbowPositions = [];
+			for (var i = 0; i < siteswap.numJugglers; i++) {
+				jugglerElbowPositions.push([[],[]]);
 			}
 
 			/* generate prop positions */
@@ -784,8 +789,20 @@ function CreateSiteswap(siteswapStr, options) {
 
 							tmpJugglerHandPositions[juggler][hand] = {x:x,y:y,z:z};
 						}
+						
 						jugglerHandPositions[juggler][hand].push(tmpJugglerHandPositions[juggler][hand]);
+						jugglerElbowPositions[juggler][hand].push(
+							getElbowPosition(
+								{x:siteswap.jugglers[juggler].position.x+Math.cos(siteswap.jugglers[juggler].rotation)*(hand == LEFT ? - 1 : 1)*.225,y:1.425,z:siteswap.jugglers[juggler].position.z+Math.sin(siteswap.jugglers[juggler].rotation)*0}, // shoulder
+								tmpJugglerHandPositions[juggler][hand], // hand position
+								.45, // half arm length
+								.05, // chicken wing factor
+								hand // hand
+							)
+						);
+
 					}
+
 				}
 
 			}
@@ -793,10 +810,11 @@ function CreateSiteswap(siteswapStr, options) {
 			siteswap.propPositions = propPositions;
 			siteswap.propRotations = propRotations;
 			siteswap.jugglerHandPositions = jugglerHandPositions;
+			siteswap.jugglerElbowPositions = jugglerElbowPositions;
 
-		//} catch(e) {
-		//	siteswap.errorMessage = e.message;
-		//}
+		} catch(e) {
+			siteswap.errorMessage = e.message;
+		}
 	}
 
 	/* interpolate flight path */	
@@ -1012,6 +1030,59 @@ function CreateSiteswap(siteswapStr, options) {
 			z: siteswap.jugglers[juggler].position.z - .4125*Math.cos(siteswap.jugglers[juggler].rotation) + ((hand == LEFT ? -1 : 1)*dwellPosition.x)*Math.sin(siteswap.jugglers[juggler].rotation)
 		};
 
+	}
+
+	function getElbowPosition(S,H,l,w,hand) {
+		var Hp = {};
+		Hp.x = H.x - S.x;
+		Hp.y = H.y - S.y;
+		Hp.z = H.z - S.z;
+
+		var Hpp = {};
+		Hpp.x = Math.sqrt(Hp.x*Hp.x + Hp.z*Hp.z);
+		Hpp.y = Hp.y;
+		Hpp.z = 0;
+
+		var th = Math.atan2(Hp.z,Hp.x);
+
+		var magHp = Math.sqrt(Hp.x*Hp.x + Hp.y*Hp.y + Hp.z*Hp.z);
+
+		/* magically stretch arms */
+		if (2*l < magHp) {
+			l = magHp/2;
+		}
+
+		var u1 = {};
+		u1.x = Hpp.y/magHp;
+		u1.y = -Hpp.x/magHp;
+		u1.z = 0;
+
+		var u2 = {x:0,y:0};
+		if (hand == 1) {
+			u2.z = -1;
+		} else {
+			u2.z = 1;
+		}
+
+		var h = Math.sqrt(l*l - .25*magHp*magHp);
+
+		var Epp = {};
+		Epp.x = Hpp.x/2 + h*u1.x*Math.cos(w) + h*u2.x*Math.sin(w);
+		Epp.y = Hpp.y/2 + h*u1.y*Math.cos(w) + h*u2.y*Math.sin(w);
+		Epp.z = Hpp.z/2 + h*u1.z*Math.cos(w) + h*u2.z*Math.sin(w);
+
+		var Ep = {};
+		Ep.x = Epp.x*Math.cos(th) + Epp.z*Math.sin(th);
+		Ep.y = Epp.y;
+		Ep.z = Epp.x*Math.sin(th) + Epp.z*Math.cos(th);	
+
+		var E = {};
+		E.x = Ep.x + S.x;
+		E.y = Ep.y + S.y;
+		E.z = Ep.z + S.z;
+
+
+		return E;
 	}
 
 }

@@ -78,7 +78,7 @@
 		</div>
 
 		<br/>
-		Motion Blur  <input type="checkbox" id="motionBlur"></input>	
+		Prop Tails <input type="checkbox" id="motionBlur"></input>	
 
 		<div id="help">
 			<br/>
@@ -104,7 +104,7 @@
 	<td>
 		<div style="position:absolute;top:10px;padding-left:10px;">
 			<div style="float:left;width:200px;">
-				<input type="range" onchange="updateAnimationSpeed();" class="form-control input-sm" id="animationSpeed" min="0" max="1" value=".75" step=".01"></input>
+				<input type="range" onchange="updateAnimationSpeed();" class="form-control input-sm" id="animationSpeed" min="0" max="1" value=".6" step=".01"></input>
 			</div>
 			<div style="float:left;width:100px;padding-left:10px;">
 				<select id="cameraMode" class="input-sm" onchange="updateCameraMode();">
@@ -114,8 +114,11 @@
 			</div>
 			<div style="float:left;width:100px;padding-left:10px;">
 				<button type="button" class="btn btn-default" onclick="zoomIn();"><span class="glyphicon glyphicon-zoom-in"></span></button>
-				<button type="button" class="btn btn-default" onclick="zoomOut();"><span class="glyphicon glyphicon-zoom-out"></span></button>
+				<button type="button" class="btn btn-default" onclick="zoomOut();"><span class="glyphicon glyphicon-zoom-out"></span></button>				
 			</div>			
+			<div style="float:left;padding-left:10px;">
+				<span>Click/drag to rotate, scroll to zoom</span>
+			</div>
 		</div>
 		<div style="position:absolute;top:10px;right:10px;">
 			<a href="http://gunswap.blogspot.com/" class="btn btn-info">Blog</a>
