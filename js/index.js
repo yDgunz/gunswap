@@ -98,10 +98,10 @@ function readInputs() {
 					}
 				}).reverse()
 			);
-	} else {
-		throw 'Invalid custom dwell path';
+		} else {
+			throw 'Invalid custom dwell path';
+		}
 	}
-	}	
 	
 	return {
 			siteswap: $('#siteswap').val(),

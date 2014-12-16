@@ -597,7 +597,7 @@ function CreateSiteswap(siteswapStr, options) {
 				/* find the current state of each prop */
 				for(var prop = 0; prop < siteswap.numProps; prop++) {					
 
-					var prevToss, curToss, nextToss;
+					var prevToss = undefined, curToss = undefined, nextToss = undefined;
 					
 					if (siteswap.propOrbits[prop].length == 1) {
 						
@@ -638,13 +638,22 @@ function CreateSiteswap(siteswapStr, options) {
 						catchTime += (siteswap.beatDuration*siteswap.states.length);	
 					}
 
+					var lastTossTime = prevToss.beat*siteswap.beatDuration+siteswap.dwellDuration;
+					var lastCatchTime = curToss.beat*siteswap.beatDuration;
+					if (lastTossTime >= lastCatchTime && lastCatchTime >= currentTime) { 
+						lastTossTime -= (siteswap.beatDuration*siteswap.states.length);
+					}
+					if (lastTossTime >= lastCatchTime && lastCatchTime < currentTime) {
+						lastCatchTime += (siteswap.beatDuration*siteswap.states.length);	
+					}
+
 					if (currentTime < tossTime) {
 						/* interpolate dwell path */
 						var launch = interpolateFlightPath(
 								interpolateDwellPath(curToss.dwellPathIx,curToss.juggler,curToss.hand,1), /* p0 */
 								interpolateDwellPath(nextToss.dwellPathIx,nextToss.juggler,nextToss.hand,0), /* p1 */
-								1,
-								0,
+								(catchTime - tossTime),
+								0,								
 								{
 									numBounces: curToss.numBounces, 
 									bounceType: curToss.bounceType, 
@@ -655,8 +664,8 @@ function CreateSiteswap(siteswapStr, options) {
 						var land = interpolateFlightPath(
 								interpolateDwellPath(prevToss.dwellPathIx,prevToss.juggler,prevToss.hand,1), /* p0 */
 								interpolateDwellPath(curToss.dwellPathIx,curToss.juggler,curToss.hand,0), /* p1 */
-								1,
-								1,
+								(lastCatchTime - lastTossTime),
+								(lastCatchTime - lastTossTime),
 								{
 									numBounces: prevToss.numBounces, 
 									bounceType: prevToss.bounceType, 
@@ -973,8 +982,16 @@ function CreateSiteswap(siteswapStr, options) {
 		} else if (T == 1) {
 			dwellPosition = siteswap.dwellPath[dwellPathIx].last();
 		} else {
+
 			var P = siteswap.dwellPath[dwellPathIx];
-			var controlScale = 0.05;
+
+			/* if left hand, flip x values of land and launch */
+			if (hand == LEFT) {
+				land.dx *= -1;
+				launch.dx *= -1;
+			}
+
+			var controlScale = 0.06;
 			var C = [{x: P[0].x+land.dx*controlScale, y: P[0].y+land.dy*controlScale, z: P[0].z+land.dz*controlScale},{x: P.last().x-launch.dx*controlScale, y: P.last().y-launch.dy*controlScale, z: P.last().z-launch.dz*controlScale}];		
 			var eps = .00001;
 
