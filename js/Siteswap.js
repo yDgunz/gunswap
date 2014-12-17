@@ -650,8 +650,8 @@ function CreateSiteswap(siteswapStr, options) {
 					if (currentTime < tossTime) {
 						/* interpolate dwell path */
 						var launch = interpolateFlightPath(
-								interpolateDwellPath(curToss.dwellPathIx,curToss.juggler,curToss.hand,1), /* p0 */
-								interpolateDwellPath(nextToss.dwellPathIx,nextToss.juggler,nextToss.hand,0), /* p1 */
+								interpolateBezierSpline(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,1), /* p0 */
+								interpolateBezierSpline(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0), /* p1 */
 								(catchTime - tossTime),
 								0,								
 								{
@@ -662,8 +662,8 @@ function CreateSiteswap(siteswapStr, options) {
 								}
 							);
 						var land = interpolateFlightPath(
-								interpolateDwellPath(prevToss.dwellPathIx,prevToss.juggler,prevToss.hand,1), /* p0 */
-								interpolateDwellPath(curToss.dwellPathIx,curToss.juggler,curToss.hand,0), /* p1 */
+								interpolateBezierSpline(siteswap.dwellPath[prevToss.dwellPathIx],prevToss.juggler,prevToss.hand,1), /* p0 */
+								interpolateBezierSpline(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,0), /* p1 */
 								(lastCatchTime - lastTossTime),
 								(lastCatchTime - lastTossTime),
 								{
@@ -675,8 +675,8 @@ function CreateSiteswap(siteswapStr, options) {
 							);
 
 						var t = 1-(tossTime - currentTime)/siteswap.dwellDuration;
-						var pos = interpolateDwellPath(
-							curToss.dwellPathIx
+						var pos = interpolateBezierSpline(
+							siteswap.dwellPath[curToss.dwellPathIx]
 							, curToss.juggler
 							, curToss.hand
 							, t
@@ -704,8 +704,8 @@ function CreateSiteswap(siteswapStr, options) {
 						var t = currentTime - tossTime;
 
 						var pos = interpolateFlightPath(
-								interpolateDwellPath(curToss.dwellPathIx,curToss.juggler,curToss.hand,1), /* p0 */
-								interpolateDwellPath(nextToss.dwellPathIx,nextToss.juggler,nextToss.hand,0), /* p1 */
+								interpolateBezierSpline(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,1), /* p0 */
+								interpolateBezierSpline(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0), /* p1 */
 								T,
 								t,
 								{
@@ -789,8 +789,8 @@ function CreateSiteswap(siteswapStr, options) {
 								lastThrowTime -= (siteswap.beatDuration*siteswap.states.length);
 							}
 
-							var throwPos = interpolateDwellPath(lastBeatThrowPosition,juggler,hand,1);
-							var catchPos = interpolateDwellPath(nextBeatCatchPosition,juggler,hand,0);
+							var throwPos = interpolateBezierSpline(siteswap.dwellPath[lastBeatThrowPosition],juggler,hand,1);
+							var catchPos = interpolateBezierSpline(siteswap.dwellPath[nextBeatCatchPosition],juggler,hand,0);
 
 							var x = throwPos.x + (catchPos.x-throwPos.x)/(nextCatchTime-lastThrowTime)*(currentTime-lastThrowTime);
 							var y = throwPos.y + (catchPos.y-throwPos.y)/(nextCatchTime-lastThrowTime)*(currentTime-lastThrowTime);
@@ -963,9 +963,9 @@ function CreateSiteswap(siteswapStr, options) {
 		};
 	}
 
-	function interpolateDwellPath(dwellPathIx,juggler,hand,T,land,launch) {
+	function interpolateBezierSpline(P,juggler,hand,t,v_0,v_T) {
 		
-		// T goes from 0 to 1
+		// t goes from 0 to 1
 
 		/* dwellPath object looks like this */
 		/*
@@ -977,22 +977,20 @@ function CreateSiteswap(siteswapStr, options) {
 
 		var dwellPosition;
 
-		if (T == 0) {
-			dwellPosition = siteswap.dwellPath[dwellPathIx][0];
-		} else if (T == 1) {
-			dwellPosition = siteswap.dwellPath[dwellPathIx].last();
+		if (t == 0) {
+			dwellPosition = P[0];
+		} else if (t == 1) {
+			dwellPosition = P.last();
 		} else {
 
-			var P = siteswap.dwellPath[dwellPathIx];
-
-			/* if left hand, flip x values of land and launch */
+			/* if left hand, flip x values of v_0 and v_T */
 			if (hand == LEFT) {
-				land.dx *= -1;
-				launch.dx *= -1;
+				v_0.dx *= -1;
+				v_T.dx *= -1;
 			}
 
 			var controlScale = 0.06;
-			var C = [{x: P[0].x+land.dx*controlScale, y: P[0].y+land.dy*controlScale, z: P[0].z+land.dz*controlScale},{x: P.last().x-launch.dx*controlScale, y: P.last().y-launch.dy*controlScale, z: P.last().z-launch.dz*controlScale}];		
+			var C = [{x: P[0].x+v_0.dx*controlScale, y: P[0].y+v_0.dy*controlScale, z: P[0].z+v_0.dz*controlScale},{x: P.last().x-v_T.dx*controlScale, y: P.last().y-v_T.dy*controlScale, z: P.last().z-v_T.dz*controlScale}];		
 			var eps = .00001;
 
 			var c = [];
@@ -1025,26 +1023,46 @@ function CreateSiteswap(siteswapStr, options) {
 					c.push(c1);
 				}
 
-				for (var t = 0; t <= 1+eps; t += .02) {
+				for (var _t = 0; _t <= 1+eps; _t += .02) {
 					path.push(
 						{
-							x: Math.pow(1-t,3)*p0.x + 3*Math.pow(1-t,2)*t*c0.x + 3*(1-t)*Math.pow(t,2)*c1.x + Math.pow(t,3)*p1.x,
-							y: Math.pow(1-t,3)*p0.y + 3*Math.pow(1-t,2)*t*c0.y + 3*(1-t)*Math.pow(t,2)*c1.y + Math.pow(t,3)*p1.y,
-							z: Math.pow(1-t,3)*p0.z + 3*Math.pow(1-t,2)*t*c0.z + 3*(1-t)*Math.pow(t,2)*c1.z + Math.pow(t,3)*p1.z
+							x: Math.pow(1-_t,3)*p0.x + 3*Math.pow(1-_t,2)*_t*c0.x + 3*(1-_t)*Math.pow(_t,2)*c1.x + Math.pow(_t,3)*p1.x,
+							y: Math.pow(1-_t,3)*p0.y + 3*Math.pow(1-_t,2)*_t*c0.y + 3*(1-_t)*Math.pow(_t,2)*c1.y + Math.pow(_t,3)*p1.y,
+							z: Math.pow(1-_t,3)*p0.z + 3*Math.pow(1-_t,2)*_t*c0.z + 3*(1-_t)*Math.pow(_t,2)*c1.z + Math.pow(_t,3)*p1.z
 						}
 					);
+					if (path.length == 1) {
+						path.last().dist = 0;
+					} else {
+						path.last().dist = path[path.length-2].dist + Math.sqrt(Math.pow(path.last().x-path[path.length-2].x,2)+Math.pow(path.last().y-path[path.length-2].y,2)+Math.pow(path.last().z-path[path.length-2].z,2));
+					}
 				}
 			}
 
-			var dwellPositionIx = Math.floor(T*path.length); 
-			dwellPosition = path[dwellPositionIx < 0 ? 0 : dwellPositionIx];
+			var v_0mag = Math.sqrt(Math.pow(v_0.dx,2)+Math.pow(v_0.dy,2)+Math.pow(v_0.dz,2));
+			var v_Tmag = Math.sqrt(Math.pow(v_T.dx,2)+Math.pow(v_T.dy,2)+Math.pow(v_T.dz,2));
+			var L = path.last().dist;
+			var T = siteswap.dwellDuration;
+			var j = (6*T*(v_Tmag + v_0mag) - 12*L)/Math.pow(T,3);
+			var a_0 = (v_Tmag - v_0mag - .5*j*Math.pow(T,2))/T;
+			var dt = t*T;
+			var p_dt = v_0mag*dt + .5*a_0*Math.pow(dt,2) + (1/6)*j*Math.pow(dt,3);
+
+			var dwellPositionIx = 0;
+			for (var i = 0; i < path.length; i++) {
+				if (path[i].dist <= p_dt) {
+					dwellPositionIx = i;
+				}
+			}
+
+			dwellPosition = path[dwellPositionIx];
 
 		}
 
 		return {
-			x: siteswap.jugglers[juggler].position.x - .4125*Math.sin(siteswap.jugglers[juggler].rotation) + ((hand == LEFT ? -1 : 1)*dwellPosition.x)*Math.cos(siteswap.jugglers[juggler].rotation),
+			x: siteswap.jugglers[juggler].position.x + (dwellPosition.z - .4125)*Math.sin(siteswap.jugglers[juggler].rotation) + ((hand == LEFT ? -1 : 1)*dwellPosition.x)*Math.cos(siteswap.jugglers[juggler].rotation),
 			y: 1.0125 + dwellPosition.y,
-			z: siteswap.jugglers[juggler].position.z - .4125*Math.cos(siteswap.jugglers[juggler].rotation) + ((hand == LEFT ? -1 : 1)*dwellPosition.x)*Math.sin(siteswap.jugglers[juggler].rotation)
+			z: siteswap.jugglers[juggler].position.z + (dwellPosition.z - .4125)*Math.cos(siteswap.jugglers[juggler].rotation) + ((hand == LEFT ? -1 : 1)*dwellPosition.x)*Math.sin(siteswap.jugglers[juggler].rotation)
 		};
 
 	}
