@@ -169,8 +169,8 @@ function SiteswapAnimator(containerId) {
 					THREE.GeometryUtils.merge(geometry,clubHandle);
 					THREE.GeometryUtils.merge(geometry,clubBody1);
 					THREE.GeometryUtils.merge(geometry,clubBody2);
-					// move entire club down so center of gravity is at fattest point
-					geometry.vertices.map(function(v) { v.y -= .38});
+					// move entire club down to correct center of gravity
+					geometry.vertices.map(function(v) { v.y -= .2});
 
 				}
 				else if (siteswap.props[i].type == "ring") {

@@ -682,7 +682,7 @@ function CreateSiteswap(siteswapStr, options) {
 							, t
 							, land
 							, launch
-							, .07 // toss control scale
+							, .06 // toss control scale
 						);
 
 						pos.dwell = true;
@@ -855,7 +855,7 @@ function CreateSiteswap(siteswapStr, options) {
 								, t
 								, v_0
 								, v_T
-								, .05 // empty hand control scale
+								, .04 // empty hand control scale
 							);
 
 							tmpJugglerHandPositions[juggler][hand] = pos;
@@ -867,7 +867,7 @@ function CreateSiteswap(siteswapStr, options) {
 								{x:siteswap.jugglers[juggler].position.x+Math.cos(siteswap.jugglers[juggler].rotation)*(hand == LEFT ? - 1 : 1)*.225,y:1.425,z:siteswap.jugglers[juggler].position.z+Math.sin(siteswap.jugglers[juggler].rotation)*0}, // shoulder
 								tmpJugglerHandPositions[juggler][hand], // hand position
 								.45, // half arm length
-								.05, // chicken wing factor
+								.1, // chicken wing factor
 								hand // hand
 							)
 						);
@@ -1078,8 +1078,8 @@ function CreateSiteswap(siteswapStr, options) {
 					var m1 = { x: (P[i+1].x+P[i+2].x)/2, y: (P[i+1].y+P[i+2].y)/2, z: (P[i+1].z+P[i+2].z)/2 };
 					var l0 = Math.sqrt( Math.pow(P[i].x - P[i+1].x,2) + Math.pow(P[i].y - P[i+1].y,2) + Math.pow(P[i].z - P[i+1].z,2) );
 					var l1 = Math.sqrt( Math.pow(P[i+1].x - P[i+2].x,2) + Math.pow(P[i+1].y - P[i+2].y,2) + Math.pow(P[i+1].z - P[i+2].z,2) );
-					var t = l0/(l0+l1);
-					var q = { x: (1-t)*m0.x + t*m1.x, y: (1-t)*m0.y + t*m1.y, z: (1-t)*m0.z + t*m1.z };
+					var _t = l0/(l0+l1);
+					var q = { x: (1-_t)*m0.x + _t*m1.x, y: (1-_t)*m0.y + _t*m1.y, z: (1-_t)*m0.z + _t*m1.z };
 					c1 = { x: p1.x + (m0.x-q.x), y: p1.y + (m0.y-q.y), z: p1.z + (m0.z-q.z) };
 					c.push(c1);
 				}
@@ -1119,7 +1119,7 @@ function CreateSiteswap(siteswapStr, options) {
 				}
 			}
 			
-			dwellPosition = path[dwellPositionIx];
+			dwellPosition = path[dwellPositionIx < 0 ? 0 : dwellPositionIx];
 
 		}
 
