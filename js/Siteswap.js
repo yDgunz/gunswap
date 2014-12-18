@@ -548,7 +548,7 @@ function CreateSiteswap(siteswapStr, options) {
 
 	function generatePropPositions() {
 
-		try {
+		//try {
 
 			/* initialize jugglers */
 			siteswap.jugglers = [];		
@@ -682,6 +682,7 @@ function CreateSiteswap(siteswapStr, options) {
 							, t
 							, land
 							, launch
+							, .07 // toss control scale
 						);
 
 						pos.dwell = true;
@@ -734,69 +735,130 @@ function CreateSiteswap(siteswapStr, options) {
 				for (var juggler = 0; juggler < siteswap.numJugglers; juggler++) {
 					for (var hand = 0; hand <= 1; hand++) {
 						if(tmpJugglerHandPositions[juggler][hand] == undefined) {
-							/* find the next beat a prop is going to be in this hand and linearly move to the catch position */
-							var nextBeat = undefined; 
-							var minBeat = undefined;
-							var lastBeat = undefined;
-							var maxBeat = undefined;
+							
+							/* need 
+								nextToss - to determine where the hand is going to
+								propLastToss - to determine where the prop we're catching came from so we know its catch velocity
+								lastToss - to determine where the hand is coming from
+								propNextToss - to determine where the prop we just tossed is going so we know its toss velocity
+							*/
 
-							var nextBeatCatchPosition = undefined;
-							var minBeatCatchPosition = undefined;
-							var lastBeatThrowPosition = undefined;
-							var maxBeatThrowPosition = undefined;
+
+							/* find the next beat a prop is going to be in this hand and linearly move to the catch position */
+							var nextToss = undefined, minToss = undefined, lastToss = undefined, maxToss = undefined;
+							var minTossProp = undefined, minTossOrbit = undefined, nextTossProp = undefined, nextTossOrbit = undefined, maxTossProp = undefined, maxTossOrbit = undefined, lastTossProp = undefined, lastTossOrbit = undefined;
+							var propLastToss = undefined, propNextToss = undefined;
 
 							for (var prop = 0; prop < siteswap.propOrbits.length; prop++) {
 								for (var orbit = 0; orbit < siteswap.propOrbits[prop].length; orbit++) {
 									if (siteswap.propOrbits[prop][orbit].juggler == juggler && siteswap.propOrbits[prop][orbit].hand == hand) {
+										
 										// min beat
-										if (minBeat == undefined || siteswap.propOrbits[prop][orbit].beat < minBeat) {
-											minBeat = siteswap.propOrbits[prop][orbit].beat;
-											minBeatCatchPosition = siteswap.propOrbits[prop][orbit].dwellPathIx;
+										if (minToss == undefined || siteswap.propOrbits[prop][orbit].beat < minToss.beat) {
+											minToss = siteswap.propOrbits[prop][orbit];
+											minTossProp = prop;
+											minTossOrbit = orbit;
 										}
 										// next beat
-										if (siteswap.propOrbits[prop][orbit].beat > currentBeat && (nextBeat == undefined || siteswap.propOrbits[prop][orbit].beat < nextBeat)) {
-											nextBeat = siteswap.propOrbits[prop][orbit].beat;
-											nextBeatCatchPosition = siteswap.propOrbits[prop][orbit].dwellPathIx;
+										if (siteswap.propOrbits[prop][orbit].beat > currentBeat && (nextToss == undefined || siteswap.propOrbits[prop][orbit].beat < nextToss.beat)) {
+											nextToss = siteswap.propOrbits[prop][orbit];
+											nextTossProp = prop;
+											nextTossOrbit = orbit;
 										}
+										
 										// max beat
-										if (maxBeat == undefined || siteswap.propOrbits[prop][orbit].beat > maxBeat) {
-											maxBeat = siteswap.propOrbits[prop][orbit].beat;
-											maxBeatThrowPosition = siteswap.propOrbits[prop][orbit].dwellPathIx;
+										if (maxToss == undefined || siteswap.propOrbits[prop][orbit].beat > maxToss.beat) {
+											maxToss = siteswap.propOrbits[prop][orbit];
+											maxTossProp = prop;
+											maxTossOrbit = orbit;
 										}
 										// last beat
-										if (siteswap.propOrbits[prop][orbit].beat <= currentBeat && (lastBeat == undefined || siteswap.propOrbits[prop][orbit].beat > lastBeat)) {
-											lastBeat = siteswap.propOrbits[prop][orbit].beat;
-											lastBeatThrowPosition = siteswap.propOrbits[prop][orbit].dwellPathIx;
+										if (siteswap.propOrbits[prop][orbit].beat <= currentBeat && (lastToss == undefined || siteswap.propOrbits[prop][orbit].beat > lastToss.beat)) {
+											lastToss = siteswap.propOrbits[prop][orbit];
+											lastTossProp = prop;
+											lastTossOrbit = orbit;
 										}
 									}
 								}
 							}
-							if (nextBeat == undefined) {
-								nextBeat = minBeat;
-								nextBeatCatchPosition = minBeatCatchPosition;
+
+							if (nextToss == undefined) {
+								nextToss = minToss;
+								nextTossProp = minTossProp;
+								nextTossOrbit = minTossOrbit;
 							}
-							if (lastBeat == undefined) {
-								lastBeat = maxBeat;
-								lastBeatThrowPosition = maxBeatThrowPosition;
+							if (lastToss == undefined) {
+								lastToss = maxToss;
+								lastTossProp = maxTossProp;
+								lastTossOrbit = maxTossOrbit;
 							}
 
-							var nextCatchTime = nextBeat*siteswap.beatDuration;
+							if (nextTossOrbit == 0) {
+								propLastToss = siteswap.propOrbits[nextTossProp].last();
+							} else {
+								propLastToss = siteswap.propOrbits[nextTossProp][nextTossOrbit-1];
+							}
+
+							if (lastTossOrbit == 0) {
+								propNextToss = siteswap.propOrbits[lastTossProp].last();
+							} else {
+								propNextToss = siteswap.propOrbits[lastTossProp][lastTossOrbit-1];
+							}
+
+							var nextCatchTime = nextToss.beat*siteswap.beatDuration;
 							if (nextCatchTime < currentTime) {
 								nextCatchTime += (siteswap.beatDuration*siteswap.states.length);
 							}
-							var lastThrowTime = lastBeat*siteswap.beatDuration+siteswap.dwellDuration;
+							var lastThrowTime = lastToss.beat*siteswap.beatDuration+siteswap.dwellDuration;
 							if (lastThrowTime > currentTime) {
 								lastThrowTime -= (siteswap.beatDuration*siteswap.states.length);
 							}
+							var propNextCatchTime = propNextToss.beat*siteswap.beatDuration;
+							if (propNextCatchTime < lastThrowTime) {
+								propNextCatchTime += (siteswap.beatDuration*siteswap.states.length);
+							}
+							var propLastThrowTime = propLastToss.beat*siteswap.beatDuration+siteswap.dwellDuration;
+							if (propLastThrowTime > nextCatchTime) {
+								propLastThrowTime -= (siteswap.beatDuration*siteswap.states.length);
+							}
 
-							var throwPos = interpolateBezierSpline(siteswap.dwellPath[lastBeatThrowPosition],juggler,hand,1);
-							var catchPos = interpolateBezierSpline(siteswap.dwellPath[nextBeatCatchPosition],juggler,hand,0);
+							var v_0 = interpolateFlightPath(
+								interpolateBezierSpline(siteswap.dwellPath[lastToss.dwellPathIx],lastToss.juggler,lastToss.hand,1), /* p0 */
+								interpolateBezierSpline(siteswap.dwellPath[propNextToss.dwellPathIx],propNextToss.juggler,propNextToss.hand,0), /* p1 */
+								(propNextCatchTime - lastThrowTime),
+								0,								
+								{
+									numBounces: lastToss.numBounces, 
+									bounceType: lastToss.bounceType,
+									R: siteswap.props[lastTossProp].radius, 
+									C: siteswap.props[lastTossProp].C
+								}
+							);
+							var v_T = interpolateFlightPath(
+								interpolateBezierSpline(siteswap.dwellPath[propLastToss.dwellPathIx],propLastToss.juggler,propLastToss.hand,1), /* p0 */
+								interpolateBezierSpline(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0), /* p1 */
+								(nextCatchTime - propLastThrowTime),
+								(nextCatchTime - propLastThrowTime),
+								{
+									numBounces: nextToss.numBounces, 
+									bounceType: nextToss.bounceType,
+									R: siteswap.props[nextTossProp].radius, 
+									C: siteswap.props[nextTossProp].C
+								}
+							);
 
-							var x = throwPos.x + (catchPos.x-throwPos.x)/(nextCatchTime-lastThrowTime)*(currentTime-lastThrowTime);
-							var y = throwPos.y + (catchPos.y-throwPos.y)/(nextCatchTime-lastThrowTime)*(currentTime-lastThrowTime);
-							var z = throwPos.z + (catchPos.z-throwPos.z)/(nextCatchTime-lastThrowTime)*(currentTime-lastThrowTime);
+							var t = (currentTime - lastThrowTime)/(nextCatchTime - lastThrowTime);
+							var pos = interpolateBezierSpline(
+								[siteswap.dwellPath[lastToss.dwellPathIx].last(),siteswap.dwellPath[nextToss.dwellPathIx][0]]
+								, lastToss.juggler
+								, lastToss.hand
+								, t
+								, v_0
+								, v_T
+								, .05 // empty hand control scale
+							);
 
-							tmpJugglerHandPositions[juggler][hand] = {x:x,y:y,z:z};
+							tmpJugglerHandPositions[juggler][hand] = pos;
 						}
 						
 						jugglerHandPositions[juggler][hand].push(tmpJugglerHandPositions[juggler][hand]);
@@ -821,9 +883,9 @@ function CreateSiteswap(siteswapStr, options) {
 			siteswap.jugglerHandPositions = jugglerHandPositions;
 			siteswap.jugglerElbowPositions = jugglerElbowPositions;
 
-		} catch(e) {
-			siteswap.errorMessage = e.message;
-		}
+		//} catch(e) {
+		//	siteswap.errorMessage = e.message;
+		//}
 	}
 
 	/* interpolate flight path */	
@@ -963,7 +1025,7 @@ function CreateSiteswap(siteswapStr, options) {
 		};
 	}
 
-	function interpolateBezierSpline(P,juggler,hand,t,v_0,v_T) {
+	function interpolateBezierSpline(P,juggler,hand,t,v_0,v_T,controlScale) {
 		
 		// t goes from 0 to 1
 
@@ -989,7 +1051,6 @@ function CreateSiteswap(siteswapStr, options) {
 				v_T.dx *= -1;
 			}
 
-			var controlScale = 0.06;
 			var C = [{x: P[0].x+v_0.dx*controlScale, y: P[0].y+v_0.dy*controlScale, z: P[0].z+v_0.dz*controlScale},{x: P.last().x-v_T.dx*controlScale, y: P.last().y-v_T.dy*controlScale, z: P.last().z-v_T.dz*controlScale}];		
 			var eps = .00001;
 
@@ -1039,6 +1100,9 @@ function CreateSiteswap(siteswapStr, options) {
 				}
 			}
 
+			// old method
+			//var dwellPositionIx = Math.floor(t*path.length);
+
 			var v_0mag = Math.sqrt(Math.pow(v_0.dx,2)+Math.pow(v_0.dy,2)+Math.pow(v_0.dz,2));
 			var v_Tmag = Math.sqrt(Math.pow(v_T.dx,2)+Math.pow(v_T.dy,2)+Math.pow(v_T.dz,2));
 			var L = path.last().dist;
@@ -1054,7 +1118,7 @@ function CreateSiteswap(siteswapStr, options) {
 					dwellPositionIx = i;
 				}
 			}
-
+			
 			dwellPosition = path[dwellPositionIx];
 
 		}

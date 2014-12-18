@@ -48,6 +48,7 @@ function SiteswapAnimator(containerId) {
 		context.clearRect(0,0,width,height);
 
 	} else if (renderMode == '3D') {
+		
 		camera = new THREE.PerspectiveCamera( 75, width / height, .05, 100 );
 		updateCamera();
 
@@ -90,6 +91,7 @@ function SiteswapAnimator(containerId) {
 		renderer.setClearColor( 0xffffff, 1);
 
 		renderer.render(scene,camera);
+		
 	}
 
 	this.resize = function(w,h) {
