@@ -1,4 +1,3 @@
-
 (function(exports){
 
 function SiteswapAnimator(containerId) {
@@ -206,11 +205,6 @@ function SiteswapAnimator(containerId) {
 					}
 					var mesh = new THREE.Mesh( geometry, material );			
 
-					if (siteswap.props[i].type == 'club') {
-						//rotate to correct starting orientation
-						mesh.rotation.x = Math.PI/2;
-					}
-
 					scene.add( mesh );
 
 					tmpPropMeshes.push(mesh); 
@@ -253,58 +247,10 @@ function SiteswapAnimator(containerId) {
 				propMeshes[i][j].position.y = siteswap.propPositions[i][stepIx].y;
 				propMeshes[i][j].position.z = siteswap.propPositions[i][stepIx].z;
 
-				/* reset rotation */
+				/* apply current rotation */
 				propMeshes[i][j].quaternion.set(1,0,0,0);
-
-				/* set to toss orientation */
 				var q = new THREE.Quaternion();
-				if (siteswap.propRotations[i][stepIx].tossOrientation == 'X') {
-					if (siteswap.props[i].type == 'club')
-						q.setFromAxisAngle(new THREE.Vector3(0,0,1), Math.PI/2);
-				} else if (siteswap.propRotations[i][stepIx].tossOrientation == '-X') {
-					if (siteswap.props[i].type == 'club')
-						q.setFromAxisAngle(new THREE.Vector3(0,0,-1), Math.PI/2);
-				} else if (siteswap.propRotations[i][stepIx].tossOrientation == 'Y') {
-					if (siteswap.props[i].type == 'club')
-						q.setFromAxisAngle(new THREE.Vector3(0,0,1), Math.PI);
-					else if (siteswap.props[i].type == 'ring')
-						q.setFromAxisAngle(new THREE.Vector3(1,0,0), Math.PI/2);
-				} else if (siteswap.propRotations[i][stepIx].tossOrientation == '-Y') {
-					if (siteswap.props[i].type == 'ring')
-						q.setFromAxisAngle(new THREE.Vector3(1,0,0), Math.PI/2);
-				} else if (siteswap.propRotations[i][stepIx].tossOrientation == 'Z') {
-					if (siteswap.props[i].type == 'club')
-						q.setFromAxisAngle(new THREE.Vector3(1,0,0), Math.PI/2);
-					else if (siteswap.props[i].type == 'ring')
-						q.setFromAxisAngle(new THREE.Vector3(0,1,0), Math.PI/2);
-				} else if (siteswap.propRotations[i][stepIx].tossOrientation == '-Z') {
-					if (siteswap.props[i].type == 'club')
-						q.setFromAxisAngle(new THREE.Vector3(-1,0,0), Math.PI/2);
-					else if (siteswap.props[i].type == 'ring')
-						q.setFromAxisAngle(new THREE.Vector3(0,1,0), Math.PI/2);
-				} else { // defaults
-					if (siteswap.props[i].type == 'club')
-						q.setFromAxisAngle(new THREE.Vector3(1,0,0), Math.PI/2);
-					else if (siteswap.props[i].type == 'ring')
-						q.setFromAxisAngle(new THREE.Vector3(0,1,0), Math.PI/2);
-				}
-				propMeshes[i][j].quaternion.multiplyQuaternions(q, propMeshes[i][j].quaternion);
-
-				/* rotate along spin axis */
-				q = new THREE.Quaternion();
-				if (siteswap.propRotations[i][stepIx].spinOrientation == 'X' || siteswap.propRotations[i][stepIx].spinOrientation == undefined) {
-					q.setFromAxisAngle(new THREE.Vector3(1,0,0), siteswap.propRotations[i][stepIx].rotation);
-				} else if (siteswap.propRotations[i][stepIx].spinOrientation == '-X') {
-					q.setFromAxisAngle(new THREE.Vector3(-1,0,0), siteswap.propRotations[i][stepIx].rotation);
-				} else if (siteswap.propRotations[i][stepIx].spinOrientation == 'Y') {
-					q.setFromAxisAngle(new THREE.Vector3(0,1,0), siteswap.propRotations[i][stepIx].rotation);
-				} else if (siteswap.propRotations[i][stepIx].spinOrientation == '-Y') {
-					q.setFromAxisAngle(new THREE.Vector3(0,-1,0), siteswap.propRotations[i][stepIx].rotation);
-				} else if (siteswap.propRotations[i][stepIx].spinOrientation == 'Z') {
-					q.setFromAxisAngle(new THREE.Vector3(0,0,1), siteswap.propRotations[i][stepIx].rotation);
-				} else if (siteswap.propRotations[i][stepIx].spinOrientation == '-Z') {
-					q.setFromAxisAngle(new THREE.Vector3(0,0,-1), siteswap.propRotations[i][stepIx].rotation);
-				}
+				q.setFromAxisAngle((new THREE.Vector3(siteswap.propRotations[i][stepIx].x,siteswap.propRotations[i][stepIx].y,siteswap.propRotations[i][stepIx].z)).normalize(), siteswap.propRotations[i][stepIx].th);
 				propMeshes[i][j].quaternion.multiplyQuaternions(q, propMeshes[i][j].quaternion);
 
 			}

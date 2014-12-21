@@ -102,6 +102,13 @@ function CreateSiteswap(siteswapStr, options) {
 		dwellDuration: 			undefined,
 		props:  				undefined,
 		dwellPath: 				undefined,
+		tossMatchVelocity:		undefined,
+		catchMatchVelocity:		undefined,
+		dwellCatchScale:		undefined,
+		dwellTossScale:			undefined,
+		emptyTossScale:			undefined,
+		emptyCatchScale:		undefined,
+		armAngle: 				undefined,
 		errorMessage:  			undefined
 	};
 
@@ -139,6 +146,12 @@ function CreateSiteswap(siteswapStr, options) {
 		siteswap.beatDuration = (options.beatDuration === undefined ? .2 : options.beatDuration);		
 		siteswap.dwellDuration = (options.dwellRatio === undefined ? siteswap.beatDuration*.5 : siteswap.beatDuration*options.dwellRatio);
 		siteswap.numStepsPerBeat = (options.numStepsPerBeat === undefined ? Math.floor(siteswap.beatDuration*100) : options.numStepsPerBeat);
+		siteswap.matchVelocity = (options.matchVelocity === undefined ? false : options.matchVelocity);
+		siteswap.dwellCatchScale = (options.dwellCatchScale === undefined ? 0.05 : options.dwellCatchScale);
+		siteswap.dwellTossScale = (options.dwellTossScale === undefined ? 0.05 : options.dwellTossScale);
+		siteswap.emptyTossScale = (options.emptyTossScale === undefined ? 0.05 : options.emptyTossScale);
+		siteswap.emptyCatchScale = (options.emptyCatchScale === undefined ? 0.05 : options.emptyCatchScale);
+		siteswap.armAngle = (options.armAngle === undefined ? 0.1 : options.armAngle);
 		
 		if (options.props === undefined) {
 			siteswap.props = [{type: 'ball', radius: .05, C: .95}];
@@ -147,9 +160,7 @@ function CreateSiteswap(siteswapStr, options) {
 		}
 
 		if (options.dwellPath === undefined) {
-
-			siteswap.dwellPath = [[{x:0.3,y:0,z:0},{x:0.1,y:0,z:0}]];
-
+			siteswap.dwellPath = [[{x:0.3,y:0,z:0,rotation:{x:4,y:0,z:-1,th:Math.PI/2}},{x:0.1,y:0,z:0,rotation:{x:4,y:0,z:1,th:Math.PI/2}}]];
 		} else {
 			siteswap.dwellPath = options.dwellPath;
 		}
@@ -189,7 +200,7 @@ function CreateSiteswap(siteswapStr, options) {
 		}
 
 		/* construct the various regex patterns. see blog post for details about this */
-		var validToss = "(R|L)?([\\da-o])x?(" + passPattern + ")?(B\\d(L|HL|F|HF)?)?(S\\d?-?(X|Y|Z)?-?(X|Y|Z)?)?";
+		var validToss = "(R|L)?([\\da-o])x?(" + passPattern + ")?(B\\d(L|HL|F|HF)?)?(S\\d?)?";
 		var validMultiplex = "\\[(" + validToss + ")+\\]";
 		var validSync = "\\((" + validToss + "|" + validMultiplex + "),(" + validToss + "|" + validMultiplex + ")\\)";
 		var validBeat = "(" + validToss + "|" + validMultiplex + "|" + validSync + ")";
@@ -279,23 +290,11 @@ function CreateSiteswap(siteswapStr, options) {
 
 			var numSpins;
 			var sIx = siteswapStr.indexOf("S");
-			var tossOrientation = undefined;
-			var spinOrientation = undefined;
 			if ( sIx > 0 && !isNaN(parseInt(siteswapStr[sIx+1])) ) {
 				numSpins = parseInt(siteswapStr[sIx+1]);				
 			} else {
 				numSpins = Math.floor(numBeats/2);
 			}
-
-			if (sIx > 0) {
-				var orientations = siteswapStr.match(/-?(X|Y|Z)/g);
-				if ( orientations != null ) {
-					tossOrientation = orientations[0];
-					if (orientations.length > 1) {
-						spinOrientation = orientations[1];
-					}
-				}
-			}				
 
 			tosses.push(
 				{
@@ -308,8 +307,6 @@ function CreateSiteswap(siteswapStr, options) {
 					numBounces: numBounces,
 					bounceType: bounceType,
 					numSpins: numSpins,
-					tossOrientation: tossOrientation,
-					spinOrientation: spinOrientation,
 					dwellPathIx: dwellPathIx
 				}
 			);
@@ -500,7 +497,7 @@ function CreateSiteswap(siteswapStr, options) {
 						tmpPropOrbits[prop] = [];
 					}
 
-					tmpPropOrbits[prop].push({beat: beat, juggler: toss.juggler, hand: tossHand, numBounces: toss.numBounces, bounceType: toss.bounceType, numSpins: toss.numSpins, tossOrientation: toss.tossOrientation, spinOrientation: toss.spinOrientation, dwellPathIx: toss.dwellPathIx });
+					tmpPropOrbits[prop].push({beat: beat, juggler: toss.juggler, hand: tossHand, numBounces: toss.numBounces, bounceType: toss.bounceType, numSpins: toss.numSpins, dwellPathIx: toss.dwellPathIx });
 
 					if(curState[toss.targetJuggler][catchHand][toss.numBeats-1] == undefined) {
 						curState[toss.targetJuggler][catchHand][toss.numBeats-1] = [prop];
@@ -682,7 +679,8 @@ function CreateSiteswap(siteswapStr, options) {
 							, t
 							, land
 							, launch
-							, .06 // toss control scale
+							, siteswap.dwellCatchScale
+							, siteswap.dwellTossScale
 						);
 
 						pos.dwell = true;
@@ -694,7 +692,12 @@ function CreateSiteswap(siteswapStr, options) {
 							tmpJugglerHandPositions[curToss.juggler][curToss.hand] = pos;
 						}					
 
-						propRotations[prop].push({rotation: 0, tossOrientation: curToss.tossOrientation, spinOrientation: curToss.spinOrientation });
+						propRotations[prop].push({
+							x: siteswap.dwellPath[curToss.dwellPathIx][0].rotation.x+(siteswap.dwellPath[curToss.dwellPathIx].last().rotation.x-siteswap.dwellPath[curToss.dwellPathIx][0].rotation.x)*t,
+							y: siteswap.dwellPath[curToss.dwellPathIx][0].rotation.y+(siteswap.dwellPath[curToss.dwellPathIx].last().rotation.y-siteswap.dwellPath[curToss.dwellPathIx][0].rotation.y)*t,
+							z: (curToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[curToss.dwellPathIx][0].rotation.z+((curToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[curToss.dwellPathIx].last().rotation.z-(curToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[curToss.dwellPathIx][0].rotation.z)*t,
+							th: siteswap.dwellPath[curToss.dwellPathIx][0].rotation.th+(siteswap.dwellPath[curToss.dwellPathIx].last().rotation.th-siteswap.dwellPath[curToss.dwellPathIx][0].rotation.th)*t
+						});
 					} else {
 
 						/*
@@ -725,7 +728,17 @@ function CreateSiteswap(siteswapStr, options) {
 						var tossRotation = 0;
 						var currentRotation = tossRotation + (t/T)*(catchRotation - tossRotation);
 
-						propRotations[prop].push({ rotation: currentRotation, tossOrientation: curToss.tossOrientation, spinOrientation: curToss.spinOrientation });
+						/* don't spin rings for now */
+						if (siteswap.props[prop].type == 'ring') {
+							currentRotation = 0;
+						}
+
+						propRotations[prop].push({
+							x: siteswap.dwellPath[curToss.dwellPathIx].last().rotation.x+(siteswap.dwellPath[nextToss.dwellPathIx][0].rotation.x-siteswap.dwellPath[curToss.dwellPathIx].last().rotation.x)*(t/T),
+							y: siteswap.dwellPath[curToss.dwellPathIx].last().rotation.y+(siteswap.dwellPath[nextToss.dwellPathIx][0].rotation.y-siteswap.dwellPath[curToss.dwellPathIx].last().rotation.y)*(t/T),
+							z: (curToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[curToss.dwellPathIx].last().rotation.z+((nextToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[nextToss.dwellPathIx][0].rotation.z-(curToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[curToss.dwellPathIx].last().rotation.z)*(t/T),
+							th: currentRotation+siteswap.dwellPath[curToss.dwellPathIx].last().rotation.th+(siteswap.dwellPath[nextToss.dwellPathIx][0].rotation.th-siteswap.dwellPath[curToss.dwellPathIx].last().rotation.th)*(t/T)
+						});
 
 					}
 
@@ -855,7 +868,8 @@ function CreateSiteswap(siteswapStr, options) {
 								, t
 								, v_0
 								, v_T
-								, .04 // empty hand control scale
+								, siteswap.emptyTossScale
+								, siteswap.emptyCatchScale
 							);
 
 							tmpJugglerHandPositions[juggler][hand] = pos;
@@ -867,7 +881,7 @@ function CreateSiteswap(siteswapStr, options) {
 								{x:siteswap.jugglers[juggler].position.x+Math.cos(siteswap.jugglers[juggler].rotation)*(hand == LEFT ? - 1 : 1)*.225,y:1.425,z:siteswap.jugglers[juggler].position.z+Math.sin(siteswap.jugglers[juggler].rotation)*0}, // shoulder
 								tmpJugglerHandPositions[juggler][hand], // hand position
 								.45, // half arm length
-								.1, // chicken wing factor
+								siteswap.armAngle, // chicken wing factor
 								hand // hand
 							)
 						);
@@ -1025,7 +1039,7 @@ function CreateSiteswap(siteswapStr, options) {
 		};
 	}
 
-	function interpolateBezierSpline(P,juggler,hand,t,v_0,v_T,controlScale) {
+	function interpolateBezierSpline(P,juggler,hand,t,v_0,v_T,v_0scale,v_Tscale,matchVelocity) {
 		
 		// t goes from 0 to 1
 
@@ -1051,7 +1065,7 @@ function CreateSiteswap(siteswapStr, options) {
 				v_T.dx *= -1;
 			}
 
-			var C = [{x: P[0].x+v_0.dx*controlScale, y: P[0].y+v_0.dy*controlScale, z: P[0].z+v_0.dz*controlScale},{x: P.last().x-v_T.dx*controlScale, y: P.last().y-v_T.dy*controlScale, z: P.last().z-v_T.dz*controlScale}];		
+			var C = [{x: P[0].x+v_0.dx*v_0scale, y: P[0].y+v_0.dy*v_0scale, z: P[0].z+v_0.dz*v_0scale},{x: P.last().x-v_T.dx*v_Tscale, y: P.last().y-v_T.dy*v_Tscale, z: P.last().z-v_T.dz*v_Tscale}];
 			var eps = .00001;
 
 			var c = [];
@@ -1100,23 +1114,25 @@ function CreateSiteswap(siteswapStr, options) {
 				}
 			}
 
-			// old method
-			//var dwellPositionIx = Math.floor(t*path.length);
+			var dwellPositionIx;
+			if (siteswap.matchVelocity) {
+				var v_0mag = Math.sqrt(Math.pow(v_0.dx,2)+Math.pow(v_0.dy,2)+Math.pow(v_0.dz,2));
+				var v_Tmag = Math.sqrt(Math.pow(v_T.dx,2)+Math.pow(v_T.dy,2)+Math.pow(v_T.dz,2));
+				var L = path.last().dist;
+				var T = siteswap.dwellDuration;
+				var j = (6*T*(v_Tmag + v_0mag) - 12*L)/Math.pow(T,3);
+				var a_0 = (v_Tmag - v_0mag - .5*j*Math.pow(T,2))/T;
+				var dt = t*T;
+				var p_dt = v_0mag*dt + .5*a_0*Math.pow(dt,2) + (1/6)*j*Math.pow(dt,3);
 
-			var v_0mag = Math.sqrt(Math.pow(v_0.dx,2)+Math.pow(v_0.dy,2)+Math.pow(v_0.dz,2));
-			var v_Tmag = Math.sqrt(Math.pow(v_T.dx,2)+Math.pow(v_T.dy,2)+Math.pow(v_T.dz,2));
-			var L = path.last().dist;
-			var T = siteswap.dwellDuration;
-			var j = (6*T*(v_Tmag + v_0mag) - 12*L)/Math.pow(T,3);
-			var a_0 = (v_Tmag - v_0mag - .5*j*Math.pow(T,2))/T;
-			var dt = t*T;
-			var p_dt = v_0mag*dt + .5*a_0*Math.pow(dt,2) + (1/6)*j*Math.pow(dt,3);
-
-			var dwellPositionIx = 0;
-			for (var i = 0; i < path.length; i++) {
-				if (path[i].dist <= p_dt) {
-					dwellPositionIx = i;
+				dwellPositionIx = 0;
+				for (var i = 0; i < path.length; i++) {
+					if (path[i].dist <= p_dt) {
+						dwellPositionIx = i;
+					}
 				}
+			} else {
+				dwellPositionIx = Math.floor(t*path.length);
 			}
 			
 			dwellPosition = path[dwellPositionIx < 0 ? 0 : dwellPositionIx];

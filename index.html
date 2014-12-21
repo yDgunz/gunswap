@@ -16,7 +16,8 @@
 <div id="outerContainer" style="padding:10px;">
 	<table id="container" style="width:100%">
 	<tr>
-	<td id="inputs" style="width:250px" valign="top">
+	<td id="inputs" style="width:400px" valign="top">
+	<div id="inputsDiv" style="overflow-y:scroll;">
 
 		<div style="width:100%; text-align:center;">
 			<button id="go" class="btn btn-success btn-lg" onclick="go();">Juggle!</button>
@@ -25,7 +26,7 @@
 		<div id="errorMessage" class="alert alert-danger" style="display:none;"></div>
 
 		Siteswap<br/> 
-		<input id="siteswap" type="text" value="5" class="form-control input-sm" onchange="siteswapChanged();"></input>
+		<input id="siteswap" type="text" value="3" class="form-control input-sm" onchange="siteswapChanged();"></input>
 		<br/>
 
 		Beat Duration (s)<br/>
@@ -43,7 +44,7 @@
 			<option value="mills mess">Mills Mess</option>
 			<option value="windmill">Windmill</option>
 		</select>
-		<input id="dwellPath" type="text" value="(10)(30)" class="form-control input-sm"></input>
+		<input id="dwellPath" type="text" value="(30)(10)" class="form-control input-md"></input>
 
 		<br/>
 		Props
@@ -58,9 +59,9 @@
 			<tr>
 				<td style="width:50%">
 					<select id="propTypeNNN" class="form-control input-sm">						
-						<option value="ball">Ball</option>					
-						<option value="club">Club</option>
-						<option value="ring">Ring</option>
+						<option value="ball">Ball</option>
+						<option value="ring">Ring</option>						
+						<option value="club">Club</option>												
 					</select>
 				</td>
 				<td style="width:50%">
@@ -79,6 +80,23 @@
 
 		<br/>
 		Prop Tails <input type="checkbox" id="motionBlur"></input>	
+		<br/><br/>
+
+		<a href="#" onclick="$('#advancedInputs').toggle();">Advanced Inputs</a>
+		<div id="advancedInputs" style="display:none;">
+			<br/>
+			Match Velocity <input type="checkbox" id="matchVelocity"></input>	
+			<br/><br/>
+
+			Bezier Control Scale<br/>
+			Dwell Catch<input type="range" class="form-control input-sm" id="dwellCatchScale" min=".01" max=".1" value=".06" step=".005"></input>
+			Dwell Toss<input type="range" class="form-control input-sm" id="dwellTossScale" min=".01" max=".1" value=".06" step=".005"></input>
+			Empty Toss<input type="range" class="form-control input-sm" id="emptyTossScale" min=".01" max=".1" value=".025" step=".005"></input>
+			Empty Catch<input type="range" class="form-control input-sm" id="emptyCatchScale" min=".01" max=".1" value=".025" step=".005"></input>
+
+			<br/>
+			Arm Angle<input type="range" class="form-control input-sm" id="armAngle" min="0" max="1.5" value=".1" step=".05"></input>
+		</div>
 
 		<div id="help">
 			<br/>
@@ -100,6 +118,7 @@
 
 		</div>
 
+	</div>
 	</td>
 	<td>
 		<div style="position:absolute;top:10px;padding-left:10px;">
