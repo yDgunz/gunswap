@@ -2,9 +2,9 @@
 <html>
 <head>
 
-	<script src="js/jquery-1.10.2.min.js"></script>
-	<script src="js/three.min.js"></script>
-	<script src="js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+	<script type="text/javascript" src="js/three.min.js"></script>
+	<script type="text/javascript" src="js/bootstrap.min.js"></script>
 
 	<link href="css/bootstrap.min.css" rel="stylesheet">
 	<link href="css/gunswap.css" rel="stylesheet">
@@ -13,140 +13,122 @@
 
 <body>
 
-<div id="outerContainer" style="padding:10px;">
-	<table id="container" style="width:100%">
-	<tr>
-	<td id="inputs" style="width:400px" valign="top">
-	<div id="inputsDiv" style="overflow-y:scroll;">
+<div id="inputsDiv" style="float:left;overflow-y:scroll;width:400px;padding-left:5px;">
 
-		<div style="width:100%; text-align:center;">
-			<button id="go" class="btn btn-success btn-lg" onclick="go();">Juggle!</button>
-		</div>
+	<div style="width:100%; text-align:center;">
+		<button id="go" class="btn btn-success btn-lg" onclick="go();">Juggle!</button>
+	</div>
 
-		<div id="errorMessage" class="alert alert-danger" style="display:none;"></div>
+	<div id="errorMessage" class="alert alert-danger" style="display:none;"></div>
 
-		Siteswap<br/> 
-		<input id="siteswap" type="text" value="3" class="form-control input-sm" onchange="siteswapChanged();"></input>
+	Siteswap<br/> 
+	<input id="siteswap" type="text" value="3" class="form-control input-sm" onchange="siteswapChanged();"></input>
+	<br/>
+
+	Beat Duration (s)<br/>
+	<input type="range" class="form-control input-sm" id="beatDuration" min=".05" max=".5" value=".24" step=".005"></input>
+	<br/>
+
+	Dwell Ratio (%)<br/>
+	<input type="range" class="form-control input-sm" id="dwellRatio" min=".01" max=".99" value=".7" step=".01"></input>
+
+	Hand Movement<br/>
+	<select id="dwellPathType" class="form-control input-sm" onchange="handMovementChanged();">
+		<option value="cascade">Cascade</option>
+		<option value="reverse cascade">Reverse Cascade</option>
+		<option value="shower">Shower</option>
+		<option value="mills mess">Mills Mess</option>
+		<option value="windmill">Windmill</option>
+		<option value="custom">Custom</option>
+	</select>
+	<input id="dwellPath" type="text" value="(30)(10)" class="form-control input-md"></input>
+
+	<br/>
+	Props
+	<input id="propInputType" type="checkbox" onchange="togglePropInputType();" checked></input>
+	apply to all
+	<br/>
+	<div id="singlePropInputs"></div>		
+	<div id="multiPropInputs" style="display:none;"></div>
+
+	<div id="propInputTemplate" style="display:none;">
+		<table style="width:100%">
+		<tr>
+			<td style="width:50%">
+				<select id="propTypeNNN" class="form-control input-sm">						
+					<option value="ball">Ball</option>
+					<option value="club">Club</option>
+					<option value="ring">Ring</option>																							
+				</select>
+			</td>
+			<td style="width:50%">
+				<select id="propColorNNN" class="form-control input-sm">											
+					<option value="red">Red</option>
+					<option value="blue">Blue</option>
+					<option value="white">White</option>
+					<option value="green">Green</option>
+					<option value="black">Black</option>
+					<option value="random">Random</option>
+				</select>				
+			</td>
+		</tr>
+		</table>			
+	</div>
+
+	<br/>
+	Prop Tails <input type="checkbox" id="motionBlur"></input>	
+	<br/><br/>
+
+	<a href="#" onclick="$('#advancedInputs').toggle();">Advanced Inputs</a>
+	<div id="advancedInputs" style="display:none;">
 		<br/>
-
-		Beat Duration (s)<br/>
-		<input type="range" class="form-control input-sm" id="beatDuration" min=".05" max=".5" value=".24" step=".005"></input>
-		<br/>
-
-		Dwell Ratio (%)<br/>
-		<input type="range" class="form-control input-sm" id="dwellRatio" min=".01" max=".99" value=".7" step=".01"></input>
-
-		Hand Movement<br/>
-		<select id="dwellPathType" class="form-control input-sm" onchange="handMovementChanged();">
-			<option value="cascade">Cascade</option>
-			<option value="reverse cascade">Reverse Cascade</option>
-			<option value="shower">Shower</option>
-			<option value="mills mess">Mills Mess</option>
-			<option value="windmill">Windmill</option>
-		</select>
-		<input id="dwellPath" type="text" value="(30)(10)" class="form-control input-md"></input>
-
-		<br/>
-		Props
-		<input id="propInputType" type="checkbox" onchange="togglePropInputType();" checked></input>
-		apply to all
-		<br/>
-		<div id="singlePropInputs"></div>		
-		<div id="multiPropInputs" style="display:none;"></div>
-
-		<div id="propInputTemplate" style="display:none;">
-			<table style="width:100%">
-			<tr>
-				<td style="width:50%">
-					<select id="propTypeNNN" class="form-control input-sm">						
-						<option value="ball">Ball</option>
-						<option value="ring">Ring</option>						
-						<option value="club">Club</option>												
-					</select>
-				</td>
-				<td style="width:50%">
-					<select id="propColorNNN" class="form-control input-sm">											
-						<option value="red">Red</option>
-						<option value="blue">Blue</option>
-						<option value="white">White</option>
-						<option value="green">Green</option>
-						<option value="black">Black</option>
-						<option value="random">Random</option>
-					</select>				
-				</td>
-			</tr>
-			</table>			
-		</div>
-
-		<br/>
-		Prop Tails <input type="checkbox" id="motionBlur"></input>	
+		Match Velocity <input type="checkbox" id="matchVelocity"></input>	
 		<br/><br/>
 
-		<a href="#" onclick="$('#advancedInputs').toggle();">Advanced Inputs</a>
-		<div id="advancedInputs" style="display:none;">
-			<br/>
-			Match Velocity <input type="checkbox" id="matchVelocity"></input>	
-			<br/><br/>
+		Bezier Control Scale<br/>
+		Dwell Catch<input type="range" class="form-control input-sm" id="dwellCatchScale" min=".01" max=".1" value=".06" step=".005"></input>
+		Dwell Toss<input type="range" class="form-control input-sm" id="dwellTossScale" min=".01" max=".1" value=".06" step=".005"></input>
+		Empty Toss<input type="range" class="form-control input-sm" id="emptyTossScale" min=".01" max=".1" value=".025" step=".005"></input>
+		Empty Catch<input type="range" class="form-control input-sm" id="emptyCatchScale" min=".01" max=".1" value=".025" step=".005"></input>
 
-			Bezier Control Scale<br/>
-			Dwell Catch<input type="range" class="form-control input-sm" id="dwellCatchScale" min=".01" max=".1" value=".06" step=".005"></input>
-			Dwell Toss<input type="range" class="form-control input-sm" id="dwellTossScale" min=".01" max=".1" value=".06" step=".005"></input>
-			Empty Toss<input type="range" class="form-control input-sm" id="emptyTossScale" min=".01" max=".1" value=".025" step=".005"></input>
-			Empty Catch<input type="range" class="form-control input-sm" id="emptyCatchScale" min=".01" max=".1" value=".025" step=".005"></input>
+		<br/>
+		Arm Angle<input type="range" class="form-control input-sm" id="armAngle" min="0" max="1.5" value=".1" step=".05"></input>
+	</div>
 
-			<br/>
-			Arm Angle<input type="range" class="form-control input-sm" id="armAngle" min="0" max="1.5" value=".1" step=".05"></input>
-		</div>
-
-		<div id="help">
-			<br/>
-			Examples
-			<br/><br/>
-			<ul>
-				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('5');go();" href="#">5</a> - 5 ball cascade</li>
-				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('7531');go();" href="#">7531</a> - 4 ball tower</li>
-				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('91');go();" href="#">91</a> - 5 ball shower</li>
-				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('(4,4)');go();" href="#">(4,4)</a> - 4 ball sync fountain</li>
-				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('(4,2x)(2x,4)');go();" href="#">(4,2x)(2x,4)</a> - 3 ball box</li>
-				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('24[54]');go();" href="#">24[54]</a> - 5 ball multiplex</li>
-				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('5B1L');go();" href="#">5B1L</a> - 5 ball lift bounce</li>
-				<li><a onclick="$('#propType').val('club');$('#siteswap').val('5S05S3');go();" href="#">5S05S3</a> - 5 club alternating flats/triples</li>
-				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('<3|3><3P|3P>');go();" href="#">&lt;3|3&gt;&lt;3P|3P&gt;</a> - 6 ball 2 juggler passing</li>
-				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('<5|5><5PB1F|5PB1F>');go();" href="#">&lt;5|5&gt;&lt;5PB1F|5PB1F&gt;</a> - 6 ball 2 juggler passing w/ force bounce</li>
-				<li><a onclick="$('#propType').val('ball');$('#siteswap').val('<7|5|3>');go();" href="#">&lt;7|5|3&gt;</a> - 3 jugglers no passing</li>
-			</ul>
-
-		</div>
+	<div id="help">
+		<br/>
+		Examples, try <a href="#" onclick="$('#filterExamples').val('club');filterExamples();">club</a>, <a href="#" onclick="$('#filterExamples').val('bounce');filterExamples();">bounce</a>, <a href="#" onclick="$('#filterExamples').val('tower');filterExamples();">tower</a>, <a href="#" onclick="$('#filterExamples').val('box');filterExamples();">box</a>, <a href="#" onclick="$('#filterExamples').val('mills');filterExamples();">mills</a>
+		<br/>
+		<input id="filterExamples" type="text" class="form-control input-sm" onkeyup="filterExamples();" placeholder="filter examples"></input>
+		<ul id="examples"></ul>
 
 	</div>
-	</td>
-	<td>
-		<div style="position:absolute;top:10px;padding-left:10px;">
-			<div style="float:left;width:200px;">
-				<input type="range" onchange="updateAnimationSpeed();" class="form-control input-sm" id="animationSpeed" min="0" max="1" value=".6" step=".01"></input>
-			</div>
-			<div style="float:left;width:100px;padding-left:10px;">
-				<select id="cameraMode" class="input-sm" onchange="updateCameraMode();">
-					<option value="sky">Sky</option>
-					<option value="juggler">Juggler</option>
-				</select>
-			</div>
-			<div style="float:left;width:100px;padding-left:10px;">
-				<button type="button" class="btn btn-default" onclick="zoomIn();"><span class="glyphicon glyphicon-zoom-in"></span></button>
-				<button type="button" class="btn btn-default" onclick="zoomOut();"><span class="glyphicon glyphicon-zoom-out"></span></button>				
-			</div>			
-			<div style="float:left;padding-left:10px;">
-				<span>Click/drag to rotate, scroll to zoom</span>
-			</div>
-		</div>
-		<div style="position:absolute;top:10px;right:10px;">
-			<a href="http://gunswap.blogspot.com/" class="btn btn-info">Blog</a>
-		</div>
-		<div id="animatorContainer">
-		</div>
-	</td>	
-	</tr>	
-	</table>
+</div>
+
+<div style="position:absolute;top:10px;left:450px;">
+	<div style="float:left;width:200px;">
+		<input type="range" onchange="updateAnimationSpeed();" class="form-control input-sm" id="animationSpeed" min="0" max="1" value=".6" step=".01"></input>
+	</div>
+	<div style="float:left;width:100px;padding-left:10px;">
+		<select id="cameraMode" class="input-sm" onchange="updateCameraMode();">
+			<option value="sky">Sky</option>
+			<option value="juggler">Juggler</option>
+		</select>
+	</div>
+	<div style="float:left;width:100px;padding-left:10px;">
+		<button type="button" class="btn btn-default" onclick="zoomIn();"><span class="glyphicon glyphicon-zoom-in"></span></button>
+		<button type="button" class="btn btn-default" onclick="zoomOut();"><span class="glyphicon glyphicon-zoom-out"></span></button>				
+	</div>			
+	<div style="float:left;padding-left:10px;">
+		<span>Click/drag to rotate, scroll to zoom</span>
+	</div>
+</div>
+
+<div style="position:absolute;top:10px;right:10px;">
+	<a href="http://gunswap.blogspot.com/" class="btn btn-info">Blog</a>
+</div>
+
+<div id="animatorContainer" style="float:left;width:800px;height:800px;">
 </div>
 
 <script src="js/util.js"></script>

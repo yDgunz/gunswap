@@ -1,6 +1,6 @@
 /* ON PAGE LOAD */
 
-$('#inputsDiv').height($(window).height()-20);
+$('#inputsDiv').height($(window).height());
 
 var animator = new SiteswapAnimator.SiteswapAnimator('animatorContainer');
 
@@ -12,12 +12,13 @@ if (queryStringSiteswap !== "") {
 var siteswap = SiteswapJS.CreateSiteswap($('#siteswap').val(),{validationOnly: true});
 buildPropInputs();
 
+buildExamples();
+
 go();
 
 window.onresize = function () {
-	$('#container').width($(window).width());
-	animator.resize($('#animatorContainer').width()-25, $(window).height()-40);
-	$('#inputsDiv').height($(window).height()-20);
+	//animator.resize($('#animatorContainer').width()-25, $(window).height()-40);
+	$('#inputsDiv').height($(window).height());
 }
 
 function siteswapChanged() {
@@ -70,6 +71,39 @@ function toggleMultiPropInputs() {
 			$('#propInputs' + i).hide();
 		}
 	}
+}
+
+var defaultInputs = {
+	siteswap: 5,
+	beatDuration: .24,
+	dwellRatio: .7,
+	dwellPath: '(30)(10)',
+	dwellPathType: 'cascade',
+	armAngle: .1,
+	propType: 'ball',
+	propColor: 'red'
+}
+
+function bindInputs(inputs,defaults) {
+	/* leave these inputs as they were unless otherwise specified */		
+	$('#siteswap').val(inputs.siteswap ? inputs.siteswap : defaults.siteswap);
+	$('#beatDuration').val(inputs.beatDuration ? inputs.beatDuration : defaults.beatDuration);
+	$('#dwellRatio').val(inputs.dwellRatio ? inputs.dwellRatio : defaults.dwellRatio);
+	$('#dwellPath').val(inputs.dwellPath ? inputs.dwellPath : defaults.dwellPath);
+	$('#dwellPathType').val(inputs.dwellPath ? 'custom' : defaults.dwellPathType);
+	$('#armAngle').val(inputs.armAngle ? inputs.armAngle : defaults.armAngle);
+
+	/* not going to add the advanced dwell path inputs to this for now since they'll probably get taken out */
+
+	/* only allow uniform prop types */
+	if(!$('#propInputType')[0].checked) {
+		togglePropInputType();
+	}
+	$('#propInputType')[0].checked = true;
+
+	$('#propType').val(inputs.propType ? inputs.propType : defaults.propType);
+	$('#propColor').val(inputs.propColor ? inputs.propColor : defaults.propColor);
+
 }
 
 function readInputs() {
@@ -150,6 +184,8 @@ function handMovementChanged() {
 		$('#dwellPath').val('(2.5)(-30).(-2.5)(30).(0)(-30)');
 	} else if (dwellPathType == 'windmill') {
 		$('#dwellPath').val('(-20)(20).(20)(-20)');
+	} else if (dwellPathType == 'custom') {
+		$('#dwellPath').val('');
 	}
 }
 
@@ -189,4 +225,123 @@ function updateAnimationSpeed() {
 function updateCameraMode() {
 	cameraMode = $('#cameraMode').val();
 	animator.updateCameraMode(cameraMode);
+}
+
+function generateGIF() {
+
+	var current = 0;
+	var total = 100;
+
+	var canvas = document.createElement( 'canvas' );
+	canvas.width = $('canvas')[0].width;
+	canvas.height = $('canvas')[0].height;
+
+	var context = canvas.getContext( '2d' );
+
+	var buffer = new Uint8Array( canvas.width * canvas.height * total * 5 );
+	var gif = new GifWriter( buffer, canvas.width, canvas.height, { loop: 0 } );
+
+	var pixels = new Uint8Array( canvas.width * canvas.height );
+
+	var addFrame = function () {
+
+		context.drawImage( $('canvas')[0], 0, 0 );
+
+		var data = context.getImageData( 0, 0, canvas.width, canvas.height ).data;
+
+		var palette = [];
+
+		for ( var j = 0, k = 0, jl = data.length; j < jl; j += 4, k ++ ) {
+
+			var r = Math.floor( data[ j + 0 ] * 0.1 ) * 10;
+			var g = Math.floor( data[ j + 1 ] * 0.1 ) * 10;
+			var b = Math.floor( data[ j + 2 ] * 0.1 ) * 10;
+			var color = r << 16 | g << 8 | b << 0;
+
+			var index = palette.indexOf( color );
+
+			if ( index === -1 ) {
+
+				pixels[ k ] = palette.length;
+				palette.push( color );
+
+			} else {
+
+				pixels[ k ] = index;
+
+			}
+
+		}
+
+		// force palette to be power of 2
+
+		var powof2 = 1;
+		while ( powof2 < palette.length ) powof2 <<= 1;
+		palette.length = powof2;
+
+		gif.addFrame( 0, 0, canvas.width, canvas.height, pixels, { palette: new Uint32Array( palette ), delay: 5 } );
+
+		current ++;
+
+		if ( current < total ) {
+
+			setTimeout( addFrame, 0 );
+
+		} else {
+
+			setTimeout( finish, 0 );
+
+		}
+
+	}
+
+	var finish = function () {
+
+		// return buffer.slice( 0, gif.end() );
+
+		var string = '';
+
+		for ( var i = 0, l = gif.end(); i < l; i ++ ) {
+
+			string += String.fromCharCode( buffer[ i ] )
+
+		}
+
+		var image = document.createElement( 'img' );
+		image.src = 'data:image/gif;base64,' + btoa( string );
+		document.body.appendChild( image );
+
+	}
+
+	addFrame();
+
+}
+
+function runExample(exampleName) {
+	$.getJSON("examples.json", function(data) {
+		for (var i = 0; i < data.examples.length; i++) {
+			if (data.examples[i].name == exampleName) {
+				bindInputs(data.examples[i],defaultInputs);
+				go();
+			}
+		}
+	});
+}
+
+function buildExamples() {
+	$.getJSON("examples.json", function(data) {
+		for (var i = 0; i < data.examples.length; i++) {
+			$('#examples').append('<li><a href="#" onclick="runExample(\'' + data.examples[i].name + '\');">' + data.examples[i].name + '</a></li>');
+		}
+	});
+}
+
+function filterExamples() {
+	var filterValue = $('#filterExamples').val();
+	if (filterValue == '') {
+		$('#examples li').show();	
+	} else {
+		$('#examples li').hide();
+		$('#examples li:contains("' + filterValue + '")').show();
+	}
 }

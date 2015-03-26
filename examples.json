@@ -1,0 +1,268 @@
+{
+	"examples": [
+		{
+			"name": "3 ball cascade",
+			"siteswap": "3"
+		},
+		{
+			"name": "3 ball reverse cascade",
+			"siteswap": "3",
+			"dwellPath": "(10)(30)"
+		},
+		{
+			"name": "3 ball half shower",
+			"siteswap": "3",
+			"dwellPath": "(30)(10).(10)(30)"
+		},
+		{
+			"name": "3 ball tennis",
+			"siteswap": "3",
+			"dwellPath": "(40).(15)(10).(15)(10)"
+		},
+		{
+			"name": "3 ball windmill",
+			"siteswap": "3",
+			"dwellPath": "(-20)(20).(20)(-20)"
+		},
+		{
+			"name": "3 ball mills mess",
+			"siteswap": "3",
+			"dwellPath": "(2.5)(-30).(-2.5)(30).(0)(-30)"
+		},
+		{
+			"name": "3 ball columns",
+			"siteswap": "(4,4)(4x,0)(4,4)(0,4x)",
+			"dwellPath": "(20).(20).(0).(0)"
+		},
+		{
+			"name": "3 ball box",
+			"siteswap": "(4,2x)(2x,4)",
+			"dwellPath": "(20)"
+		},
+		{
+			"name": "3 ball box shower",
+			"siteswap": "(4x,2x)",
+			"dwellPath": "(20)"
+		},
+		{
+			"name": "3 ball double box",
+			"siteswap": "(2x,4)(4x,2x)(4,2x)(2x,4x)",
+			"dwellPath": "(20)"
+		},
+		{
+			"name": "3 ball 423",
+			"siteswap": "423"
+		},
+		{
+			"name": "3 ball tower 531",
+			"siteswap": "531"
+		},
+		{
+			"name": "3 ball 441",
+			"siteswap": "441"
+		},
+		{
+			"name": "3 ball 51",
+			"siteswap": "51"
+		},
+		{
+			"name": "3 ball 55500",
+			"siteswap": "55500"
+		},
+		{
+			"name": "4 ball fountain",
+			"siteswap": "4"
+		},
+		{
+			"name": "4 ball reverse fountain",
+			"siteswap": "4",
+			"dwellPath": "(10)(30)"
+		},
+		{
+			"name": "4 ball sync fountain",
+			"siteswap": "(4,4)"
+		},
+		{
+			"name": "4 ball sync reverse fountain",
+			"siteswap": "(4,4)",
+			"dwellPath": "(10)(30)"
+		},
+		{
+			"name": "4 ball pistons",
+			"siteswap": "4",
+			"dwellPath": "(30).(10).(10).(30)"
+		},
+		{
+			"name": "4 ball sync pistons",
+			"siteswap": "(4,4)(4,4)",
+			"dwellPath": "(30).(10).(10).(30)"
+		},
+		{
+			"name": "4 ball windmill",
+			"siteswap": "4",
+			"dwellPath": "(-20)(20).(20)(-20)"
+		},
+		{
+			"name": "4 ball mills mess",
+			"siteswap": "4",
+			"dwellPath": "(2.5)(-30).(-2.5)(30).(0)(-30)"
+		},
+		{
+			"name": "4 ball 53",
+			"siteswap": "53"
+		},
+		{
+			"name": "4 ball 552",
+			"siteswap": "552"
+		},
+		{
+			"name": "4 ball 5551",
+			"siteswap": "5551"
+		},
+		{
+			"name": "4 ball 55550",
+			"siteswap": "55550"
+		},
+		{
+			"name": "4 ball tower 7531",
+			"siteswap": "7531"
+		},
+		{
+			"name": "4 ball 7441",
+			"siteswap": "7441"
+		},
+		{
+			"name": "5 ball cascade",
+			"siteswap": "5"
+		},
+		{
+			"name": "5 ball reverse cascade",
+			"siteswap": "5",
+			"dwellPath": "(10)(30)"
+		},
+		{
+			"name": "5 ball mills mess",
+			"siteswap": "5",
+			"dwellPath": "(2.5)(-30).(-2.5)(30).(0)(-30)"
+		},
+		{
+			"name": "5 ball 744",
+			"siteswap": "744"
+		},
+		{
+			"name": "5 ball 771",
+			"siteswap": "771"
+		},
+		{
+			"name": "5 ball tower 97531",
+			"siteswap": "97531"
+		},
+		{
+			"name": "6 ball",
+			"siteswap": "6"
+		},
+		{
+			"name": "7 ball",
+			"beatDuration": ".2",
+			"siteswap": "7"
+		},
+		{
+			"name": "8 ball",
+			"beatDuration": ".2",
+			"siteswap": "8"
+		},
+		{
+			"name": "8 ball tower fdb97531",
+			"beatDuration": ".2",
+			"siteswap": "fdb97531"
+		},
+		{
+			"name": "9 ball",
+			"beatDuration": ".17",
+			"siteswap": "9"
+		},
+		{
+			"name": "15 ball",
+			"beatDuration": ".13",
+			"siteswap": "f"
+		},
+		{
+			"name": "3 club cascade",
+			"siteswap": "3",
+			"propType": "club"
+		},
+		{
+			"name": "3 club cascade doubles",
+			"beatDuration": ".35",
+			"siteswap": "3S2",
+			"propType": "club"
+		},
+		{
+			"name": "3 club cascade flats",
+			"siteswap": "3S0",
+			"propType": "club"
+		},
+		{
+			"name": "5 club cascade triples",
+			"beatDuration": ".28",
+			"siteswap": "5S3",
+			"propType": "club"
+		},
+		{
+			"name": "5 club cascade quads",
+			"beatDuration": ".3",
+			"siteswap": "5S4",
+			"propType": "club"
+		},
+		{
+			"name": "3 ring cascade",
+			"siteswap": "3",
+			"propType": "ring"
+		},
+		{
+			"name": "5 ball lift bounce",
+			"siteswap": "5B1L",
+			"dwellPath": "(30)(22)"
+		},
+		{
+			"name": "5 ball force bounce",
+			"siteswap": "5B1F",
+			"dwellPath": "(30)(22)"
+		},
+		{
+			"name": "5 ball hyperlift bounce",
+			"siteswap": "5B1HL",
+			"dwellPath": "(30)(22)"
+		},
+		{
+			"name": "5 ball hyperforce bounce",
+			"siteswap": "5B1HF",
+			"beatDuration": ".15",
+			"dwellPath": "(30)(18)"
+		},
+		{
+			"name": "5 ball double lift bounce",
+			"siteswap": "5B2L",
+			"beatDuration": ".45",
+			"dwellPath": "(30)(22)"
+		},
+		{
+			"name": "5 ball lift bounce and toss",
+			"siteswap": "5B1L5",
+			"dwellPath": "(30)(22)"
+		},
+		{
+			"name": "4 ball 5551 lift bounce and toss tennis",
+			"siteswap": "5B1L5B1L5B1L50",
+			"dwellPath": "(30)(22)"
+		},
+		{
+			"name": "6 ball 4 count passing",
+			"siteswap": "<3|3><3|3><3|3><3P|3P>"
+		},
+		{
+			"name": "5 ball gattoplex",
+			"siteswap": "[54]24"
+		}
+	]
+}

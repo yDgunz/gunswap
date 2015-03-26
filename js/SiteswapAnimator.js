@@ -33,8 +33,8 @@ function SiteswapAnimator(containerId) {
 
 	container = $('#' + containerId);
 
-	width = container.width()-25;
-	height = $(window).height()-40;
+	width = container.width();
+	height = container.height();
 
 	if (renderMode == '2D') {
 

@@ -1059,6 +1059,11 @@ function CreateSiteswap(siteswapStr, options) {
 			dwellPosition = P.last();
 		} else {
 
+			/* if P is just one point, duplicate it */
+			if (P.length == 1) {
+				P.push(P[0]);
+			}			
+
 			/* if left hand, flip x values of v_0 and v_T */
 			if (hand == LEFT) {
 				v_0.dx *= -1;
