@@ -1,30 +1,6 @@
 (function(exports){
 
 /* helper functions. initially wanted these in util but that caused some tests to fail and i didn't want to do the necessary refactoring */
-
-/* calculates the sum of all throws in the siteswap. used to determine the number of props */
-function sumThrows(str) {
-
-	var total = 0;
-	for (var i = 0; i < str.length; i++) {
-		if(parseInt(str[i])) {
-			total += parseInt(str[i]);					
-		} else if (str.charCodeAt(i) >= 97 && str.charCodeAt(i) <= 119) {
-			// handle "a" through "z" (where "a" = 10)
-			total += str.charCodeAt(0)-87;
-		}
-
-		// if the current character is a pass/bounce/spin marker
-		// ignore the next character so we don't count the
-		// juggler identifier  in something like <5p2|5p3|5p1>
-		if ((str[i] == "P" || str[i] == "S" || str[i] == "B") && parseInt(str[i+1]) ){
-			i++;
-		}
-	}
-
-	return total;
-}
-
 /* used for deep cloning of various arrays/objects */
 function cloneObject(obj) {
   var newObj = (obj instanceof Array) ? [] : {};
@@ -65,6 +41,84 @@ if (!Array.prototype.last){
         return this[this.length - 1];
     };
 };
+
+function cross(a,b) {
+	return {
+		x: a.y*b.z - a.z*b.y,
+		y: a.z*b.x - a.x*b.z,
+		z: a.x*b.y - a.y*b.x
+	}
+}
+
+function dot(a,b) {
+	return a.x*b.x + a.y*b.y + a.z*b.z;
+}
+
+function magnitude(a) {
+	return Math.sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
+}
+
+function normalize(a) {
+	var mag = magnitude(a);
+	a.x = a.x/mag;
+	a.y = a.y/mag;
+	a.z = a.z/mag;
+	return a;
+}
+
+function multiply(a,b) {
+	a.x *= b;
+	a.y *= b;
+	a.z *= b;
+	return a;
+}
+
+function add(a,b) {
+	a.x += b.x;
+	a.y += b.y;
+	a.z += b.z;
+	return a;
+}
+
+function sub(a,b) {
+	a.x -= b.x;
+	a.y -= b.y;
+	a.z -= b.z;
+	return a;
+}
+
+function negate(a) {
+	multiply(a,-1);
+	return a;
+}
+
+/* calculates the sum of all throws in the siteswap. used to determine the number of props */
+function sumThrows(str) {
+
+	var total = 0;
+	for (var i = 0; i < str.length; i++) {
+		if(parseInt(str[i])) {
+			total += parseInt(str[i]);					
+		} else if (str.charCodeAt(i) >= 97 && str.charCodeAt(i) <= 119) {
+			// handle "a" through "z" (where "a" = 10)
+			total += str.charCodeAt(0)-87;
+		}
+
+		// if the current character is a pass/spin marker
+		// ignore the next character so we don't count the
+		// juggler identifier  in something like <5p2|5p3|5p1>
+		if ((str[i] == "P" || str[i] == "S") && parseInt(str[i+1]) ){
+			i++;
+		}
+		// if the current character is a bounce marker
+		// and then next character is a {, move forward until we find a }
+		if (str[i] == "B" && str[i+1] == "{") {
+			i = str.indexOf("}",i)+1;
+		}
+	}
+
+	return total;
+}
 
 var flightPathCache = {};
 
@@ -109,6 +163,7 @@ function CreateSiteswap(siteswapStr, options) {
 		emptyTossScale:			undefined,
 		emptyCatchScale:		undefined,
 		armAngle: 				undefined,
+		surfaces: 				undefined,
 		errorMessage:  			undefined
 	};
 
@@ -165,6 +220,31 @@ function CreateSiteswap(siteswapStr, options) {
 			siteswap.dwellPath = options.dwellPath;
 		}
 
+		if (options.surfaces === undefined) {
+			siteswap.surfaces = [{position:{x:0,y:0,z:0}, normal:{x:0,y:1,z:0}, scale: 5}];
+		} else {
+			siteswap.surfaces = options.surfaces;
+		}
+
+		// set up axes on surfaces
+		for (var i = 0; i < siteswap.surfaces.length; i++) {
+			var surface = siteswap.surfaces[i];
+			normalize(surface.normal);
+			var axis1;
+			if (surface.normal.x == 0 && surface.normal.z == 0) {
+				axis1 = {x:1, y:0, z:0};
+			} else {
+				axis1 = {x:-surface.normal.z, y:0, z:surface.normal.x};
+			}
+			var axis2 = cross(surface.normal,axis1);
+			normalize(axis1);
+			multiply(axis1,surface.scale);
+			normalize(axis2);
+			multiply(axis2,surface.scale);
+			surface.axis1 = axis1;
+			surface.axis2 = axis2;
+		}
+
 	}
 
 	/* check that the siteswap has the correct syntax */
@@ -200,7 +280,7 @@ function CreateSiteswap(siteswapStr, options) {
 		}
 
 		/* construct the various regex patterns. see blog post for details about this */
-		var validToss = "(R|L)?([\\da-o])x?(" + passPattern + ")?(B\\d(L|HL|F|HF)?)?(S\\d?)?";
+		var validToss = "(R|L)?([\\da-o])x?(" + passPattern + ")?(B({\\d*(L|HL|F|HF)?})?)?(S\\d?)?";
 		var validMultiplex = "\\[(" + validToss + ")+\\]";
 		var validSync = "\\((" + validToss + "|" + validMultiplex + "),(" + validToss + "|" + validMultiplex + ")\\)";
 		var validBeat = "(" + validToss + "|" + validMultiplex + "|" + validSync + ")";
@@ -256,9 +336,33 @@ function CreateSiteswap(siteswapStr, options) {
 			}
 
 			var numBounces = 0;
+			var bounceOrder = [];
 			var bIx = siteswapStr.indexOf("B");
 			if (bIx > 0) {
-				numBounces = parseInt(siteswapStr[bIx+1]);
+				if (siteswapStr[bIx+1] == "{" && !isNaN(siteswapStr[bIx+2])) {
+					numBounces = parseInt(siteswapStr[bIx+2]);
+					for (var i = bIx + 3; i < siteswapStr.length; i++) {
+						if (!isNaN(siteswapStr[i])) {
+							var surfaceIx = parseInt(siteswapStr[i]);
+							if (surfaceIx >= siteswap.surfaces.length) {
+								throw {message: "Bounce surface index out of range"};
+							} else {
+								bounceOrder.push(surfaceIx);
+							}							
+						} else {
+							break;
+						}
+					}
+				} else {
+					numBounces = 1;
+					bounceOrder = [0];
+				}
+				if (bounceOrder.length < numBounces) {
+					var numMissingBounces = bounceOrder.length;
+					for (var i = 0; i < numBounces-numMissingBounces; i++) {
+						bounceOrder.push(0);
+					}
+				}
 			}
 
 			var bounceType = undefined;
@@ -305,6 +409,7 @@ function CreateSiteswap(siteswapStr, options) {
 					numBeats: numBeats,
 					siteswapStr: siteswapStr,
 					numBounces: numBounces,
+					bounceOrder: bounceOrder,
 					bounceType: bounceType,
 					numSpins: numSpins,
 					dwellPathIx: dwellPathIx
@@ -497,7 +602,7 @@ function CreateSiteswap(siteswapStr, options) {
 						tmpPropOrbits[prop] = [];
 					}
 
-					tmpPropOrbits[prop].push({beat: beat, juggler: toss.juggler, hand: tossHand, numBounces: toss.numBounces, bounceType: toss.bounceType, numSpins: toss.numSpins, dwellPathIx: toss.dwellPathIx });
+					tmpPropOrbits[prop].push({beat: beat, juggler: toss.juggler, hand: tossHand, numBounces: toss.numBounces, bounceType: toss.bounceType, bounceOrder: toss.bounceOrder, numSpins: toss.numSpins, dwellPathIx: toss.dwellPathIx });
 
 					if(curState[toss.targetJuggler][catchHand][toss.numBeats-1] == undefined) {
 						curState[toss.targetJuggler][catchHand][toss.numBeats-1] = [prop];
@@ -546,6 +651,9 @@ function CreateSiteswap(siteswapStr, options) {
 	function generatePropPositions() {
 
 		//try {
+
+			// clear flight path cache
+			flightPathCache = {};
 
 			/* initialize jugglers */
 			siteswap.jugglers = [];		
@@ -654,6 +762,7 @@ function CreateSiteswap(siteswapStr, options) {
 								{
 									numBounces: curToss.numBounces, 
 									bounceType: curToss.bounceType, 
+									bounceOrder: curToss.bounceOrder,
 									R: siteswap.props[prop].radius, 
 									C: siteswap.props[prop].C
 								}
@@ -665,7 +774,8 @@ function CreateSiteswap(siteswapStr, options) {
 								(lastCatchTime - lastTossTime),
 								{
 									numBounces: prevToss.numBounces, 
-									bounceType: prevToss.bounceType, 
+									bounceType: prevToss.bounceType,
+									bounceOrder: prevToss.bounceOrder, 
 									R: siteswap.props[prop].radius, 
 									C: siteswap.props[prop].C
 								}
@@ -715,6 +825,7 @@ function CreateSiteswap(siteswapStr, options) {
 								{
 									numBounces: curToss.numBounces, 
 									bounceType: curToss.bounceType, 
+									bounceOrder: curToss.bounceOrder,
 									R: siteswap.props[prop].radius, 
 									C: siteswap.props[prop].C
 								}
@@ -843,6 +954,7 @@ function CreateSiteswap(siteswapStr, options) {
 								{
 									numBounces: lastToss.numBounces, 
 									bounceType: lastToss.bounceType,
+									bounceOrder: lastToss.bounceOrder,
 									R: siteswap.props[lastTossProp].radius, 
 									C: siteswap.props[lastTossProp].C
 								}
@@ -853,8 +965,9 @@ function CreateSiteswap(siteswapStr, options) {
 								(nextCatchTime - propLastThrowTime),
 								(nextCatchTime - propLastThrowTime),
 								{
-									numBounces: nextToss.numBounces, 
-									bounceType: nextToss.bounceType,
+									numBounces: propLastToss.numBounces, 
+									bounceType: propLastToss.bounceType,
+									bounceOrder: propLastToss.bounceOrder,
 									R: siteswap.props[nextTossProp].radius, 
 									C: siteswap.props[nextTossProp].C
 								}
@@ -921,6 +1034,9 @@ function CreateSiteswap(siteswapStr, options) {
 			- R - radius of prop
 		*/
 
+		// round T to 2 decimal places for the sake of the flight path cache
+		T = parseFloat(T.toFixed(2));
+
 		if (options == undefined) { options = {}; }
 
 		/* set defaults */
@@ -934,6 +1050,8 @@ function CreateSiteswap(siteswapStr, options) {
 			options.dv = .01;
 		if (!options.numBounces)
 			options.numBounces = 0;
+		if (!options.bounceOrder)
+			options.bounceOrder = [0];
 		if (!options.G)
 			options.G = -9.8;
 		if (!options.C)
@@ -970,72 +1088,105 @@ function CreateSiteswap(siteswapStr, options) {
 
 		} else if (flightPathCache[inputKey] == undefined) {
 
-			var done = true;
+			var fitnessConfig = {
+				p0: p0,
+				pT: p1,
+				minT: T,
+				maxT: T,
+				R: options.R,
+				C: options.C,
+				dt: options.dt,
+				G: -9.8,
+				numBounces: options.numBounces,
+				surfaceBounceOrder: options.bounceOrder,
+				tossSign: options.bounceType == 'L' || options.bounceType == 'HL' ? 1 : -1,
+				catchSign: options.bounceType == 'L' || options.bounceType == 'HF' ? 1 : -1,
+				surfaces: siteswap.surfaces
+			};
 
-			/* run simulation */
+			var gaConfig = {
+				maxGenerations: 500,
+				populationSize: 50,
+				mutationChance: .7,
+				mutationScale: 5,
+				initialScale: 20,
+				fitnessThreshold: .1,
+				noGA: false
+			};
+
+			ga = new BounceGA(gaConfig,fitnessConfig);
+			ga.evolve();
+
+			// var done = true;
+
+			// /* run simulation */
 			
-			var tries = 0;
-			var v0 = 0; // starting toss y velocity
-			done = false;
+			// var tries = 0;
+			// var v0 = 0; // starting toss y velocity
+			// done = false;
 
-			while (!done && tries <= options.tries) {
+			// while (!done && tries <= options.tries) {
 
-				var y = [p0.y];
-				var vy = [v0];
-				var bounces = 0;
+			// 	var y = [p0.y];
+			// 	var vy = [v0];
+			// 	var bounces = 0;
 
-				for (var tSim = 0; tSim < T; tSim += options.dt) {
+			// 	for (var tSim = 0; tSim < T; tSim += options.dt) {
 
-					/* update position and velocity */
-					y.push(y[y.length-1] + vy[vy.length-1]*options.dt);
-					vy.push(vy[vy.length-1] + options.G*options.dt);
+			// 		/* update position and velocity */
+			// 		y.push(y[y.length-1] + vy[vy.length-1]*options.dt);
+			// 		vy.push(vy[vy.length-1] + options.G*options.dt);
 
-					/* if the prop is at the floor, velocity changes and loses momentum according to C */
-					if (y[y.length-1] - options.R <= 0 && vy[vy.length-1] <= 0) {
-						vy[vy.length-1] = -options.C*vy[vy.length-1];
-						bounces++;
-					}
+			// 		/* if the prop is at the floor, velocity changes and loses momentum according to C */
+			// 		if (y[y.length-1] - options.R <= 0 && vy[vy.length-1] <= 0) {
+			// 			vy[vy.length-1] = -options.C*vy[vy.length-1];
+			// 			bounces++;
+			// 		}
 
-				}
+			// 	}
 
-				if (bounces == options.numBounces && Math.abs(p1.y-y[y.length-1]) <= options.eps && ( ( (options.bounceType == "HF" || options.bounceType == "L") && vy[vy.length-1] >= 0) || ( (options.bounceType == "F" || options.bounceType == "HL") && vy[vy.length-1] <= 0) )) {
-					done = true;
-					flightPathCache[inputKey] = {y:y, dy: vy};		
-				} else {
+			// 	if (bounces == options.numBounces && Math.abs(p1.y-y[y.length-1]) <= options.eps && ( ( (options.bounceType == "HF" || options.bounceType == "L") && vy[vy.length-1] >= 0) || ( (options.bounceType == "F" || options.bounceType == "HL") && vy[vy.length-1] <= 0) )) {
+			// 		done = true;
+			// 		flightPathCache[inputKey] = {y:y, dy: vy};		
+			// 	} else {
 
-					/* check to see if this just isn't going to happen */
-					if ( (options.bounceType == "HL" || options.bounceType == "L" || options.bounceType == "F" || (options.bounceType == "HF" && options.numBounces > 1)) && bounces < options.numBounces ) {
-						throw {message: 'Not enough time for all bounces'};
-					} else if (options.bounceType == "HF" && options.numBounces == 1 && y[y.length-1] > p1.y+options.eps) {
-						throw {message: 'Too much time for hyperforce and single bounce'};
-					}
+			// 		/* check to see if this just isn't going to happen */
+			// 		if ( (options.bounceType == "HL" || options.bounceType == "L" || options.bounceType == "F" || (options.bounceType == "HF" && options.numBounces > 1)) && bounces < options.numBounces ) {
+			// 			throw {message: 'Not enough time for all bounces'};
+			// 		} else if (options.bounceType == "HF" && options.numBounces == 1 && y[y.length-1] > p1.y+options.eps) {
+			// 			throw {message: 'Too much time for hyperforce and single bounce'};
+			// 		}
 
-					if (options.bounceType == "HL" || options.bounceType == "L") {
-						v0+=options.dv;
-					} else {
-						v0-=options.dv;
-					}
-				}
+			// 		if (options.bounceType == "HL" || options.bounceType == "L") {
+			// 			v0+=options.dv;
+			// 		} else {
+			// 			v0-=options.dv;
+			// 		}
+			// 	}
 
-				tries++;
+			// 	tries++;
 
-			}
+			// }
 
-			if (!done) {
+			if (!ga.ableToFindSolution) {
 				/* TODO - improve error to explain why the bounce path couldn't be calculated */
 				throw {message: 'Unable to calculate bounce path'};
 			}
+
+			var gaResult = ga.getBouncePath(ga.fittestMembers[ga.fittestMembers.length-1].v);
+
+			flightPathCache[inputKey] = {path: gaResult.path, velocities: gaResult.velocities};
 
 		}
 
 		var flightPath = flightPathCache[inputKey];
 		return {
-			x: xt, 
-			y: flightPath.y[Math.floor((flightPath.y.length-1)*t/T)],
-			z: zt,
-			dx: dx,
-			dy: flightPath.dy[Math.floor((flightPath.dy.length-1)*t/T)],
-			dz: dz
+			x: flightPath.path[Math.floor((flightPath.path.length-1)*t/T)].x,
+			y: flightPath.path[Math.floor((flightPath.path.length-1)*t/T)].y,
+			z: flightPath.path[Math.floor((flightPath.path.length-1)*t/T)].z,
+			dx: flightPath.velocities[Math.floor((flightPath.velocities.length-1)*t/T)].x,
+			dy: flightPath.velocities[Math.floor((flightPath.velocities.length-1)*t/T)].y,
+			dz: flightPath.velocities[Math.floor((flightPath.velocities.length-1)*t/T)].z,
 		};
 	}
 

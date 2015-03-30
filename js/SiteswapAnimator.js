@@ -60,11 +60,6 @@ function SiteswapAnimator(containerId) {
 		var floorLight = new THREE.PointLight( 0xffffff );
 		floorLight.position.set(0,0,-2);
 		scene.add( floorLight );
-
-		/* draw floor */
-		var floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshBasicMaterial( { color: 'grey' } ));
-		floor.rotation.x += 3*Math.PI/2
-		scene.add(floor);
 		
 		/* create the renderer and add it to the canvas container */
 		/* if browser is mobile, render using canvas */
@@ -145,6 +140,8 @@ function SiteswapAnimator(containerId) {
 			jugglerMeshes = [];
 			jugglerHandVertices = [];
 			jugglerElbowVertices = [];
+
+			drawSurfaces();
 
 			drawJugglers();
 
@@ -292,6 +289,29 @@ function SiteswapAnimator(containerId) {
 			requestAnimationFrame(function() { animate(); });
 		}
 
+	}
+
+	function drawSurfaces() {
+		siteswap.surfaces.map(function(a) {
+			var surface = {
+				position: new THREE.Vector3(a.position.x,a.position.y,a.position.z),
+				normal: new THREE.Vector3(a.normal.x,a.normal.y,a.normal.z),
+				axis1: new THREE.Vector3(a.axis1.x,a.axis1.y,a.axis1.z),
+				axis2: new THREE.Vector3(a.axis2.x,a.axis2.y,a.axis2.z),
+				scale: a.scale
+			}
+			var surfaceGeom = new THREE.Geometry();
+			surfaceGeom.vertices.push( (new THREE.Vector3()).copy(surface.position).add((new THREE.Vector3()).add(surface.axis1).add(surface.axis2)) );
+			surfaceGeom.vertices.push( (new THREE.Vector3()).copy(surface.position).add((new THREE.Vector3()).add(surface.axis1).negate().add(surface.axis2)) );
+			surfaceGeom.vertices.push( (new THREE.Vector3()).copy(surface.position).add((new THREE.Vector3()).add(surface.axis1).add(surface.axis2).negate()) );
+			surfaceGeom.vertices.push( (new THREE.Vector3()).copy(surface.position).add((new THREE.Vector3()).add(surface.axis2).negate().add(surface.axis1)) );
+
+			surfaceGeom.faces.push( new THREE.Face3( 0, 1, 2 ) );
+			surfaceGeom.faces.push( new THREE.Face3( 2, 0, 3 ) );
+
+			var surfaceMesh = new THREE.Mesh(surfaceGeom, new THREE.MeshBasicMaterial( { color: 'grey', side: THREE.DoubleSide } ));
+			scene.add(surfaceMesh);
+		});
 	}
 
 	function drawJugglers() {

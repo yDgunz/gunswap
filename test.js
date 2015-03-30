@@ -204,3 +204,29 @@ describe('Spin modifiers', function() {
 	});
 
 });
+
+describe('Bounce modifiers', function() {
+
+	describe('Default bouncing', function() {
+		it('"5B" should bounce once', function() {
+			var s = Siteswap.CreateSiteswap('5B',{validationOnly: true});
+			assert.equal(s.tosses[0][0].numBounces,1);
+		});
+	});
+
+	describe('Num bounces', function() {
+		it('"5B{1}" should bounce once', function() {
+			var s = Siteswap.CreateSiteswap('5B{1}',{validationOnly: true});
+			assert.equal(s.tosses[0][0].numBounces,1);
+		});
+	});
+
+	describe('Bounce order', function() {
+		it('"5B{10}" should bounce once', function() {
+			var s = Siteswap.CreateSiteswap('5B{1}',{validationOnly: true});
+			assert.equal(s.tosses[0][0].numBounces,1);
+			assert.equal(s.tosses[0][0].bounceOrder[0],0);
+		});
+	});
+
+});
