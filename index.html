@@ -1,134 +1,122 @@
 <!doctype html>
 <html>
-<head>
 
+<head>
+	
 	<script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
 	<script type="text/javascript" src="js/three.min.js"></script>
-	<script type="text/javascript" src="js/bootstrap.min.js"></script>
 
-	<link href="css/bootstrap.min.css" rel="stylesheet">
-	<link href="css/gunswap.css" rel="stylesheet">
+	<style>
+
+		body, button, select, input {
+			font-family: monospace;
+		}
+		a {
+			text-decoration: none;
+		}
+		.activeNav {
+			border-style: solid;
+			border-width: 1px;
+			font-weight: bold;
+		}
+		label { 
+			display: block; 
+			width: 100px; 
+			float: left; 
+		}
+		#inputsBasic div {
+			padding: 5px;
+		}
+		#navContainer a {
+			padding: 5px;
+			font-size: larger;
+		}
+		.menu {
+			padding-top: 15px;
+		}
+		#menuAdvanced div {
+			padding-top:5px;
+		}
+
+	</style>
 
 </head>
 
 <body>
 
-<div id="inputsDiv" style="float:left;overflow-y:scroll;width:400px;padding-left:5px;">
-
-	<div style="width:100%; text-align:center;">
-		<button id="go" class="btn btn-success btn-lg" onclick="go();">Juggle!</button>
+<div id="container" style="width:1024px; margin:0 auto;">
+	<div id="menuContainer" style="width:50%;float:left;">
+		<div id="navContainer">
+			<a id="navBasic" href="#" onclick="displayMenu('Basic');">Basic</a>
+			<a id="navAdvanced" href="#" onclick="displayMenu('Advanced');">Advanced</a>
+			<a id="navExamples" href="#" onclick="displayMenu('Examples');">Examples</a>
+			<a id="navAbout" href="#" onclick="displayMenu('About');">About</a>
+		</div>
+		<div id="menuBasic" class="menu">
+			<div id="inputsBasic">
+				<button onclick="go();">Juggle!</button><br/>
+				<div>
+					<label for="siteswap">Siteswap</label>
+					<input id="siteswap" value="5" onchange="updateAdvancedInputsFromBasic();"></input>
+				</div>
+				<div>
+					<label for="prop">Prop</label>
+					<select id="prop" onchange="updateAdvancedInputsFromBasic();">
+						<option value="ball">Ball</option>
+						<option value="club">Club</option>
+						<option value="ring">Ring</option>
+					</select>
+				</div>
+				<div>
+					<label for="dwellPath">Hand Movement</label>
+					<select id="dwellPath" onchange="updateAdvancedInputsFromBasic();">
+						<option value="(30)(10)">Cascade</option>
+						<option value="(10)(30)">Reverse Cascade</option>
+						<option value="(30)(10).(10)(30)">Shower</option>
+						<option value="(-20)(20).(20)(-20)">Windmill</option>
+						<option value="(2.5)(-30).(-2.5)(30).(0)(-30)">Mills Mess</option>						
+					</select>
+				</div>
+				<div>
+					<label for="beatDuration">Height</label>
+					<input id="beatDuration" type="range" min=".05" max=".5" value=".24" step=".005" onchange="updateAdvancedInputsFromBasic();"></input>
+				</div>
+				<div>
+					Click/drag to rotate, scroll to zoom
+				</div>
+			</div>			
+		</div>
+		<div id="menuAdvanced" class="menu">
+			<button onclick="go();">Juggle!</button><br/><br/>
+			<textarea id="inputsAdvanced" rows="10" cols="40" onchange="updateAdvancedLabels();"></textarea><br/><br/>
+			<div>siteswap: <span id="lblSiteswap"></span></div>
+			<div>beatDuration: <span id="lblBeatDuration"></span>, dwellRatio: <span id="lblDwellRatio"></span></div>
+			<div>props: <span id="lblProps"></span></div>
+			<div>dwellPath: <span id="lblDwellPath"></span></div>
+			<div>matchVelocity: <span id="lblMatchVelocity"></span>, dwellCatchScale: <span id="lblDwellCatchScale"></span>, dwellTossScale: <span id="lblDwellTossScale"></span>, emptyTossScale: <span id="lblEmptyTossScale"></span>, emptyCatchScale: <span id="lblEmptyCatchScale"></span></div>
+			<div><span id="lblSurfaces"></span></div>
+		</div>
+		<div id="menuExamples">
+			<br/>
+			Try <a href="#" onclick="$('#filterExamples').val('club');filterExamples();">club</a>, <a href="#" onclick="$('#filterExamples').val('bounce');filterExamples();">bounce</a>, <a href="#" onclick="$('#filterExamples').val('tower');filterExamples();">tower</a>, <a href="#" onclick="$('#filterExamples').val('box');filterExamples();">box</a>, <a href="#" onclick="$('#filterExamples').val('mills');filterExamples();">mills</a>
+			<br/><br/>
+			<input id="filterExamples" type="text" onkeyup="filterExamples();" placeholder="filter examples"></input>
+			<ul id="examples"></ul>
+		</div>
 	</div>
-
-	<div id="errorMessage" class="alert alert-danger" style="display:none;"></div>
-
-	Siteswap<br/> 
-	<input id="siteswap" type="text" value="3" class="form-control input-sm" onchange="siteswapChanged();"></input>
-	<br/>
-
-	Beat Duration (s)<br/>
-	<input type="range" class="form-control input-sm" id="beatDuration" min=".05" max=".5" value=".24" step=".005"></input>
-	<br/>
-
-	Dwell Ratio (%)<br/>
-	<input type="range" class="form-control input-sm" id="dwellRatio" min=".01" max=".99" value=".7" step=".01"></input>
-
-	Hand Movement<br/>
-	<select id="dwellPathType" class="form-control input-sm" onchange="handMovementChanged();">
-		<option value="cascade">Cascade</option>
-		<option value="reverse cascade">Reverse Cascade</option>
-		<option value="shower">Shower</option>
-		<option value="mills mess">Mills Mess</option>
-		<option value="windmill">Windmill</option>
-		<option value="custom">Custom</option>
-	</select>
-	<input id="dwellPath" type="text" value="(30)(10)" class="form-control input-md"></input>
-
-	<br/>
-	Props
-	<input id="propInputType" type="checkbox" onchange="togglePropInputType();" checked></input>
-	apply to all
-	<br/>
-	<div id="singlePropInputs"></div>		
-	<div id="multiPropInputs" style="display:none;"></div>
-
-	<div id="propInputTemplate" style="display:none;">
-		<table style="width:100%">
-		<tr>
-			<td style="width:50%">
-				<select id="propTypeNNN" class="form-control input-sm">						
-					<option value="ball">Ball</option>
-					<option value="club">Club</option>
-					<option value="ring">Ring</option>																							
-				</select>
-			</td>
-			<td style="width:50%">
-				<select id="propColorNNN" class="form-control input-sm">											
-					<option value="red">Red</option>
-					<option value="blue">Blue</option>
-					<option value="white">White</option>
-					<option value="green">Green</option>
-					<option value="black">Black</option>
-					<option value="random">Random</option>
-				</select>				
-			</td>
-		</tr>
-		</table>			
+	<div id="animatorContainer" style="width:50%;float:left;">
+		<div id="animatorControls">			
+			<select id="cameraMode" onchange="updateCameraMode();">
+				<option value="sky">Sky</option>
+				<option value="juggler">Juggler</option>
+			</select>
+			<button onclick="zoomIn();">Zoom In</button>
+			<button onclick="zoomOut();">Zoom Out</button>
+			Speed <input type="range" onchange="updateAnimationSpeed();" id="animationSpeed" min="0" max="1" value=".6" step=".01"></input>
+		</div>		
+		<div id="animatorCanvasContainer" style="width:100%;height:600px;">
+		</div>
 	</div>
-
-	<br/>
-	Prop Tails <input type="checkbox" id="motionBlur"></input>	
-	<br/><br/>
-
-	<a href="#" onclick="$('#advancedInputs').toggle();">Advanced Inputs</a>
-	<div id="advancedInputs" style="display:none;">
-		<br/>
-		Match Velocity <input type="checkbox" id="matchVelocity"></input>	
-		<br/><br/>
-
-		Bezier Control Scale<br/>
-		Dwell Catch<input type="range" class="form-control input-sm" id="dwellCatchScale" min=".01" max=".1" value=".06" step=".005"></input>
-		Dwell Toss<input type="range" class="form-control input-sm" id="dwellTossScale" min=".01" max=".1" value=".06" step=".005"></input>
-		Empty Toss<input type="range" class="form-control input-sm" id="emptyTossScale" min=".01" max=".1" value=".025" step=".005"></input>
-		Empty Catch<input type="range" class="form-control input-sm" id="emptyCatchScale" min=".01" max=".1" value=".025" step=".005"></input>
-
-		<br/>
-		Arm Angle<input type="range" class="form-control input-sm" id="armAngle" min="0" max="1.5" value=".1" step=".05"></input>
-	</div>
-
-	<div id="help">
-		<br/>
-		Examples, try <a href="#" onclick="$('#filterExamples').val('club');filterExamples();">club</a>, <a href="#" onclick="$('#filterExamples').val('bounce');filterExamples();">bounce</a>, <a href="#" onclick="$('#filterExamples').val('tower');filterExamples();">tower</a>, <a href="#" onclick="$('#filterExamples').val('box');filterExamples();">box</a>, <a href="#" onclick="$('#filterExamples').val('mills');filterExamples();">mills</a>
-		<br/>
-		<input id="filterExamples" type="text" class="form-control input-sm" onkeyup="filterExamples();" placeholder="filter examples"></input>
-		<ul id="examples"></ul>
-
-	</div>
-</div>
-
-<div style="position:absolute;top:10px;left:450px;">
-	<div style="float:left;width:200px;">
-		<input type="range" onchange="updateAnimationSpeed();" class="form-control input-sm" id="animationSpeed" min="0" max="1" value=".6" step=".01"></input>
-	</div>
-	<div style="float:left;width:100px;padding-left:10px;">
-		<select id="cameraMode" class="input-sm" onchange="updateCameraMode();">
-			<option value="sky">Sky</option>
-			<option value="juggler">Juggler</option>
-		</select>
-	</div>
-	<div style="float:left;width:100px;padding-left:10px;">
-		<button type="button" class="btn btn-default" onclick="zoomIn();"><span class="glyphicon glyphicon-zoom-in"></span></button>
-		<button type="button" class="btn btn-default" onclick="zoomOut();"><span class="glyphicon glyphicon-zoom-out"></span></button>				
-	</div>			
-	<div style="float:left;padding-left:10px;">
-		<span>Click/drag to rotate, scroll to zoom</span>
-	</div>
-</div>
-
-<div style="position:absolute;top:10px;right:10px;">
-	<a href="http://gunswap.blogspot.com/" class="btn btn-info">Blog</a>
-</div>
-
-<div id="animatorContainer" style="float:left;width:800px;height:800px;">
 </div>
 
 <script src="js/util.js"></script>

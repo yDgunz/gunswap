@@ -1,125 +1,120 @@
-/* ON PAGE LOAD */
+window.onload = function () {
 
-$('#inputsDiv').height($(window).height());
+	displayMenu('Examples');
 
-var animator = new SiteswapAnimator.SiteswapAnimator('animatorContainer');
+	updateAdvancedInputsFromBasic();
+	updateAdvancedLabels();
 
-var queryStringSiteswap = getURLQueryStringParameterByName('siteswap');
-if (queryStringSiteswap !== "") {
-	$('#siteswap').val(decodeURIComponent(queryStringSiteswap));
+	$('#menuContainer').height($(window).height());
+
+	window.animator = new SiteswapAnimator.SiteswapAnimator('animatorCanvasContainer');
+
+	buildExamples();
+
 }
-
-var siteswap = SiteswapJS.CreateSiteswap($('#siteswap').val(),{validationOnly: true});
-buildPropInputs();
-
-buildExamples();
-
-go();
 
 window.onresize = function () {
 	//animator.resize($('#animatorContainer').width()-25, $(window).height()-40);
-	$('#inputsDiv').height($(window).height());
+	$('#menuContainer').height($(window).height());
 }
 
-function siteswapChanged() {
-	$('#errorMessage').empty();
-	$('#errorMessage').hide();
+function displayMenu(menu) {
+	$('#menuBasic').hide();
+	$('#menuAdvanced').hide();
+	$('#menuExamples').hide();
+	$('#menuHelp').hide();
+	$('#menuAbout').hide();
+	$('#menu' + menu).show();
 
-	siteswap = SiteswapJS.CreateSiteswap($('#siteswap').val(),{validationOnly: true});
+	$('#navBasic').removeClass('activeNav');
+	$('#navAdvanced').removeClass('activeNav');
+	$('#navExamples').removeClass('activeNav');
+	$('#navHelp').removeClass('activeNav');
+	$('#navAbout').removeClass('activeNav');
+	$('#nav' + menu).addClass('activeNav');	
 
-	if (siteswap.errorMessage) {
-		$('#errorMessage').html("WARNING: " + siteswap.errorMessage);
-		$('#errorMessage').show();
-	}
-
-	buildPropInputs();
-
-}
-
-function buildPropInputs() {
-
-	/* only re-build the single prop inputs if they haven't been built yet */
-	if ($('#singlePropInputs select').length == 0) {
-		$('#singlePropInputs').empty();
-		$('#singlePropInputs').html($('#propInputTemplate').html().replace(/NNN/g,''));
-	}
-
-	$('#multiPropInputs').empty();
-	$('#multiPropInputs').append('<select id="propSelector" class="form-control input-sm" onchange="toggleMultiPropInputs();"></select>');
-
-	for (var i = 0; i < siteswap.numProps; i++) {
-		$('#propSelector').append('<option id="prop' + i + '" value="' + i + '">Prop ' + (i+1) + '</option>');
-		$('#multiPropInputs').append('<div id="propInputs' + i + '" style="' + (i > 0 ? 'display:none;' : '') + '"></div>');
-		$('#propInputs' + i).html($('#propInputTemplate').html().replace(/NNN/g,i));
+	if (menu == 'Basic') {
+		updateAdvancedInputsFromBasic();
 	}
 
 }
 
-function togglePropInputType() {
-
-	$('#singlePropInputs').toggle();
-	$('#multiPropInputs').toggle();
-
+function updateAdvancedInputsFromBasic() {
+	bindInputs({
+		siteswap: $('#siteswap').val(),
+		props: [{type: $('#prop').val(), color: 'red', radius: .05, C: .97}],
+		beatDuration: $('#beatDuration').val(),
+		dwellRatio: .5,
+		dwellPath: $('#dwellPath').val(),
+		matchVelocity: 1,
+		dwellCatchScale: .06,
+		dwellTossScale: .06,
+		emptyTossScale: .025,
+		emptyCatchScale: .025,
+		armAngle: .1,
+		surfaces: [
+			{
+				position: {x:0, y:0, z:0},
+				normal: {x:0, y:1, z:0},
+				scale: 5,
+			}
+		]
+	});
 }
 
-function toggleMultiPropInputs() {
-	for (var i = 0; i < siteswap.numProps; i++) {
-		
-		if (i == $("#propSelector").val()) {
-			$('#propInputs' + i).show();
+function applyInputDefaults(inputs) {
+	inputs.siteswap = inputs.siteswap === undefined ? "3" : inputs.siteswap;
+	inputs.props = inputs.props === undefined ? [{type: "ball", color: "red", radius: ".05", C: .97}] : inputs.props;
+	inputs.beatDuration = inputs.beatDuration === undefined ? .25 : inputs.beatDuration;
+	inputs.dwellRatio = inputs.dwellRatio === undefined ? .5 : inputs.dwellRatio;
+	inputs.dwellPath = inputs.dwellPath === undefined ? "(30)(10)" : inputs.dwellPath;
+	inputs.matchVelocity = inputs.matchVelocity === undefined ? 1 : inputs.matchVelocity;
+	inputs.dwellCatchScale = inputs.dwellCatchScale === undefined ? .06 : inputs.dwellCatchScale;
+	inputs.dwellTossScale = inputs.dwellTossScale === undefined ? .06 : inputs.dwellTossScale;
+	inputs.emptyTossScale = inputs.emptyTossScale === undefined ? .025 : inputs.emptyTossScale;
+	inputs.emptyCatchScale = inputs.emptyCatchScale === undefined ? .025 : inputs.emptyCatchScale;
+	inputs.armAngle = inputs.armAngle === undefined ? .1 : inputs.armAngle;
+	inputs.surfaces = inputs.surfaces === undefined ? [{position: {x:0, y:0, z:0}, normal: {x:0, y:1, z:0}, scale: 5}] : inputs.surfaces;
+	return inputs;
+}
+
+function bindInputs(inputs) {
+	var inputsText = inputs.siteswap + "\n";
+	inputsText += inputs.beatDuration + " " + inputs.dwellRatio + "\n";
+	for (var i = 0; i < inputs.props.length; i++) {
+		inputsText += inputs.props[i].type + " " + inputs.props[i].color + " " + inputs.props[i].radius + " " + inputs.props[i].C;
+		if (i < inputs.props.length-1) {
+			inputsText += " ";
 		} else {
-			$('#propInputs' + i).hide();
+			inputsText += "\n";
 		}
 	}
-}
-
-var defaultInputs = {
-	siteswap: 5,
-	beatDuration: .24,
-	dwellRatio: .7,
-	dwellPath: '(30)(10)',
-	dwellPathType: 'cascade',
-	armAngle: .1,
-	propType: 'ball',
-	propColor: 'red'
-}
-
-function bindInputs(inputs,defaults) {
-	/* leave these inputs as they were unless otherwise specified */		
-	$('#siteswap').val(inputs.siteswap ? inputs.siteswap : defaults.siteswap);
-	$('#beatDuration').val(inputs.beatDuration ? inputs.beatDuration : defaults.beatDuration);
-	$('#dwellRatio').val(inputs.dwellRatio ? inputs.dwellRatio : defaults.dwellRatio);
-	$('#dwellPath').val(inputs.dwellPath ? inputs.dwellPath : defaults.dwellPath);
-	$('#dwellPathType').val(inputs.dwellPath ? 'custom' : defaults.dwellPathType);
-	$('#armAngle').val(inputs.armAngle ? inputs.armAngle : defaults.armAngle);
-
-	/* not going to add the advanced dwell path inputs to this for now since they'll probably get taken out */
-
-	/* only allow uniform prop types */
-	if(!$('#propInputType')[0].checked) {
-		togglePropInputType();
+	inputsText += inputs.dwellPath + "\n";
+	inputsText += inputs.matchVelocity + " " + inputs.dwellCatchScale + " " + inputs.dwellTossScale + " " + inputs.emptyTossScale + " " + inputs.emptyCatchScale + " " + inputs.armAngle + "\n";
+	for (var i = 0; i < inputs.surfaces.length; i++) {
+		inputsText += inputs.surfaces[i].position.x + " " + inputs.surfaces[i].position.y + " " + inputs.surfaces[i].position.z + " " + inputs.surfaces[i].normal.x + " " + inputs.surfaces[i].normal.y + " " + inputs.surfaces[i].normal.z + " " + inputs.surfaces[i].scale + "\n";
 	}
-	$('#propInputType')[0].checked = true;
+	$('#inputsAdvanced').val(inputsText);
+} 
 
-	$('#propType').val(inputs.propType ? inputs.propType : defaults.propType);
-	$('#propColor').val(inputs.propColor ? inputs.propColor : defaults.propColor);
-
-}
-
-function readInputs() {
+function parseInputs(inputs) {
+	var lines = inputs.split('\n');
+	var siteswap = lines[0];
+	var beatDuration = parseFloat(lines[1].split(' ')[0]);
+	var dwellRatio = parseFloat(lines[1].split(' ')[1]);
+	var propsLine = lines[2].split(' ');
 	var props = [];
-	var singlePropInput = $('#propInputType')[0].checked;
-	for (var i = 0; i < siteswap.numProps; i++) {
-		props.push(
-		{
-			type: singlePropInput ? $('#propType').val() : $('#propType' + i).val(),
-			color: singlePropInput ? $('#propColor').val() : $('#propColor' + i).val(),
-			C: .95,
-			radius: .05
+	for (var i = 3; i < propsLine.length; i+=4) {
+		props.push({
+			type: propsLine[i-3],
+			color: propsLine[i-2], 
+			radius: parseFloat(propsLine[i-1]), 
+			C: parseFloat(propsLine[i])
 		});
 	}
-
-	var customDwellPathInput = $('#dwellPath').val();
+	
+	// this whole bit should probably be moved into the Siteswap class
+	var customDwellPathInput = lines[3];
 	var customDwellPathBeats = customDwellPathInput.split(').').map(function(a,ix,arr) { if (ix < arr.length-1) { return a+')'; } else { return a; } });
 	var dwellPath = [];
 	for (var i = 0; i < customDwellPathBeats.length; i++) {
@@ -155,48 +150,55 @@ function readInputs() {
 			throw 'Invalid custom dwell path';
 		}
 	}
-	
-	return {
-			siteswap: $('#siteswap').val(),
-			beatDuration: parseFloat($('#beatDuration').val()),
-			dwellRatio: parseFloat($('#dwellRatio').val()),
-			props: props,
-			dwellPath: dwellPath,
-			motionBlur: $('#motionBlur')[0].checked,
-			matchVelocity: $('#matchVelocity')[0].checked,
-			dwellCatchScale: parseFloat($('#dwellCatchScale').val()),
-			dwellTossScale: parseFloat($('#dwellTossScale').val()),
-			emptyTossScale: parseFloat($('#emptyTossScale').val()),
-			emptyCatchScale: parseFloat($('#emptyCatchScale').val()),
-			armAngle: parseFloat($('#armAngle').val())
-		};
-}
 
-function handMovementChanged() {
-	var dwellPathType = $('#dwellPathType').val();
-	if (dwellPathType == 'cascade') {
-		$('#dwellPath').val('(30)(10)');
-	} else if (dwellPathType == 'reverse cascade') {
-		$('#dwellPath').val('(10)(30)');
-	} else if (dwellPathType == 'shower') {
-		$('#dwellPath').val('(30)(10).(10)(30)');
-	} else if (dwellPathType == 'mills mess') {
-		$('#dwellPath').val('(2.5)(-30).(-2.5)(30).(0)(-30)');
-	} else if (dwellPathType == 'windmill') {
-		$('#dwellPath').val('(-20)(20).(20)(-20)');
-	} else if (dwellPathType == 'custom') {
-		$('#dwellPath').val('');
+	var dwellPathConfigs = lines[4].split(' ');
+	var matchVelocity = dwellPathConfigs[0] == 1 ? true : false;
+	var dwellCatchScale = parseFloat(dwellPathConfigs[1]);
+	var dwellTossScale = parseFloat(dwellPathConfigs[2]);
+	var emptyTossScale = parseFloat(dwellPathConfigs[3]);
+	var emptyCatchScale = parseFloat(dwellPathConfigs[4]);
+	var armAngle = parseFloat(dwellPathConfigs[5]);
+
+	var surfaces= [];
+	for (var i = 5; i < lines.length; i++) {
+		var surfaceLine = lines[i].split(' ');
+		surfaces.push({
+			position: {
+				x: parseFloat(surfaceLine[0]),
+				y: parseFloat(surfaceLine[1]),
+				z: parseFloat(surfaceLine[2]),
+			},
+			normal: {
+				x: parseFloat(surfaceLine[3]),
+				y: parseFloat(surfaceLine[4]),
+				z: parseFloat(surfaceLine[5]),	
+			},
+			scale: parseFloat(surfaceLine[6])
+		});
 	}
+
+	return {
+		siteswap: siteswap,
+		beatDuration: beatDuration,
+		dwellRatio: dwellRatio,
+		props: props,
+		inputDwellPath: customDwellPathInput,
+		dwellPath: dwellPath,
+		matchVelocity: matchVelocity,
+		dwellCatchScale: dwellCatchScale,
+		dwellTossScale: dwellTossScale,
+		emptyTossScale: emptyTossScale,
+		emptyCatchScale: emptyCatchScale,
+		armAngle: armAngle,
+		surfaces: surfaces
+	};
 }
 
 function go() {
 
-	$('#errorMessage').empty();
-	$('#errorMessage').hide();
+	var inputs = parseInputs($('#inputsAdvanced').val());
 
-	var inputs = readInputs();
-
-	var siteswap = SiteswapJS.CreateSiteswap(inputs.siteswap, 
+	window.siteswap = SiteswapJS.CreateSiteswap(inputs.siteswap, 
 		{
 			beatDuration: 		inputs.beatDuration,
 			dwellRatio: 		inputs.dwellRatio,
@@ -207,10 +209,11 @@ function go() {
 			dwellTossScale: 	inputs.dwellTossScale,
 			emptyTossScale: 	inputs.emptyTossScale,
 			emptyCatchScale: 	inputs.emptyCatchScale,
-			armAngle: 			inputs.armAngle
+			armAngle: 			inputs.armAngle,
+			surfaces: 			inputs.surfaces
 		});
 
-	animator.go(siteswap, {motionBlur: inputs.motionBlur});
+	animator.go(siteswap, {});
 }
 
 function zoomIn() { animator.zoomIn(); }
@@ -227,93 +230,37 @@ function updateCameraMode() {
 	animator.updateCameraMode(cameraMode);
 }
 
-function generateGIF() {
-
-	var current = 0;
-	var total = 100;
-
-	var canvas = document.createElement( 'canvas' );
-	canvas.width = $('canvas')[0].width;
-	canvas.height = $('canvas')[0].height;
-
-	var context = canvas.getContext( '2d' );
-
-	var buffer = new Uint8Array( canvas.width * canvas.height * total * 5 );
-	var gif = new GifWriter( buffer, canvas.width, canvas.height, { loop: 0 } );
-
-	var pixels = new Uint8Array( canvas.width * canvas.height );
-
-	var addFrame = function () {
-
-		context.drawImage( $('canvas')[0], 0, 0 );
-
-		var data = context.getImageData( 0, 0, canvas.width, canvas.height ).data;
-
-		var palette = [];
-
-		for ( var j = 0, k = 0, jl = data.length; j < jl; j += 4, k ++ ) {
-
-			var r = Math.floor( data[ j + 0 ] * 0.1 ) * 10;
-			var g = Math.floor( data[ j + 1 ] * 0.1 ) * 10;
-			var b = Math.floor( data[ j + 2 ] * 0.1 ) * 10;
-			var color = r << 16 | g << 8 | b << 0;
-
-			var index = palette.indexOf( color );
-
-			if ( index === -1 ) {
-
-				pixels[ k ] = palette.length;
-				palette.push( color );
-
-			} else {
-
-				pixels[ k ] = index;
-
-			}
-
+function updateAdvancedLabels() {
+	var inputs = parseInputs($('#inputsAdvanced').val());
+	$('#lblSiteswap').text(inputs.siteswap);
+	$('#lblBeatDuration').text(inputs.beatDuration);
+	$('#lblDwellRatio').text(inputs.dwellRatio);
+	var lblProps = "";
+	for (var i = 0; i < inputs.props.length; i++) {
+		var prop = inputs.props[i];
+		lblProps += prop.color + ' ' + prop.type + ' ' + prop.radius + 'm ' + prop.C;
+		if (i < inputs.props.length-1) {
+			lblProps += ', ';
 		}
-
-		// force palette to be power of 2
-
-		var powof2 = 1;
-		while ( powof2 < palette.length ) powof2 <<= 1;
-		palette.length = powof2;
-
-		gif.addFrame( 0, 0, canvas.width, canvas.height, pixels, { palette: new Uint32Array( palette ), delay: 5 } );
-
-		current ++;
-
-		if ( current < total ) {
-
-			setTimeout( addFrame, 0 );
-
-		} else {
-
-			setTimeout( finish, 0 );
-
-		}
-
 	}
+	$('#lblProps').text(lblProps);
+	$('#lblDwellPath').text(inputs.inputDwellPath);
+	$('#lblMatchVelocity').text(inputs.matchVelocity == 1 ? 'Y' : 'N');
+	$('#lblDwellCatchScale').text(inputs.dwellCatchScale);
+	$('#lblDwellTossScale').text(inputs.dwellTossScale);
+	$('#lblEmptyTossScale').text(inputs.emptyTossScale);
+	$('#lblEmptyCatchScale').text(inputs.emptyCatchScale);
+	$('#lblArmAngle').text(inputs.armAngle + ' rad');
 
-	var finish = function () {
-
-		// return buffer.slice( 0, gif.end() );
-
-		var string = '';
-
-		for ( var i = 0, l = gif.end(); i < l; i ++ ) {
-
-			string += String.fromCharCode( buffer[ i ] )
-
+	var lblSurfaces = "";
+	for (var i = 0; i < inputs.surfaces.length; i++) {
+		var surface = inputs.surfaces[i];
+		lblSurfaces += 'surface ' + i + ': position <' + surface.position.x + ',' + surface.position.y + ',' + surface.position.z + '>' + ' normal <' + surface.normal.x + ',' + surface.normal.y + ',' + surface.normal.z + '> half-width ' + surface.scale + 'm';
+		if (i < inputs.surfaces.length-1) {
+			lblSurfaces += ", ";
 		}
-
-		var image = document.createElement( 'img' );
-		image.src = 'data:image/gif;base64,' + btoa( string );
-		document.body.appendChild( image );
-
 	}
-
-	addFrame();
+	$('#lblSurfaces').text(lblSurfaces);
 
 }
 
@@ -321,7 +268,7 @@ function runExample(exampleName) {
 	$.getJSON("examples.json", function(data) {
 		for (var i = 0; i < data.examples.length; i++) {
 			if (data.examples[i].name == exampleName) {
-				bindInputs(data.examples[i],defaultInputs);
+				bindInputs(applyInputDefaults(data.examples[i]));
 				go();
 			}
 		}

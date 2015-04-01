@@ -767,6 +767,7 @@ function CreateSiteswap(siteswapStr, options) {
 									C: siteswap.props[prop].C
 								}
 							);
+
 						var land = interpolateFlightPath(
 								interpolateBezierSpline(siteswap.dwellPath[prevToss.dwellPathIx],prevToss.juggler,prevToss.hand,1), /* p0 */
 								interpolateBezierSpline(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,0), /* p1 */
@@ -792,6 +793,15 @@ function CreateSiteswap(siteswapStr, options) {
 							, siteswap.dwellCatchScale
 							, siteswap.dwellTossScale
 						);
+
+						// the landing return by flight path interpolation may be slightly off (if solved by BounceGA)
+						// in this case we should find the correct landing and interpolate between the two 
+						var correctLand = interpolateBezierSpline(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,0);
+
+						var landingDiff = {x: land.x - correctLand.x, y: land.y - correctLand.y, z: land.z - correctLand.z};
+						pos.x += (1-t)*landingDiff.x;
+						pos.y += (1-t)*landingDiff.y;
+						pos.z += (1-t)*landingDiff.z;
 
 						pos.dwell = true;
 						
@@ -984,6 +994,18 @@ function CreateSiteswap(siteswapStr, options) {
 								, siteswap.emptyTossScale
 								, siteswap.emptyCatchScale
 							);
+
+							var correctCatch = interpolateBezierSpline(
+								[siteswap.dwellPath[lastToss.dwellPathIx].last(),siteswap.dwellPath[nextToss.dwellPathIx][0]]
+								, lastToss.juggler
+								, lastToss.hand
+								, 1
+							);
+
+							var catchDiff = {x: v_T.x - correctCatch.x, y: v_T.y - correctCatch.y, z: v_T.z - correctCatch.z};
+							pos.x += (t)*catchDiff.x;
+							pos.y += (t)*catchDiff.y;
+							pos.z += (t)*catchDiff.z;							
 
 							tmpJugglerHandPositions[juggler][hand] = pos;
 						}

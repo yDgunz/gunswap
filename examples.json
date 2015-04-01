@@ -189,30 +189,30 @@
 		{
 			"name": "3 club cascade",
 			"siteswap": "3",
-			"propType": "club"
+			"props": [{"type": "club", "color": "red", "radius": ".05", "C": ".97"}]
 		},
 		{
 			"name": "3 club cascade doubles",
 			"beatDuration": ".35",
 			"siteswap": "3S2",
-			"propType": "club"
+			"props": [{"type": "club", "color": "red", "radius": ".05", "C": ".97"}]
 		},
 		{
 			"name": "3 club cascade flats",
 			"siteswap": "3S0",
-			"propType": "club"
+			"props": [{"type": "club", "color": "red", "radius": ".05", "C": ".97"}]
 		},
 		{
 			"name": "5 club cascade triples",
 			"beatDuration": ".28",
 			"siteswap": "5S3",
-			"propType": "club"
+			"props": [{"type": "club", "color": "red", "radius": ".05", "C": ".97"}]
 		},
 		{
 			"name": "5 club cascade quads",
 			"beatDuration": ".3",
 			"siteswap": "5S4",
-			"propType": "club"
+			"props": [{"type": "club", "color": "red", "radius": ".05", "C": ".97"}]
 		},
 		{
 			"name": "3 ring cascade",
@@ -221,40 +221,58 @@
 		},
 		{
 			"name": "5 ball lift bounce",
-			"siteswap": "5B1L",
+			"siteswap": "5B",
 			"dwellPath": "(30)(22)"
 		},
 		{
 			"name": "5 ball force bounce",
-			"siteswap": "5B1F",
+			"siteswap": "5B{F}",
 			"dwellPath": "(30)(22)"
 		},
 		{
 			"name": "5 ball hyperlift bounce",
-			"siteswap": "5B1HL",
+			"siteswap": "5B{HL}",
 			"dwellPath": "(30)(22)"
 		},
 		{
 			"name": "5 ball hyperforce bounce",
-			"siteswap": "5B1HF",
+			"siteswap": "5B{HF}",
 			"beatDuration": ".15",
 			"dwellPath": "(30)(18)"
 		},
 		{
 			"name": "5 ball double lift bounce",
-			"siteswap": "5B2L",
+			"siteswap": "5B{2}",
 			"beatDuration": ".45",
 			"dwellPath": "(30)(22)"
 		},
 		{
 			"name": "5 ball lift bounce and toss",
-			"siteswap": "5B1L5",
+			"siteswap": "5B5",
 			"dwellPath": "(30)(22)"
 		},
 		{
 			"name": "4 ball 5551 lift bounce and toss tennis",
-			"siteswap": "5B1L5B1L5B1L50",
+			"siteswap": "5B5B5B50",
 			"dwellPath": "(30)(22)"
+		},
+		{
+			"name": "5 ball lift bounce on angled surfaces #1",
+			"siteswap": "5B{10}5B{11}",
+			"dwellPath": "(30)(22)",
+			"surfaces": [
+				{"position": {"x":"1", "y":"0", "z":"0"}, "normal": {"x":"-.2", "y":"1", "z":"0"}, "scale": "1"},
+				{"position": {"x":"-1", "y":"0", "z":"0"}, "normal": {"x":".2", "y":"1", "z":"0"}, "scale": "1"}
+			]
+		},
+		{
+			"name": "5 ball lift bounce on angled surfaces #2",
+			"siteswap": "5B{11}5B{10}",
+			"dwellPath": "(30)(22)",
+			"surfaces": [
+				{"position": {"x":"1", "y":"0", "z":"0"}, "normal": {"x":"-.2", "y":"1", "z":"0"}, "scale": "1"},
+				{"position": {"x":"-1", "y":"0", "z":"0"}, "normal": {"x":".2", "y":"1", "z":"0"}, "scale": "1"}
+			]
 		},
 		{
 			"name": "6 ball 4 count passing",
