@@ -11,6 +11,8 @@ window.onload = function () {
 
 	buildExamples();
 
+	go();
+
 }
 
 window.onresize = function () {
@@ -32,10 +34,6 @@ function displayMenu(menu) {
 	$('#navHelp').removeClass('activeNav');
 	$('#navAbout').removeClass('activeNav');
 	$('#nav' + menu).addClass('activeNav');	
-
-	if (menu == 'Basic') {
-		updateAdvancedInputsFromBasic();
-	}
 
 }
 
@@ -68,7 +66,7 @@ function applyInputDefaults(inputs) {
 	inputs.beatDuration = inputs.beatDuration === undefined ? .25 : inputs.beatDuration;
 	inputs.dwellRatio = inputs.dwellRatio === undefined ? .5 : inputs.dwellRatio;
 	inputs.dwellPath = inputs.dwellPath === undefined ? "(30)(10)" : inputs.dwellPath;
-	inputs.matchVelocity = inputs.matchVelocity === undefined ? 1 : inputs.matchVelocity;
+	inputs.matchVelocity = inputs.matchVelocity === undefined ? 0 : inputs.matchVelocity;
 	inputs.dwellCatchScale = inputs.dwellCatchScale === undefined ? .06 : inputs.dwellCatchScale;
 	inputs.dwellTossScale = inputs.dwellTossScale === undefined ? .06 : inputs.dwellTossScale;
 	inputs.emptyTossScale = inputs.emptyTossScale === undefined ? .025 : inputs.emptyTossScale;
@@ -92,9 +90,13 @@ function bindInputs(inputs) {
 	inputsText += inputs.dwellPath + "\n";
 	inputsText += inputs.matchVelocity + " " + inputs.dwellCatchScale + " " + inputs.dwellTossScale + " " + inputs.emptyTossScale + " " + inputs.emptyCatchScale + " " + inputs.armAngle + "\n";
 	for (var i = 0; i < inputs.surfaces.length; i++) {
-		inputsText += inputs.surfaces[i].position.x + " " + inputs.surfaces[i].position.y + " " + inputs.surfaces[i].position.z + " " + inputs.surfaces[i].normal.x + " " + inputs.surfaces[i].normal.y + " " + inputs.surfaces[i].normal.z + " " + inputs.surfaces[i].scale + "\n";
+		inputsText += inputs.surfaces[i].position.x + " " + inputs.surfaces[i].position.y + " " + inputs.surfaces[i].position.z + " " + inputs.surfaces[i].normal.x + " " + inputs.surfaces[i].normal.y + " " + inputs.surfaces[i].normal.z + " " + inputs.surfaces[i].scale;
+		if (i < inputs.surfaces.length-1) {
+			inputsText += "\n";
+		}
 	}
 	$('#inputsAdvanced').val(inputsText);
+	updateAdvancedLabels();
 } 
 
 function parseInputs(inputs) {

@@ -50,11 +50,11 @@
 			<a id="navBasic" href="#" onclick="displayMenu('Basic');">Basic</a>
 			<a id="navAdvanced" href="#" onclick="displayMenu('Advanced');">Advanced</a>
 			<a id="navExamples" href="#" onclick="displayMenu('Examples');">Examples</a>
-			<a id="navAbout" href="#" onclick="displayMenu('About');">About</a>
+			<a id="navAbout" href="http://gunswap.blogspot.com/" target="_blank">Blog</a>
 		</div>
 		<div id="menuBasic" class="menu">
 			<div id="inputsBasic">
-				<button onclick="go();">Juggle!</button><br/>
+				<button onclick="updateAdvancedInputsFromBasic();go();">Juggle!</button><br/>
 				<div>
 					<label for="siteswap">Siteswap</label>
 					<input id="siteswap" value="5" onchange="updateAdvancedInputsFromBasic();"></input>
@@ -88,7 +88,7 @@
 		</div>
 		<div id="menuAdvanced" class="menu">
 			<button onclick="go();">Juggle!</button><br/><br/>
-			<textarea id="inputsAdvanced" rows="10" cols="40" onchange="updateAdvancedLabels();"></textarea><br/><br/>
+			<textarea id="inputsAdvanced" rows="8" cols="40" onchange="updateAdvancedLabels();"></textarea><br/><br/>
 			<div>siteswap: <span id="lblSiteswap"></span></div>
 			<div>beatDuration: <span id="lblBeatDuration"></span>, dwellRatio: <span id="lblDwellRatio"></span></div>
 			<div>props: <span id="lblProps"></span></div>

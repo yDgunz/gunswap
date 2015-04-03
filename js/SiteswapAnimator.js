@@ -22,6 +22,7 @@ function SiteswapAnimator(containerId) {
 		cameraMode = 'sky',
 		propMeshes = [],
 		jugglerMeshes = [],
+		surfaceMeshes = [],
 		jugglerHandVertices,
 		jugglerElbowVertices,
 		animationSpeed = .6,
@@ -292,6 +293,11 @@ function SiteswapAnimator(containerId) {
 	}
 
 	function drawSurfaces() {
+		// clear out surfaces from scene
+		for (var i = 0; i < surfaceMeshes.length; i++) {
+			scene.remove(surfaceMeshes[i]);
+		}
+
 		siteswap.surfaces.map(function(a) {
 			var surface = {
 				position: new THREE.Vector3(a.position.x,a.position.y,a.position.z),
@@ -310,6 +316,7 @@ function SiteswapAnimator(containerId) {
 			surfaceGeom.faces.push( new THREE.Face3( 2, 0, 3 ) );
 
 			var surfaceMesh = new THREE.Mesh(surfaceGeom, new THREE.MeshBasicMaterial( { color: 'grey', side: THREE.DoubleSide } ));
+			surfaceMeshes.push(surfaceMesh);
 			scene.add(surfaceMesh);
 		});
 	}

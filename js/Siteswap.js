@@ -1008,8 +1008,8 @@ function CreateSiteswap(siteswapStr, options) {
 							pos.z += (t)*catchDiff.z;							
 
 							tmpJugglerHandPositions[juggler][hand] = pos;
-						}
-						
+						}					
+
 						jugglerHandPositions[juggler][hand].push(tmpJugglerHandPositions[juggler][hand]);
 						jugglerElbowPositions[juggler][hand].push(
 							getElbowPosition(
@@ -1019,7 +1019,7 @@ function CreateSiteswap(siteswapStr, options) {
 								siteswap.armAngle, // chicken wing factor
 								hand // hand
 							)
-						);
+						);						
 
 					}
 
