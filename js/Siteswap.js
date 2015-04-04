@@ -1083,29 +1083,17 @@ function CreateSiteswap(siteswapStr, options) {
 		if (!options.R) /* should this one be required? */
 			options.R = .1;
 
-		/*
-		regardless of bouncing, x and z will be the same
-
-		x(t) = x(0) + v_x*t 
-		v_x = (x(T) - x(0))/T
-		*/
-
-		var xt = p0.x + (p1.x-p0.x)*t/T;
-		var dx = (p1.x-p0.x)/T;
-		var zt = p0.z + (p1.z-p0.z)*t/T;
-		var dz = (p1.z-p0.z)/T;
-
 		var inputKey = JSON.stringify({p0:p0,p1:p1,T:T,options:options});
 
 		if (options.numBounces == 0) {
-
+			
 			return  {
-				x: xt,
+				x: p0.x + (p1.x-p0.x)*t/T,
 				y: p0.y + (p1.y - p0.y - .5*options.G*T*T)*t/T + .5*options.G*t*t,
-				z: zt,
-				dx: dx,
+				z: p0.z + (p1.z-p0.z)*t/T,
+				dx: (p1.x-p0.x)/T,
 				dy: (p1.y - p0.y -.5*options.G*T*T)/T + options.G*t,
-				dz: dz
+				dz: (p1.z-p0.z)/T
 			};
 
 		} else if (flightPathCache[inputKey] == undefined) {
@@ -1138,57 +1126,6 @@ function CreateSiteswap(siteswapStr, options) {
 
 			ga = new BounceGA(gaConfig,fitnessConfig);
 			ga.evolve();
-
-			// var done = true;
-
-			// /* run simulation */
-			
-			// var tries = 0;
-			// var v0 = 0; // starting toss y velocity
-			// done = false;
-
-			// while (!done && tries <= options.tries) {
-
-			// 	var y = [p0.y];
-			// 	var vy = [v0];
-			// 	var bounces = 0;
-
-			// 	for (var tSim = 0; tSim < T; tSim += options.dt) {
-
-			// 		/* update position and velocity */
-			// 		y.push(y[y.length-1] + vy[vy.length-1]*options.dt);
-			// 		vy.push(vy[vy.length-1] + options.G*options.dt);
-
-			// 		/* if the prop is at the floor, velocity changes and loses momentum according to C */
-			// 		if (y[y.length-1] - options.R <= 0 && vy[vy.length-1] <= 0) {
-			// 			vy[vy.length-1] = -options.C*vy[vy.length-1];
-			// 			bounces++;
-			// 		}
-
-			// 	}
-
-			// 	if (bounces == options.numBounces && Math.abs(p1.y-y[y.length-1]) <= options.eps && ( ( (options.bounceType == "HF" || options.bounceType == "L") && vy[vy.length-1] >= 0) || ( (options.bounceType == "F" || options.bounceType == "HL") && vy[vy.length-1] <= 0) )) {
-			// 		done = true;
-			// 		flightPathCache[inputKey] = {y:y, dy: vy};		
-			// 	} else {
-
-			// 		/* check to see if this just isn't going to happen */
-			// 		if ( (options.bounceType == "HL" || options.bounceType == "L" || options.bounceType == "F" || (options.bounceType == "HF" && options.numBounces > 1)) && bounces < options.numBounces ) {
-			// 			throw {message: 'Not enough time for all bounces'};
-			// 		} else if (options.bounceType == "HF" && options.numBounces == 1 && y[y.length-1] > p1.y+options.eps) {
-			// 			throw {message: 'Too much time for hyperforce and single bounce'};
-			// 		}
-
-			// 		if (options.bounceType == "HL" || options.bounceType == "L") {
-			// 			v0+=options.dv;
-			// 		} else {
-			// 			v0-=options.dv;
-			// 		}
-			// 	}
-
-			// 	tries++;
-
-			// }
 
 			if (!ga.ableToFindSolution) {
 				/* TODO - improve error to explain why the bounce path couldn't be calculated */
