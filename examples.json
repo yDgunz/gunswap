@@ -222,39 +222,60 @@
 		{
 			"name": "5 ball lift bounce",
 			"siteswap": "5B",
-			"dwellPath": "(30)(22)"
+			"dwellPath": "(30)(22)",
+			"surfaces": [
+				{"position": {"x":"0", "y":"0", "z":"0"}, "normal": {"x":"0", "y":"1", "z":"0"}, "scale": "2"}
+			]
 		},
 		{
 			"name": "5 ball force bounce",
 			"siteswap": "5B{F}",
-			"dwellPath": "(30)(22)"
+			"dwellPath": "(30)(22)",
+			"surfaces": [
+				{"position": {"x":"0", "y":"0", "z":"0"}, "normal": {"x":"0", "y":"1", "z":"0"}, "scale": "2"}
+			]
 		},
 		{
 			"name": "5 ball hyperlift bounce",
 			"siteswap": "5B{HL}",
-			"dwellPath": "(30)(22)"
+			"dwellPath": "(30)(22)",
+			"surfaces": [
+				{"position": {"x":"0", "y":"0", "z":"0"}, "normal": {"x":"0", "y":"1", "z":"0"}, "scale": "2"}
+			]
 		},
 		{
 			"name": "5 ball hyperforce bounce",
 			"siteswap": "5B{HF}",
 			"beatDuration": ".15",
-			"dwellPath": "(30)(18)"
+			"dwellPath": "(30)(18)",
+			"surfaces": [
+				{"position": {"x":"0", "y":"0", "z":"0"}, "normal": {"x":"0", "y":"1", "z":"0"}, "scale": "2"}
+			]
 		},
 		{
 			"name": "5 ball double lift bounce",
 			"siteswap": "5B{2}",
 			"beatDuration": ".45",
-			"dwellPath": "(30)(22)"
+			"dwellPath": "(30)(22)",
+			"surfaces": [
+				{"position": {"x":"0", "y":"0", "z":"0"}, "normal": {"x":"0", "y":"1", "z":"0"}, "scale": "2"}
+			]
 		},
 		{
 			"name": "5 ball lift bounce and toss",
 			"siteswap": "5B5",
-			"dwellPath": "(30)(22)"
+			"dwellPath": "(30)(22)",
+			"surfaces": [
+				{"position": {"x":"0", "y":"0", "z":"0"}, "normal": {"x":"0", "y":"1", "z":"0"}, "scale": "2"}
+			]
 		},
 		{
 			"name": "4 ball 5551 lift bounce and toss tennis",
 			"siteswap": "5B5B5B50",
-			"dwellPath": "(30)(22)"
+			"dwellPath": "(30)(22)",
+			"surfaces": [
+				{"position": {"x":"0", "y":"0", "z":"0"}, "normal": {"x":"0", "y":"1", "z":"0"}, "scale": "2"}
+			]
 		},
 		{
 			"name": "5 ball lift bounce on angled surfaces #1",

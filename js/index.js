@@ -26,6 +26,7 @@ function displayMenu(menu) {
 	$('#menuExamples').hide();
 	$('#menuHelp').hide();
 	$('#menuAbout').hide();
+	$('#menuGIF').hide();
 	$('#menu' + menu).show();
 
 	$('#navBasic').removeClass('activeNav');
@@ -33,31 +34,18 @@ function displayMenu(menu) {
 	$('#navExamples').removeClass('activeNav');
 	$('#navHelp').removeClass('activeNav');
 	$('#navAbout').removeClass('activeNav');
+	$('#navGIF').removeClass('activeNav');
 	$('#nav' + menu).addClass('activeNav');	
 
 }
 
 function updateAdvancedInputsFromBasic() {
-	bindInputs({
+	bindInputs(applyInputDefaults({
 		siteswap: $('#siteswap').val(),
 		props: [{type: $('#prop').val(), color: 'red', radius: .05, C: .97}],
 		beatDuration: $('#beatDuration').val(),
-		dwellRatio: .5,
-		dwellPath: $('#dwellPath').val(),
-		matchVelocity: 1,
-		dwellCatchScale: .06,
-		dwellTossScale: .06,
-		emptyTossScale: .025,
-		emptyCatchScale: .025,
-		armAngle: .1,
-		surfaces: [
-			{
-				position: {x:0, y:0, z:0},
-				normal: {x:0, y:1, z:0},
-				scale: 5,
-			}
-		]
-	});
+		dwellPath: $('#dwellPath').val()
+	}));
 }
 
 function applyInputDefaults(inputs) {
@@ -72,7 +60,7 @@ function applyInputDefaults(inputs) {
 	inputs.emptyTossScale = inputs.emptyTossScale === undefined ? .025 : inputs.emptyTossScale;
 	inputs.emptyCatchScale = inputs.emptyCatchScale === undefined ? .025 : inputs.emptyCatchScale;
 	inputs.armAngle = inputs.armAngle === undefined ? .1 : inputs.armAngle;
-	inputs.surfaces = inputs.surfaces === undefined ? [{position: {x:0, y:0, z:0}, normal: {x:0, y:1, z:0}, scale: 5}] : inputs.surfaces;
+	inputs.surfaces = inputs.surfaces === undefined ? [] : inputs.surfaces;
 	return inputs;
 }
 
@@ -88,7 +76,10 @@ function bindInputs(inputs) {
 		}
 	}
 	inputsText += inputs.dwellPath + "\n";
-	inputsText += inputs.matchVelocity + " " + inputs.dwellCatchScale + " " + inputs.dwellTossScale + " " + inputs.emptyTossScale + " " + inputs.emptyCatchScale + " " + inputs.armAngle + "\n";
+	inputsText += inputs.matchVelocity + " " + inputs.dwellCatchScale + " " + inputs.dwellTossScale + " " + inputs.emptyTossScale + " " + inputs.emptyCatchScale + " " + inputs.armAngle;
+	if (inputs.surfaces.length > 0) {
+		inputsText += "\n"
+	}
 	for (var i = 0; i < inputs.surfaces.length; i++) {
 		inputsText += inputs.surfaces[i].position.x + " " + inputs.surfaces[i].position.y + " " + inputs.surfaces[i].position.z + " " + inputs.surfaces[i].normal.x + " " + inputs.surfaces[i].normal.y + " " + inputs.surfaces[i].normal.z + " " + inputs.surfaces[i].scale;
 		if (i < inputs.surfaces.length-1) {
@@ -215,7 +206,8 @@ function go() {
 			surfaces: 			inputs.surfaces
 		});
 
-	animator.go(siteswap, {});
+	animator.init(siteswap, {});
+	animator.animate();
 }
 
 function zoomIn() { animator.zoomIn(); }
@@ -223,7 +215,7 @@ function zoomIn() { animator.zoomIn(); }
 function zoomOut() { animator.zoomOut(); }
 
 function updateAnimationSpeed() {
-	animationSpeed = parseFloat($('#animationSpeed').val());
+	var animationSpeed = parseFloat($('#animationSpeed').val());
 	animator.updateAnimationSpeed(animationSpeed);
 }
 
@@ -293,4 +285,100 @@ function filterExamples() {
 		$('#examples li').hide();
 		$('#examples li:contains("' + filterValue + '")').show();
 	}
+}
+
+function generateGIF() {
+
+	$('#gifProgress').show();
+	$('#gifLink').empty();
+
+	animator.paused = true;
+	var numFrames = Math.round((siteswap.states.length*siteswap.beatDuration)*35);
+	var currentFrame = 0;
+
+	var canvas = document.createElement( 'canvas' );
+	canvas.width = animator.renderer.domElement.width;
+	canvas.height = animator.renderer.domElement.height;
+
+	var context = canvas.getContext( '2d' );
+
+	var buffer = new Uint8Array( canvas.width * canvas.height * numFrames * 5 );
+	var gif = new GifWriter( buffer, canvas.width, canvas.height, { loop: 0 } );
+
+	var pixels = new Uint8Array( canvas.width * canvas.height );
+
+	var addFrame = function () {
+
+		animator.render((currentFrame/numFrames)*(siteswap.states.length*siteswap.beatDuration)*1000);
+
+		context.drawImage( animator.renderer.domElement, 0, 0 );
+
+		var data = context.getImageData( 0, 0, canvas.width, canvas.height ).data;
+
+		var palette = [];
+
+		for ( var j = 0, k = 0, jl = data.length; j < jl; j += 4, k ++ ) {
+
+			var r = Math.floor( data[ j + 0 ] * 0.1 ) * 10;
+			var g = Math.floor( data[ j + 1 ] * 0.1 ) * 10;
+			var b = Math.floor( data[ j + 2 ] * 0.1 ) * 10;
+			var color = r << 16 | g << 8 | b << 0;
+
+			var index = palette.indexOf( color );
+
+			if ( index === -1 ) {
+
+				pixels[ k ] = palette.length;
+				palette.push( color );
+
+			} else {
+
+				pixels[ k ] = index;
+
+			}
+
+		}
+
+		// force palette to be power of 2
+
+		var powof2 = 1;
+		while ( powof2 < palette.length ) powof2 <<= 1;
+		palette.length = powof2;
+
+		gif.addFrame( 0, 0, canvas.width, canvas.height, pixels, { palette: new Uint32Array( palette ), delay: 5 } );
+
+		$('#gifProgress').val(currentFrame/numFrames);
+
+		currentFrame++;
+		if (currentFrame == numFrames) {
+			finish();
+		} else {
+			setTimeout(addFrame,0);
+		}
+
+
+	}
+
+	var finish = function () {
+
+		// return buffer.slice( 0, gif.end() );
+
+		var string = '';
+
+		for ( var i = 0, l = gif.end(); i < l; i ++ ) {
+
+			string += String.fromCharCode( buffer[ i ] )
+
+		}
+
+		$('#gifLink').append("<a href='" + 'data:image/gif;base64,' + btoa( string ) + "' target='_blank'>Download GIF</a>");
+
+		animator.paused = false;
+		animator.animate();
+		$('#gifProgress').hide();
+
+	}
+
+	addFrame();
+
 }

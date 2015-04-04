@@ -1132,7 +1132,7 @@ function CreateSiteswap(siteswapStr, options) {
 				mutationChance: .7,
 				mutationScale: 5,
 				initialScale: 20,
-				fitnessThreshold: .1,
+				fitnessThreshold: .05,
 				noGA: false
 			};
 

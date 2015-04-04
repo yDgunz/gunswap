@@ -6,13 +6,12 @@ function SiteswapAnimator(containerId) {
 		container,
 		width,
 		height,
-		paused = false,
 		camera, 
 		scene, 
 		renderer,
 		/* camera starting point */
 		camTheta = Math.PI, 
-		camPhi = .3, 
+		camPhi = .7, 
 		camRadius = 5,
 		/* helpers for mouse interaction */
 		isMouseDown = false, 
@@ -25,12 +24,11 @@ function SiteswapAnimator(containerId) {
 		surfaceMeshes = [],
 		jugglerHandVertices,
 		jugglerElbowVertices,
-		animationSpeed = .6,
 		startTime,
 		siteswap,
 		renderMode = '3D',
 		context,
-		randomColors = ['red','white','blue','green','black','yellow','purple'];
+		randomColors = ['red','white','blue','green','black','yellow','purple'];	
 
 	container = $('#' + containerId);
 
@@ -67,7 +65,7 @@ function SiteswapAnimator(containerId) {
 		if( !window.WebGLRenderingContext ) {
 			renderer = new THREE.CanvasRenderer();	
 		} else {
-			renderer = new THREE.WebGLRenderer( {antialias: true} );
+			renderer = new THREE.WebGLRenderer( {antialias: true, preserveDrawingBuffer: true} );
 		}
 		
 		renderer.setSize( width, height );
@@ -86,7 +84,12 @@ function SiteswapAnimator(containerId) {
 		renderer.setClearColor( 0xffffff, 1);
 
 		renderer.render(scene,camera);
-		
+
+		this.renderer = renderer; // expose renderer		
+		this.oneCycleComplete = false;
+		this.paused = false;
+		this.animationSpeed = .6;
+
 	}
 
 	this.resize = function(w,h) {
@@ -97,8 +100,10 @@ function SiteswapAnimator(containerId) {
 		renderer.setSize(width, height);
 	}
 
-	this.go = function (s,options) {
+	this.init = function(s,options) {
 
+		this.paused = false;
+		startTime = 0;
 		siteswap = s;
 
 		if (siteswap.errorMessage) {
@@ -213,23 +218,34 @@ function SiteswapAnimator(containerId) {
 				
 			}
 
-			paused = false;
-			startTime = 0;
-			animate();
-
 		}
 
 	}
 
-	function animate() {
-		
-		if (startTime == 0) {
+	this.animate = function() {		
+
+		if (startTime === 0) {
 			startTime = (new Date()).getTime();
 		}
 
 		/* find time in the pattern and translate that to a discrete step in the prop position arrays */
-		var timeElapsed = ((new Date()).getTime() - startTime)*animationSpeed;
+		var timeElapsed = ((new Date()).getTime() - startTime)*this.animationSpeed;
+		if (timeElapsed > (siteswap.states.length*siteswap.beatDuration*1000)) {
+			this.oneCycleComplete = true;
+		}
 		var t = timeElapsed % (siteswap.states.length*siteswap.beatDuration*1000); // need to *1000 b/c timeElapsed is in ms
+		
+		this.render(t);
+
+		if (!this.paused) {
+			var self = this;
+			requestAnimationFrame(function() { self.animate(); });
+		}
+
+	}
+
+	this.render = function(t) {
+
 		var step = Math.floor(t/(siteswap.states.length*siteswap.beatDuration*1000)*siteswap.numSteps);
 
 		/* update prop mesh positions and rotations */
@@ -286,10 +302,6 @@ function SiteswapAnimator(containerId) {
 			console.log('Error rendering');
 		}
 
-		if (!paused) {
-			requestAnimationFrame(function() { animate(); });
-		}
-
 	}
 
 	function drawSurfaces() {
@@ -334,17 +346,17 @@ function SiteswapAnimator(containerId) {
 			jugglerLegsG.vertices.push(new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*-.125,0,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0));
 			jugglerLegsG.vertices.push(new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,.8,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0));
 			jugglerLegsG.vertices.push(new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*.125,0,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0));
-			var jugglerLegs = new THREE.Line(jugglerLegsG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));
+			var jugglerLegs = new THREE.Line(jugglerLegsG, new THREE.LineBasicMaterial({color: 'black'}));
 
 			var jugglerTorsoG = new THREE.Geometry();
 			jugglerTorsoG.vertices.push(new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,.8,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0));
 			jugglerTorsoG.vertices.push(new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.5,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0));
-			var jugglerTorso = new THREE.Line(jugglerTorsoG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));
+			var jugglerTorso = new THREE.Line(jugglerTorsoG, new THREE.LineBasicMaterial({color: 'black'}));
 
 			var jugglerShouldersG = new THREE.Geometry();
 			jugglerShouldersG.vertices.push(new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*-.225,1.425,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0));
 			jugglerShouldersG.vertices.push(new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*.225,1.425,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0));
-			var jugglerShoulders = new THREE.Line(jugglerShouldersG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));	
+			var jugglerShoulders = new THREE.Line(jugglerShouldersG, new THREE.LineBasicMaterial({color: 'black'}));	
 
 			var jugglerLeftArmG = new THREE.Geometry();
 			/* shoulder */
@@ -356,7 +368,7 @@ function SiteswapAnimator(containerId) {
 			jugglerHandVertices[i][0] = new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*-.225,1.0125,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*-.4125);
 			jugglerLeftArmG.vertices.push(jugglerHandVertices[i][0]);
 			jugglerLeftArmG.dynamic = true;
-			var jugglerLeftArm = new THREE.Line(jugglerLeftArmG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));	
+			var jugglerLeftArm = new THREE.Line(jugglerLeftArmG, new THREE.LineBasicMaterial({color: 'black'}));	
 
 			var jugglerRightArmG = new THREE.Geometry();
 			/* shoulder */
@@ -368,7 +380,7 @@ function SiteswapAnimator(containerId) {
 			jugglerHandVertices[i][1] = new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*.225,1.0125,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*-.4125);
 			jugglerRightArmG.vertices.push(jugglerHandVertices[i][1]);
 			jugglerRightArmG.dynamic = true;
-			var jugglerRightArm = new THREE.Line(jugglerRightArmG, new THREE.LineBasicMaterial({linewidth: 3, color: 'black'}));				
+			var jugglerRightArm = new THREE.Line(jugglerRightArmG, new THREE.LineBasicMaterial({color: 'black'}));				
 
 			var jugglerHead = new THREE.Mesh( new THREE.SphereGeometry( .1125, 20 ), new THREE.MeshPhongMaterial( { color: 'black' } ) );
 			jugglerHead.position = new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.6125,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0);
@@ -442,7 +454,7 @@ function SiteswapAnimator(containerId) {
 	function onDocumentMouseWheel( event ) { camRadius -= event.wheelDeltaY*.01; }
 
 	this.updateAnimationSpeed = function(speed) {
-		animationSpeed = speed;
+		this.animationSpeed = speed;
 	}
 
 	this.updateCameraMode = function(mode) {

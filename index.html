@@ -5,6 +5,7 @@
 	
 	<script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
 	<script type="text/javascript" src="js/three.min.js"></script>
+	<script type="text/javascript" src="js/omggif.js"></script>
 
 	<style>
 
@@ -50,11 +51,12 @@
 			<a id="navBasic" href="#" onclick="displayMenu('Basic');">Basic</a>
 			<a id="navAdvanced" href="#" onclick="displayMenu('Advanced');">Advanced</a>
 			<a id="navExamples" href="#" onclick="displayMenu('Examples');">Examples</a>
+			<a id="navGIF" href="#" onclick="displayMenu('GIF');">GIF</a>
 			<a id="navAbout" href="http://gunswap.blogspot.com/" target="_blank">Blog</a>
 		</div>
 		<div id="menuBasic" class="menu">
 			<div id="inputsBasic">
-				<button onclick="updateAdvancedInputsFromBasic();go();">Juggle!</button><br/>
+				<button onclick="updateAdvancedInputsFromBasic();go();">Juggle!</button><br/><br/>
 				<div>
 					<label for="siteswap">Siteswap</label>
 					<input id="siteswap" value="5" onchange="updateAdvancedInputsFromBasic();"></input>
@@ -80,10 +82,7 @@
 				<div>
 					<label for="beatDuration">Height</label>
 					<input id="beatDuration" type="range" min=".05" max=".5" value=".24" step=".005" onchange="updateAdvancedInputsFromBasic();"></input>
-				</div>
-				<div>
-					Click/drag to rotate, scroll to zoom
-				</div>
+				</div>				
 			</div>			
 		</div>
 		<div id="menuAdvanced" class="menu">
@@ -103,18 +102,27 @@
 			<input id="filterExamples" type="text" onkeyup="filterExamples();" placeholder="filter examples"></input>
 			<ul id="examples"></ul>
 		</div>
+		<div id="menuGIF">
+			<br/>
+			<p>Move the camera to the desired position and click "Generate GIF" to create a looped GIF for the pattern.</p>
+			<button onclick="generateGIF();">Generate GIF</button><br/><br/>
+			<progress style="display:none;" id="gifProgress" value="0" max="1"></progress>
+			<span id="gifLink"></span>
+		</div>
 	</div>
 	<div id="animatorContainer" style="width:50%;float:left;">
-		<div id="animatorControls">			
+		<div id="animatorControls">						
 			<select id="cameraMode" onchange="updateCameraMode();">
 				<option value="sky">Sky</option>
 				<option value="juggler">Juggler</option>
 			</select>
-			<button onclick="zoomIn();">Zoom In</button>
-			<button onclick="zoomOut();">Zoom Out</button>
+			<button onclick="zoomIn();">Z-In</button>
+			<button onclick="zoomOut();">Z-Out</button>
 			Speed <input type="range" onchange="updateAnimationSpeed();" id="animationSpeed" min="0" max="1" value=".6" step=".01"></input>
-		</div>		
-		<div id="animatorCanvasContainer" style="width:100%;height:600px;">
+			<p>Click/drag to rotate, scroll to zoom</p>
+			<p>If animation slows down, refresh page</p>
+		</div>
+		<div id="animatorCanvasContainer" style="width:100%;height:600px;border: 2px solid #a1a1a1;">
 		</div>
 	</div>
 </div>
