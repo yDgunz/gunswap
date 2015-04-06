@@ -3986,7 +3986,7 @@ exports.SiteswapAnimator = SiteswapAnimator;
 })(typeof exports === 'undefined'? this['SiteswapAnimator']={}: exports);
 ;window.onload = function () {
 
-	displayMenu('Examples');
+	displayMenu('Basic');
 
 	updateAdvancedInputsFromBasic();
 	updateAdvancedLabels();

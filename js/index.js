@@ -1,6 +1,6 @@
 window.onload = function () {
 
-	displayMenu('Examples');
+	displayMenu('Basic');
 
 	updateAdvancedInputsFromBasic();
 	updateAdvancedLabels();

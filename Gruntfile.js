@@ -28,8 +28,10 @@ module.exports = function(grunt)
                 separator: "\n;"
             },
             dist: {
-                src: ['js/lib/*.js','js/util.js','js/BounceGA.js','js/Siteswap.js','js/SiteswapAnimator.js','js/index.js'],
-                dest: 'js/gunswap.js'
+                files: {
+                    'build/Siteswap.js': ['js/util.js','js/BounceGA.js','js/Siteswap.js'],
+                    'build/gunswap.js': ['js/lib/*.js','build/Siteswap.js','js/SiteswapAnimator.js','js/index.js']
+                }
             }
         },
 
@@ -37,7 +39,8 @@ module.exports = function(grunt)
         {
             dist: {
                 files: {
-                    'js/gunswap.min.js': ['js/gunswap.js']
+                    'build/gunswap.min.js': ['build/gunswap.js'],
+                    'build/Siteswap.min.js': ['build/Siteswap.js']
                 }
             }
         },
