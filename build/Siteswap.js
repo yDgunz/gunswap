@@ -1541,6 +1541,9 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						pos.x += (1-t)*landingDiff.x;
 						pos.y += (1-t)*landingDiff.y;
 						pos.z += (1-t)*landingDiff.z;
+						pos.angle = Math.atan2(-land.dx,-land.dy) + t*(Math.atan2(launch.dx,launch.dy)-Math.atan2(-land.dx,-land.dy));
+						if (curToss.hand == RIGHT)
+							pos.angle *= -1;
 
 						pos.dwell = true;
 						
@@ -1744,7 +1747,10 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 							var catchDiff = {x: v_T.x - correctCatch.x, y: v_T.y - correctCatch.y, z: v_T.z - correctCatch.z};
 							pos.x += (t)*catchDiff.x;
 							pos.y += (t)*catchDiff.y;
-							pos.z += (t)*catchDiff.z;							
+							pos.z += (t)*catchDiff.z;
+							pos.angle = Math.atan2(v_0.dx,v_0.dy) + t*(Math.atan2(-v_T.dx,-v_T.dy)-Math.atan2(v_0.dx,v_0.dy));
+							if (hand == RIGHT)
+								pos.angle *= -1;
 
 							tmpJugglerHandPositions[juggler][hand] = pos;
 						}					

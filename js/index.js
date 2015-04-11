@@ -52,7 +52,7 @@ function applyInputDefaults(inputs) {
 	inputs.siteswap = inputs.siteswap === undefined ? "3" : inputs.siteswap;
 	inputs.props = inputs.props === undefined ? [{type: "ball", color: "red", radius: ".05", C: .97}] : inputs.props;
 	inputs.beatDuration = inputs.beatDuration === undefined ? .25 : inputs.beatDuration;
-	inputs.dwellRatio = inputs.dwellRatio === undefined ? .5 : inputs.dwellRatio;
+	inputs.dwellRatio = inputs.dwellRatio === undefined ? .65 : inputs.dwellRatio;
 	inputs.dwellPath = inputs.dwellPath === undefined ? "(30)(10)" : inputs.dwellPath;
 	inputs.matchVelocity = inputs.matchVelocity === undefined ? 0 : inputs.matchVelocity;
 	inputs.dwellCatchScale = inputs.dwellCatchScale === undefined ? .06 : inputs.dwellCatchScale;
@@ -206,7 +206,12 @@ function go() {
 			surfaces: 			inputs.surfaces
 		});
 
-	animator.init(siteswap, {});
+	var drawHands = false;
+	if (siteswap.props[0].type == 'ball') {
+		drawHands = true;
+	}
+
+	animator.init(siteswap, {drawHands: drawHands});
 	animator.animate();
 }
 
