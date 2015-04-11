@@ -496,7 +496,7 @@ function SiteswapAnimator(containerId) {
 					var jugglerWristPosition = toVector3(siteswap.jugglerHandPositions[i][j][step]).add(new THREE.Vector3(propRadius*Math.sin(angle),-propRadius*Math.cos(angle),0));
 					
 					for (var k = 0; k < handVerticesDiff.length; k++) {
-						var newX = handVerticesDiff[k].x*Math.cos(angle) + handVerticesDiff[k].y*Math.sin(angle);
+						var newX = handVerticesDiff[k].x*Math.cos(angle) - handVerticesDiff[k].y*Math.sin(angle);
 						var newY = handVerticesDiff[k].y*Math.cos(angle) + handVerticesDiff[k].x*Math.sin(angle);
 						handVerticesDiff[k].x = newX;
 						handVerticesDiff[k].y = newY;
