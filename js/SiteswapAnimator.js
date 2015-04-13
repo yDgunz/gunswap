@@ -495,11 +495,16 @@ function SiteswapAnimator(containerId) {
 					var propRadius = siteswap.props[0].radius;
 					var jugglerWristPosition = toVector3(siteswap.jugglerHandPositions[i][j][step]).add(new THREE.Vector3(propRadius*Math.sin(angle),-propRadius*Math.cos(angle),0));
 					
+					var handAngle = -Math.atan2(siteswap.jugglerElbowPositions[i][j][step].x-siteswap.jugglerHandPositions[i][j][step].x,siteswap.jugglerElbowPositions[i][j][step].z-siteswap.jugglerHandPositions[i][j][step].z);
+
 					for (var k = 0; k < handVerticesDiff.length; k++) {
 						var newX = handVerticesDiff[k].x*Math.cos(angle) - handVerticesDiff[k].y*Math.sin(angle);
 						var newY = handVerticesDiff[k].y*Math.cos(angle) + handVerticesDiff[k].x*Math.sin(angle);
+						newX = newX*Math.cos(handAngle) - handVerticesDiff[k].z*Math.sin(handAngle);
+						var newZ = handVerticesDiff[k].z*Math.cos(handAngle) + newX*Math.sin(handAngle);
 						handVerticesDiff[k].x = newX;
 						handVerticesDiff[k].y = newY;
+						handVerticesDiff[k].z = newZ;
 						jugglerHandVertices[i][j][k].copy((new THREE.Vector3()).copy(jugglerWristPosition).add(handVerticesDiff[k]));
 					}
 				} else {

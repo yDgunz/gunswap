@@ -20,7 +20,7 @@ function sumThrows(str) {
 		}
 		// if the current character is a bounce marker
 		// and then next character is a {, move forward until we find a }
-		if (str[i] == "B" && str[i+1] == "{") {
+		if ((str[i] == "B" || str[i] == "D") && str[i+1] == "{") {
 			i = str.indexOf("}",i)+1;
 		}
 	}
@@ -188,7 +188,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		}
 
 		/* construct the various regex patterns. see blog post for details about this */
-		var validToss = "(R|L)?([\\da-o])x?(" + passPattern + ")?(B({\\d*(L|HL|F|HF)?})?)?(S\\d?)?";
+		var validToss = "(R|L)?([\\da-o])x?(" + passPattern + ")?(B({\\d*(L|HL|F|HF)?})?)?(S\\d?)?(D{\\d*\\.?\\d*})?";
 		var validMultiplex = "\\[(" + validToss + ")+\\]";
 		var validSync = "\\((" + validToss + "|" + validMultiplex + "),(" + validToss + "|" + validMultiplex + ")\\)";
 		var validBeat = "(" + validToss + "|" + validMultiplex + "|" + validSync + ")";
@@ -288,6 +288,12 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				}
 			}
 
+			var dIx = siteswapStr.indexOf("D");
+			var dwellDuration;
+			if (dIx > 0) {
+				dwellDuration = siteswap.beatDuration*parseFloat(siteswapStr.substring(dIx+2,siteswapStr.indexOf("}")));
+			}
+
 			var crossing = numBeats % 2 == 1 ? true : false;
 			// if the second character is an "x" then crossing is flipped
 			if (siteswapStr.length > 1 && siteswapStr[1] == "x") {
@@ -320,7 +326,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 					bounceOrder: bounceOrder,
 					bounceType: bounceType,
 					numSpins: numSpins,
-					dwellPathIx: dwellPathIx
+					dwellPathIx: dwellPathIx,
+					dwellDuration: dwellDuration === undefined ? siteswap.dwellDuration : dwellDuration
 				}
 			);
 
@@ -510,7 +517,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						tmpPropOrbits[prop] = [];
 					}
 
-					tmpPropOrbits[prop].push({beat: beat, juggler: toss.juggler, hand: tossHand, numBounces: toss.numBounces, bounceType: toss.bounceType, bounceOrder: toss.bounceOrder, numSpins: toss.numSpins, dwellPathIx: toss.dwellPathIx });
+					tmpPropOrbits[prop].push({beat: beat, juggler: toss.juggler, hand: tossHand, numBounces: toss.numBounces, bounceType: toss.bounceType, bounceOrder: toss.bounceOrder, numSpins: toss.numSpins, dwellPathIx: toss.dwellPathIx, dwellDuration: toss.dwellDuration });
 
 					if(curState[toss.targetJuggler][catchHand][toss.numBeats-1] == undefined) {
 						curState[toss.targetJuggler][catchHand][toss.numBeats-1] = [prop];
@@ -642,7 +649,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						}
 					}
 
-					var tossTime = curToss.beat*siteswap.beatDuration+siteswap.dwellDuration;
+					var tossTime = curToss.beat*siteswap.beatDuration+curToss.dwellDuration;
 					var catchTime = nextToss.beat*siteswap.beatDuration;
 					if (tossTime >= catchTime && catchTime >= currentTime) { 
 						tossTime -= (siteswap.beatDuration*siteswap.states.length);
@@ -651,7 +658,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						catchTime += (siteswap.beatDuration*siteswap.states.length);	
 					}
 
-					var lastTossTime = prevToss.beat*siteswap.beatDuration+siteswap.dwellDuration;
+					var lastTossTime = prevToss.beat*siteswap.beatDuration+curToss.dwellDuration;
 					var lastCatchTime = curToss.beat*siteswap.beatDuration;
 					if (lastTossTime >= lastCatchTime && lastCatchTime >= currentTime) { 
 						lastTossTime -= (siteswap.beatDuration*siteswap.states.length);
@@ -690,7 +697,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 								}
 							);
 
-						var t = 1-(tossTime - currentTime)/siteswap.dwellDuration;
+						var t = 1-(tossTime - currentTime)/curToss.dwellDuration;
 						var pos = getDwellPosition(
 							siteswap.dwellPath[curToss.dwellPathIx]
 							, curToss.juggler
@@ -854,7 +861,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 							if (nextCatchTime < currentTime) {
 								nextCatchTime += (siteswap.beatDuration*siteswap.states.length);
 							}
-							var lastThrowTime = lastToss.beat*siteswap.beatDuration+siteswap.dwellDuration;
+							var lastThrowTime = lastToss.beat*siteswap.beatDuration+lastToss.dwellDuration;
 							if (lastThrowTime > currentTime) {
 								lastThrowTime -= (siteswap.beatDuration*siteswap.states.length);
 							}
@@ -862,7 +869,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 							if (propNextCatchTime < lastThrowTime) {
 								propNextCatchTime += (siteswap.beatDuration*siteswap.states.length);
 							}
-							var propLastThrowTime = propLastToss.beat*siteswap.beatDuration+siteswap.dwellDuration;
+							var propLastThrowTime = propLastToss.beat*siteswap.beatDuration+propLastToss.dwellDuration;
 							if (propLastThrowTime > nextCatchTime) {
 								propLastThrowTime -= (siteswap.beatDuration*siteswap.states.length);
 							}
