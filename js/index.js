@@ -206,13 +206,24 @@ function go() {
 			surfaces: 			inputs.surfaces
 		});
 
-	var drawHands = false;
-	if (siteswap.props[0].type == 'ball') {
-		drawHands = true;
+	if (siteswap.errorMessage) {
+		animator.paused = true;
+		$('#errorMessage').show();
+		$('#errorMessage').text(siteswap.errorMessage);
+	} else {
+
+		$('#errorMessage').hide();
+
+		var drawHands = false;
+		if (siteswap.props[0].type == 'ball') {
+			drawHands = true;
+		}
+
+		animator.init(siteswap, {drawHands: drawHands});
+		animator.animate();
+
 	}
 
-	animator.init(siteswap, {drawHands: drawHands});
-	animator.animate();
 }
 
 function zoomIn() { animator.zoomIn(); }

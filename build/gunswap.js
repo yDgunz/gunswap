@@ -2326,7 +2326,7 @@ function sumThrows(str) {
 		}
 		// if the current character is a bounce marker
 		// and then next character is a {, move forward until we find a }
-		if ((str[i] == "B" || str[i] == "D") && str[i+1] == "{") {
+		if ((str[i] == "B" || str[i] == "D" || str[i] == "T" || str[i] == "C") && str[i+1] == "{") {
 			i = str.indexOf("}",i)+1;
 		}
 	}
@@ -2494,7 +2494,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		}
 
 		/* construct the various regex patterns. see blog post for details about this */
-		var validToss = "(R|L)?([\\da-o])x?(" + passPattern + ")?(B({\\d*(L|HL|F|HF)?})?)?(S\\d?)?(D{\\d*\\.?\\d*})?";
+		var validToss = "(R|L)?([\\da-o])x?(" + passPattern + ")?(C{(C|P)?})?(T{(C|P)?})?(B({\\d*(L|HL|F|HF)?})?)?(S\\d?)?(D{\\d*\\.?\\d*})?";
 		var validMultiplex = "\\[(" + validToss + ")+\\]";
 		var validSync = "\\((" + validToss + "|" + validMultiplex + "),(" + validToss + "|" + validMultiplex + ")\\)";
 		var validBeat = "(" + validToss + "|" + validMultiplex + "|" + validSync + ")";
@@ -2541,7 +2541,10 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			var targetJuggler = juggler;
 
 			var pIx = siteswapStr.indexOf("P");
-			if (pIx > 0) {				
+			if (
+				pIx > 0 &&
+				siteswapStr[pIx+1] != "}" // check that the next character isn't a }, in which case this is a catch/toss penguin modifier
+			) {				
 				if (siteswap.numJugglers > 2) {					
 					targetJuggler = parseInt(siteswapStr[pIx+1])-1;
 				} else {
@@ -2600,6 +2603,28 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				dwellDuration = siteswap.beatDuration*parseFloat(siteswapStr.substring(dIx+2,siteswapStr.indexOf("}")));
 			}
 
+			var tIx = siteswapStr.indexOf("T");
+			var tossType = 'standard';
+			if (tIx > 0) {
+				var tossTypeId = siteswapStr.substring(tIx+2,siteswapStr.indexOf('}',tIx));
+				if (tossTypeId.match("C")) {
+					tossType = 'claw';
+				} else if (tossTypeId.match("P")) {
+					tossTypeId = "penguin";
+				}
+			}
+
+			var cIx = siteswapStr.indexOf("C");
+			var catchType = 'standard';
+			if (cIx > 0) {
+				var catchTypeId = siteswapStr.substring(cIx+2,siteswapStr.indexOf('}',cIx));
+				if (catchTypeId.match("C")) {
+					catchType = 'claw';
+				} else if (catchTypeId.match("P")) {
+					catchType = 'penguin';
+				}
+			}
+
 			var crossing = numBeats % 2 == 1 ? true : false;
 			// if the second character is an "x" then crossing is flipped
 			if (siteswapStr.length > 1 && siteswapStr[1] == "x") {
@@ -2633,7 +2658,9 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 					bounceType: bounceType,
 					numSpins: numSpins,
 					dwellPathIx: dwellPathIx,
-					dwellDuration: dwellDuration === undefined ? siteswap.dwellDuration : dwellDuration
+					dwellDuration: dwellDuration === undefined ? siteswap.dwellDuration : dwellDuration,
+					tossType: tossType,
+					catchType: catchType
 				}
 			);
 
@@ -2823,7 +2850,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						tmpPropOrbits[prop] = [];
 					}
 
-					tmpPropOrbits[prop].push({beat: beat, juggler: toss.juggler, hand: tossHand, numBounces: toss.numBounces, bounceType: toss.bounceType, bounceOrder: toss.bounceOrder, numSpins: toss.numSpins, dwellPathIx: toss.dwellPathIx, dwellDuration: toss.dwellDuration });
+					tmpPropOrbits[prop].push({beat: beat, juggler: toss.juggler, hand: tossHand, numBounces: toss.numBounces, bounceType: toss.bounceType, bounceOrder: toss.bounceOrder, numSpins: toss.numSpins, dwellPathIx: toss.dwellPathIx, dwellDuration: toss.dwellDuration, tossType: toss.tossType, catchType: toss.catchType });
 
 					if(curState[toss.targetJuggler][catchHand][toss.numBeats-1] == undefined) {
 						curState[toss.targetJuggler][catchHand][toss.numBeats-1] = [prop];
@@ -2871,7 +2898,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 	function generatePropPositions() {
 
-		//try {
+		try {
 
 			// clear flight path cache
 			flightPathCache = {};
@@ -3023,7 +3050,19 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						pos.x += (1-t)*landingDiff.x;
 						pos.y += (1-t)*landingDiff.y;
 						pos.z += (1-t)*landingDiff.z;
-						pos.angle = Math.atan2(-land.dx,-land.dy) + t*(Math.atan2(launch.dx,launch.dy)-Math.atan2(-land.dx,-land.dy));
+						var catchAngle = Math.atan2(-land.dx,-land.dy);
+						var tossAngle = Math.atan2(launch.dx,launch.dy);
+						if (curToss.tossType == 'claw') {
+							tossAngle -= Math.PI;
+						} else if (curToss.tossTypeId == 'penguin') {
+							tossAngle -= 2*Math.PI;
+						}
+						if (curToss.catchType == 'claw') {
+							catchAngle -= Math.PI;
+						} else if (curToss.catchType == 'penguin') {
+							catchAngle -= 2*Math.PI;
+						}
+						pos.angle = catchAngle + t*(tossAngle-catchAngle);
 						if (curToss.hand == RIGHT)
 							pos.angle *= -1;
 
@@ -3230,7 +3269,19 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 							pos.x += (t)*catchDiff.x;
 							pos.y += (t)*catchDiff.y;
 							pos.z += (t)*catchDiff.z;
-							pos.angle = Math.atan2(v_0.dx,v_0.dy) + t*(Math.atan2(-v_T.dx,-v_T.dy)-Math.atan2(v_0.dx,v_0.dy));
+							var catchAngle = Math.atan2(-v_T.dx,-v_T.dy);
+							var tossAngle = Math.atan2(v_0.dx,v_0.dy);
+							if (lastToss.tossType == 'claw') {
+								tossAngle -= Math.PI;
+							} else if (lastToss.tossType == 'penguin') {
+								tossAngle -= 2*Math.PI;
+							}
+							if (nextToss.catchType == 'claw') {
+								catchAngle -= Math.PI;
+							} else if (nextToss.catchType == 'penguin') {
+								catchAngle -= 2*Math.PI;
+							}
+							pos.angle = tossAngle + t*(catchAngle-tossAngle);
 							if (hand == RIGHT)
 								pos.angle *= -1;
 
@@ -3259,9 +3310,9 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			siteswap.jugglerHandPositions = jugglerHandPositions;
 			siteswap.jugglerElbowPositions = jugglerElbowPositions;
 
-		//} catch(e) {
-		//	siteswap.errorMessage = e.message;
-		//}
+		} catch(e) {
+			siteswap.errorMessage = e.message;
+		}
 	}
 
 	/* interpolate flight path */	
@@ -4248,13 +4299,24 @@ function go() {
 			surfaces: 			inputs.surfaces
 		});
 
-	var drawHands = false;
-	if (siteswap.props[0].type == 'ball') {
-		drawHands = true;
+	if (siteswap.errorMessage) {
+		animator.paused = true;
+		$('#errorMessage').show();
+		$('#errorMessage').text(siteswap.errorMessage);
+	} else {
+
+		$('#errorMessage').hide();
+
+		var drawHands = false;
+		if (siteswap.props[0].type == 'ball') {
+			drawHands = true;
+		}
+
+		animator.init(siteswap, {drawHands: drawHands});
+		animator.animate();
+
 	}
 
-	animator.init(siteswap, {drawHands: drawHands});
-	animator.animate();
 }
 
 function zoomIn() { animator.zoomIn(); }
