@@ -5,6 +5,7 @@
 	
 	<!--<script src="build/gunswap.min.js"></script>-->
 	<script src="js/lib/jquery-1.10.2.min.js"></script>
+	<script src="js/lib/jquery-ui.min.js"></script>
 	<script src="js/lib/omggif.js"></script>
 	<script src="js/lib/three.min.js"></script>
 	<script src="js/util.js"></script>
@@ -14,114 +15,105 @@
 	<script src="js/SiteswapAnimator.js"></script>
 	<script src="js/index.js"></script>
 
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+
 	<style>
-
-		body, button, select, input {
-			font-family: monospace;
-		}
-		a {
-			text-decoration: none;
-		}
-		.activeNav {
-			border-style: solid;
-			border-width: 1px;
-			font-weight: bold;
-		}
-		label { 
-			display: block; 
-			width: 100px; 
-			float: left; 
-		}
-		#inputsBasic div {
-			padding: 5px;
-		}
-		#navContainer a {
-			padding: 5px;
-			font-size: larger;
-		}
-		.menu {
-			padding-top: 15px;
-		}
-		#menuAdvanced div {
-			padding-top:5px;
-		}
-		#errorMessage {
-			font-size: larger;
-		}
-
+	
+	body {
+		font-family: "Trebuchet MS", "Helvetica", "Arial",  "Verdana", "sans-serif";
+		font-size:65%;
+	}
+	label { 
+		display: block; 
+		width: 100px; 
+		float: left; 
+	}
+	#basic div {
+		padding: 5px;
+	}
+	#examples ul {
+		list-style-type: none;
+	}
+	#examples a {
+		text-decoration: none;
+	}
+	#examples a:hover {
+		text-decoration: underline;
+	}
+	
 	</style>
 
 </head>
 
 <body>
 
-<div id="container" style="width:1024px; margin:0 auto;">
-	<div id="menuContainer" style="width:50%;float:left;">
-		<div id="navContainer">
-			<a id="navBasic" href="#" onclick="displayMenu('Basic');">Basic</a>
-			<a id="navAdvanced" href="#" onclick="displayMenu('Advanced');">Advanced</a>
-			<a id="navExamples" href="#" onclick="displayMenu('Examples');">Examples</a>
-			<a id="navGIF" href="#" onclick="displayMenu('GIF');">GIF</a>
-			<a id="navAbout" href="http://gunswap.blogspot.com/" target="_blank">Blog</a>
+<div id="container" style="width:1024px;margin:0 auto;">
+	<div id="nav" style="width:50%;float:left">
+		<ul>
+			<li><a href="#basic">Basic</a></li>
+			<li><a href="#advanced">Advanced</a></li>
+			<li><a href="#examples">Examples</a></li>
+			<li><a href="#gif">GIF</a></li>
+			<li><a href="#about">About</a></li>
+		</ul>
+		<div id="basic">
+			<button onclick="updateAdvancedInputsFromBasic();go();">Juggle!</button><br/><br/>
+			<div id="errorMessage"></div>
+			<div>
+				<label for="siteswap">Siteswap</label>
+				<input id="siteswap" value="3" onchange="updateAdvancedInputsFromBasic();"></input>
+			</div>
+			<div>
+				<label for="prop">Prop</label>
+				<select id="prop" onchange="updateAdvancedInputsFromBasic();">
+					<option value="ball">Ball</option>
+					<option value="club">Club</option>
+					<option value="ring">Ring</option>
+				</select>
+			</div>
+			<div>
+				<label for="dwellPath">Hand Movement</label>
+				<select id="dwellPath" onchange="updateAdvancedInputsFromBasic();">
+					<option value="(30)(10)">Cascade</option>
+					<option value="(10)(30)">Reverse Cascade</option>
+					<option value="(30)(10).(10)(30)">Shower</option>
+					<option value="(-20)(20).(20)(-20)">Windmill</option>
+					<option value="(2.5)(-30).(-2.5)(30).(0)(-30)">Mills Mess</option>						
+				</select>
+			</div>
+			<div>
+				<label for="beatDuration">Height</label>
+				<input id="beatDuration" type="range" min=".05" max=".5" value=".24" step=".005" onchange="updateAdvancedInputsFromBasic();"></input>
+			</div>		    
 		</div>
-		<div id="menuBasic" class="menu">
-			<div id="inputsBasic">
-				<button onclick="updateAdvancedInputsFromBasic();go();">Juggle!</button><br/><br/>
-				<div>
-					<label for="siteswap">Siteswap</label>
-					<input id="siteswap" value="3" onchange="updateAdvancedInputsFromBasic();"></input>
-				</div>
-				<div>
-					<label for="prop">Prop</label>
-					<select id="prop" onchange="updateAdvancedInputsFromBasic();">
-						<option value="ball">Ball</option>
-						<option value="club">Club</option>
-						<option value="ring">Ring</option>
-					</select>
-				</div>
-				<div>
-					<label for="dwellPath">Hand Movement</label>
-					<select id="dwellPath" onchange="updateAdvancedInputsFromBasic();">
-						<option value="(30)(10)">Cascade</option>
-						<option value="(10)(30)">Reverse Cascade</option>
-						<option value="(30)(10).(10)(30)">Shower</option>
-						<option value="(-20)(20).(20)(-20)">Windmill</option>
-						<option value="(2.5)(-30).(-2.5)(30).(0)(-30)">Mills Mess</option>						
-					</select>
-				</div>
-				<div>
-					<label for="beatDuration">Height</label>
-					<input id="beatDuration" type="range" min=".05" max=".5" value=".24" step=".005" onchange="updateAdvancedInputsFromBasic();"></input>
-				</div>				
-			</div>			
-		</div>
-		<div id="menuAdvanced" class="menu">
+		<div id="advanced">
 			<button onclick="go();">Juggle!</button><br/><br/>
-			<textarea id="inputsAdvanced" rows="8" cols="40" onchange="updateAdvancedLabels();"></textarea><br/><br/>
+			<div id="errorMessage"></div>
+			<textarea id="inputsAdvanced" rows="8" cols="40" onchange="updateAdvancedLabels();" style="font-family:monospace;font-size:150%;"></textarea><br/><br/>
 			<div>siteswap: <span id="lblSiteswap"></span></div>
 			<div>beatDuration: <span id="lblBeatDuration"></span>, dwellRatio: <span id="lblDwellRatio"></span></div>
 			<div>props: <span id="lblProps"></span></div>
 			<div>dwellPath: <span id="lblDwellPath"></span></div>
-			<div>matchVelocity: <span id="lblMatchVelocity"></span>, dwellCatchScale: <span id="lblDwellCatchScale"></span>, dwellTossScale: <span id="lblDwellTossScale"></span>, emptyTossScale: <span id="lblEmptyTossScale"></span>, emptyCatchScale: <span id="lblEmptyCatchScale"></span></div>
+			<div>matchVelocity: <span id="lblMatchVelocity"></span>, dwellCatchScale: <span id="lblDwellCatchScale"></span>, dwellTossScale: <span id="lblDwellTossScale"></span>, emptyTossScale: <span id="lblEmptyTossScale"></span>, emptyCatchScale: <span id="lblEmptyCatchScale"></span>,
+			armAngle: <span id="lblArmAngle"></span></div>
 			<div><span id="lblSurfaces"></span></div>
 		</div>
-		<div id="menuExamples">
-			<br/>
-			Try <a href="#" onclick="$('#filterExamples').val('club');filterExamples();">club</a>, <a href="#" onclick="$('#filterExamples').val('bounce');filterExamples();">bounce</a>, <a href="#" onclick="$('#filterExamples').val('tower');filterExamples();">tower</a>, <a href="#" onclick="$('#filterExamples').val('box');filterExamples();">box</a>, <a href="#" onclick="$('#filterExamples').val('mills');filterExamples();">mills</a>
-			<br/><br/>
-			<input id="filterExamples" type="text" onkeyup="filterExamples();" placeholder="filter examples"></input>
-			<ul id="examples"></ul>
+		<div id="examples">
+			<p>Clicking an example below will run the animation and apply the inputs to the Advanced controls.</p>
+			<ul id="examplesList"></ul>
 		</div>
-		<div id="menuGIF">
-			<br/>
+		<div id="gif">
 			<p>Move the camera to the desired position and click "Generate GIF" to create a looped GIF for the pattern.</p>
 			<button onclick="generateGIF();">Generate GIF</button><br/><br/>
 			<progress style="display:none;" id="gifProgress" value="0" max="1"></progress>
 			<span id="gifLink"></span>
 		</div>
+		<div id="about">
+			<p>Gunswap is an open source siteswap animator. Follow development on the blog @ <a href="http://gunswap.blogspot.com">gunswap.blogspot.com</a></p>
+		</div>
 	</div>
-	<div id="animatorContainer" style="width:50%;float:left;">
-		<div id="animatorControls">						
+	<div id="animatorContainer" style="width:49%;height:100%;float:left;" class="ui-widget ui-widget-content ui-corner-all">
+		<div id="animatorControls" style="padding-left:5px;">						
 			<select id="cameraMode" onchange="updateCameraMode();">
 				<option value="sky">Sky</option>
 				<option value="juggler">Juggler</option>
@@ -130,10 +122,9 @@
 			<button onclick="zoomOut();">Z-Out</button>
 			Speed <input type="range" onchange="updateAnimationSpeed();" id="animationSpeed" min="0" max="1" value=".6" step=".01"></input>
 			<p>Click/drag to rotate, scroll to zoom</p>
-			<p>If animation slows down, refresh page</p>			
-			<span id="errorMessage"></span>
+			<p>If animation slows down, refresh page</p>						
 		</div>
-		<div id="animatorCanvasContainer" style="width:100%;height:600px;border: 2px solid #a1a1a1;">
+		<div id="animatorCanvasContainer" style="width:99%;height:600px;">
 		</div>
 	</div>
 </div>

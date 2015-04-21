@@ -1,6 +1,6 @@
 window.onload = function () {
 
-	displayMenu('Basic');
+	displayMenu('Examples');
 
 	updateAdvancedInputsFromBasic();
 	updateAdvancedLabels();
@@ -12,6 +12,8 @@ window.onload = function () {
 	buildExamples();
 
 	go();
+
+	$('#nav').tabs();
 
 }
 
@@ -288,19 +290,9 @@ function runExample(exampleName) {
 function buildExamples() {
 	$.getJSON("examples.json", function(data) {
 		for (var i = 0; i < data.examples.length; i++) {
-			$('#examples').append('<li><a href="#" onclick="runExample(\'' + data.examples[i].name + '\');">' + data.examples[i].name + '</a></li>');
+			$('#examplesList').append('<li><a href="#" onclick="runExample(\'' + data.examples[i].name + '\');">' + data.examples[i].name + '</a></li>');
 		}
 	});
-}
-
-function filterExamples() {
-	var filterValue = $('#filterExamples').val();
-	if (filterValue == '') {
-		$('#examples li').show();	
-	} else {
-		$('#examples li').hide();
-		$('#examples li:contains("' + filterValue + '")').show();
-	}
 }
 
 function generateGIF() {
