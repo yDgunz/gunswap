@@ -1054,11 +1054,11 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		} else if (siteswapStr.match(validSyncRe)) {
 			var patterns = siteswapStr.split(",");
 			dwellPathIx = getTosses(tosses,patterns[0].substr(1),juggler,true,LEFT, dwellPathIx);
-			dwellPathIx = getTosses(tosses,patterns[1].substr(0,patterns.length),juggler,true,RIGHT, dwellPathIx);
+			dwellPathIx = getTosses(tosses,patterns[1].substr(0,patterns[1].length-1),juggler,true,RIGHT, dwellPathIx);
 		} else if (siteswapStr.match(validMultiplexRe)) {
 			var patterns = siteswapStr.match(validTossRe);
 			patterns.map(function(s) {
-				dwellPathIx = getTosses(tosses,s,juggler, undefined, undefined, dwellPathIx);
+				dwellPathIx = getTosses(tosses,s,juggler, undefined, hand, dwellPathIx);
 			});
 		} else {
 			/* will work from "a" to "z" */

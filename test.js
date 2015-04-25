@@ -62,6 +62,15 @@ describe('Syntax', function(){
 		});
 	});
 
+	describe('Multiple multiplex sync', function(){
+		it('should return true for max toss', function(){
+			var s = Siteswap.CreateSiteswap('([44],[44])',{validationOnly: true});
+			assert.equal(s.validSyntax, true);
+			assert.equal(s.sync, true);
+			assert.equal(s.multiplex, true);
+		});
+	});	
+
 });
 
 describe('Pattern properties', function(){
@@ -168,6 +177,13 @@ describe('Valid pattern check', function(){
 			assert.equal(s.validPattern, true);
 		});
 	});
+
+	describe('Multiple multiplex sync', function(){
+		it('should return true for max toss', function(){
+			var s = Siteswap.CreateSiteswap('([44],[44])',{validationOnly: true});
+			assert.equal(s.validPattern, true);
+		});
+	});	
 
 });
 
