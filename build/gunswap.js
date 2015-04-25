@@ -2328,7 +2328,7 @@ function sumThrows(str) {
 			total += parseInt(str[i]);					
 		} else if (str.charCodeAt(i) >= 97 && str.charCodeAt(i) <= 119) {
 			// handle "a" through "z" (where "a" = 10)
-			total += str.charCodeAt(0)-87;
+			total += str.charCodeAt(i)-87;
 		}
 
 		// if the current character is a pass/spin marker
@@ -2897,8 +2897,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			hand = 1 - hand; //alternate hands
 
 			/* fail safe in case the pattern is too long */
-			if (beat > 500) {
-				siteswap.errorMessage = "Pattern took more than 500 beats to repeat states"
+			if (beat > 1000) {
+				siteswap.errorMessage = "Pattern took more than 1000 beats to repeat states"
 				return;
 			}
 

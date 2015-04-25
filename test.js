@@ -55,6 +55,13 @@ describe('Syntax', function(){
 		});
 	});
 
+	describe('Max toss', function(){
+		it('should return true for max toss', function(){
+			var s = Siteswap.CreateSiteswap('o',{validationOnly: true});
+			assert.equal(s.validSyntax, true);
+		});
+	});
+
 });
 
 describe('Pattern properties', function(){
@@ -144,6 +151,20 @@ describe('Valid pattern check', function(){
 	describe('Valid passing pattern', function(){
 		it('"<5|5><5P|5P>" should be valid', function(){    	
 			var s = Siteswap.CreateSiteswap('<5|5><5P|5P>',{validationOnly: true});
+			assert.equal(s.validPattern, true);
+		});
+	});
+
+	describe('Sync with alpha', function(){
+		it('should return true for sync', function(){
+			var s = Siteswap.CreateSiteswap('(a,2)',{validationOnly: true});
+			assert.equal(s.validPattern, true);
+		});
+	});
+
+	describe('Max toss', function(){
+		it('should return true for max toss', function(){
+			var s = Siteswap.CreateSiteswap('o',{validationOnly: true});
 			assert.equal(s.validPattern, true);
 		});
 	});
