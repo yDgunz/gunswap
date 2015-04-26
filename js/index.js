@@ -2,8 +2,7 @@ window.onload = function () {
 
 	displayMenu('Examples');
 
-	updateAdvancedInputsFromBasic();
-	updateAdvancedLabels();
+	updateAdvancedInputsFromBasic();	
 
 	$('#menuContainer').height($(window).height());
 
@@ -48,6 +47,7 @@ function updateAdvancedInputsFromBasic() {
 		beatDuration: $('#beatDuration').val(),
 		dwellPath: $('#dwellPath').val()
 	}));
+	updateAdvancedLabels();
 }
 
 function applyInputDefaults(inputs) {
@@ -293,6 +293,21 @@ function buildExamples() {
 			$('#examplesList').append('<li><a href="#" onclick="runExample(\'' + data.examples[i].name + '\');">' + data.examples[i].name + '</a></li>');
 		}
 	});
+}
+
+function generateSiteswaps() {
+	var siteswaps = SiteswapGenerator.getSiteswaps(parseInt($('#period').val()),parseInt($('#numProps').val()));
+	$('#explorerList').empty();
+	for (var i = 0; i < siteswaps.length; i++) {
+		$('#explorerList').append('<li><a href="#" onclick="bindInputs(applyInputDefaults({siteswap:\'' + siteswaps[i] + '\'}));go();">' + siteswaps[i] + '</a></li>');
+	}
+}
+
+function runRandomSiteswap() {
+	var randomSiteswap = SiteswapGenerator.getRandomSiteswap();
+	$('#siteswap').val(randomSiteswap);
+	updateAdvancedInputsFromBasic();
+	go();
 }
 
 function generateGIF() {
