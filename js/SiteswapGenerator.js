@@ -19,7 +19,7 @@ function generateStates(period, numProps) {
 	var stateOptions = [];
 	for (var i = 0; i < period; i++) {
 		if (i < numProps) {
-			stateOptions.push('x');
+			stateOptions.push('o');
 		} else {
 			stateOptions.push('-');
 		}
@@ -63,11 +63,11 @@ function getTransition(state1,state2) {
 	var newState = state1.slice(1,state1.length);
 	newState.push('-');
 	var transition = 0;
-	if (nextUp == 'x') {
+	if (nextUp == 'o') {
 		for (var i = 0; i < newState.length; i++) {
-			if (newState[i] == '-' && state2[i] == 'x') {
+			if (newState[i] == '-' && state2[i] == 'o') {
 				transition = i+1;
-				newState[i] = 'x';
+				newState[i] = 'o';
 				break;
 			}
 		}
@@ -81,14 +81,17 @@ function getTransition(state1,state2) {
 
 function generateGraph(states) {
 
-	var graph = [];
+	var graph = {};
 
-	for (var i = 0; i < states.length; i++) {
-		graph.push([]);
-		for (var j = 0; j < states.length; j++) {
-			var transition = getTransition(states[i],states[j]);
+	graph.nodes = states.map(function(state) { return {edges: [], state: state} });
+	graph.edges = [];
+
+	for (var i = 0; i < graph.nodes.length; i++) {
+		for (var j = 0; j < graph.nodes.length; j++) {
+			var transition = getTransition(graph.nodes[i].state,graph.nodes[j].state);
 			if (transition !== false) {
-				graph[i].push({stateIx: j, transition: transition});
+				var edgeIx = graph.edges.push({source: i, target: j, value: transition})-1;
+				graph.nodes[i].edges.push(edgeIx);
 			}
 		}
 	}
@@ -111,94 +114,98 @@ function patternsMatch(p1,p2) {
 	}
 }
 
-function generateSiteswaps(inputs,outputs,callback) {
-	var it = 0, limit = 10000;
+function generateSiteswaps(inputs,outputs,callbacks) {
+	var it = 0, limit = 1000000;
 	var siteswaps = outputs.siteswaps;
 	var graph = outputs.graph;
 	var period = inputs.period;
 	var maxSiteswaps = inputs.maxSiteswaps;
+	var delay = inputs.delay;
+	console.log(delay);
 
+	function transition(origNodeIx,history) {
 
-	function transition(origStateIx,history) {
-
-		outputs.origStateIx = origStateIx;
+		outputs.origNodeIx = origNodeIx;
 		outputs.history = history;
 
 		it++;		
 		if (it <= limit && siteswaps.length < maxSiteswaps) {
 			
-			var nextStateIx = origStateIx;
+			callbacks.onNodeSearch(origNodeIx,history);
+			sleep(delay);
+
+			var nextNodeIx = origNodeIx;
 			var validSiteswap = false;
 
 			if (history.length > 0 && history.length <= period) {
-				if (history.last().stateIx == origStateIx) {
-					var siteswap = history.map(function (a) { return a.transition; });
+				if (graph.edges[history.last()].target == origNodeIx) {
+					var siteswap = history.map(function (a) { return graph.edges[a].value; });
 					var exists = false;
 					for (var i = 0; i < siteswaps.length; i++) {						
-						if (patternsMatch(siteswaps[i].slice(),siteswap.slice())) {							
+						if (patternsMatch(siteswaps[i].siteswap.slice(),siteswap.slice())) {							
 							exists = true;
 							break;
 						}
 					}
 					if (!exists) {
-						siteswaps.push(siteswap);
+						var siteswapIx = siteswaps.push({siteswap: siteswap, history: history.slice()})-1;
+						callbacks.onSiteswapAdded(siteswap,siteswapIx);
 					}
 					validSiteswap = true;
 				}
-				nextStateIx = history.last().stateIx;
+				nextNodeIx = graph.edges[history.last()].target;
 			}
 
-			if (!validSiteswap) {
+			if (!validSiteswap && history.length < period) {
 
-				graph[nextStateIx].map(function(next) {
+				graph.nodes[nextNodeIx].edges.map(function(edgeIx) {
 
-					setTimeout(function () {
+					setTimeout(function () {						
 
 						var alreadyVisited = false;
 						for (var j = 0; j < history.length; j++) {
-							if (history[j].stateIx == next.stateIx) {
+							if (graph.edges[history[j]].target == graph.edges[edgeIx].target) {
 								alreadyVisited = true;
 								break;
 							}
 						}
 						if (!alreadyVisited) {
 							var newHistory = history.slice();
-							newHistory.push(next);
-							transition(origStateIx,newHistory);
+							newHistory.push(edgeIx);
+							transition(origNodeIx,newHistory);
 						}
 
-					},0);
+					},0);					
 
 				});
-				
+
 			}
 		}		
 	}
 
-	function runFromNewState(stateIx) {
+	function runFromNewNode(nodeIx) {
 		setTimeout(function() {
-			if (stateIx < graph.length) {
-				transition(stateIx,[]);
-				runFromNewState(stateIx+1);
-			} else {
-				callback();
-			}
+			if (nodeIx < graph.nodes.length) {
+				transition(nodeIx,[]);
+				runFromNewNode(nodeIx+1);
+			}			
 		},0);
 	}
 
-	runFromNewState(0);
+	//runFromNewNode(0);
+	transition(0,[]);
 
 }
 
 
-exports.getSiteswaps = function(inputs,outputs,callback) {
+exports.getSiteswaps = function(inputs,outputs,callbacks) {
 
-	inputs.maxSiteswaps = 100;
+	inputs.maxSiteswaps = 1000;
 
 	outputs.states = generateStates(inputs.period,inputs.numProps);
 	outputs.graph = generateGraph(outputs.states);
 	
-	generateSiteswaps(inputs,outputs,callback);
+	var force = callbacks.onGraphCreated(function () { generateSiteswaps(inputs,outputs,callbacks); });
 
 }
 
