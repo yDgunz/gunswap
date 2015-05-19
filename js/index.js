@@ -295,21 +295,6 @@ function buildExamples() {
 	});
 }
 
-function generateSiteswaps() {
-	var siteswaps = SiteswapGenerator.getSiteswaps(parseInt($('#period').val()),parseInt($('#numProps').val()));
-	$('#explorerList').empty();
-	for (var i = 0; i < siteswaps.length; i++) {
-		$('#explorerList').append('<li><a href="#" onclick="bindInputs(applyInputDefaults({siteswap:\'' + siteswaps[i] + '\'}));go();">' + siteswaps[i] + '</a></li>');
-	}
-}
-
-function runRandomSiteswap() {
-	var randomSiteswap = SiteswapGenerator.getRandomSiteswap();
-	$('#siteswap').val(randomSiteswap);
-	updateAdvancedInputsFromBasic();
-	go();
-}
-
 function generateGIF() {
 
 	$('#gifProgress').show();

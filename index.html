@@ -43,15 +43,6 @@
 	#examples a:hover {
 		text-decoration: underline;
 	}
-	#explorer ul {
-		list-style-type: none;
-	}
-	#explorer a {
-		text-decoration: none;
-	}
-	#explorer a:hover {
-		text-decoration: underline;
-	}
 	
 	</style>
 
@@ -65,13 +56,12 @@
 			<li><a href="#basic">Basic</a></li>
 			<li><a href="#advanced">Advanced</a></li>
 			<li><a href="#examples">Examples</a></li>
-			<!--<li><a href="#explorer">Explorer</a></li>-->
+			<li><a href="#explorer">Explorer</a></li>
 			<li><a href="#gif">GIF</a></li>
 			<li><a href="#about">About</a></li>
 		</ul>
 		<div id="basic">
 			<button onclick="updateAdvancedInputsFromBasic();go();">Juggle!</button>
-			<button onclick="runRandomSiteswap();">Random</button><br/><br/>
 			<div id="errorMessage"></div>
 			<div>
 				<label for="siteswap">Siteswap</label>
@@ -116,21 +106,9 @@
 			<p>Clicking an example below will run the animation and apply the inputs to the Advanced controls.</p>
 			<ul id="examplesList"></ul>
 		</div>
-		<!--
 		<div id="explorer">
-			<button onclick="generateSiteswaps();">Generate Siteswaps</button><br/><br/>
-			<div>
-				<label for="period">Max period</label>
-				<input id="period" value="5"></input>
-			</div>
-			<div>
-				<label for="numProps">Num Props</label>
-				<input id="numProps" value="3"></input>
-			</div>
-			<p>Clicking a siteswap below will run the animation and apply the inputs to the Advanced controls.</p>
-			<ul id="explorerList"></ul>
+			<p>The siteswap explorer is currently under development. <a href="SiteswapGraph.html" target="_blank">Try it out here!</a></p>
 		</div>
-		-->
 		<div id="gif">
 			<p>Move the camera to the desired position and click "Generate GIF" to create a looped GIF for the pattern.</p>
 			<button onclick="generateGIF();">Generate GIF</button><br/><br/>
