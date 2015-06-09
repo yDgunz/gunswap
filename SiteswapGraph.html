@@ -18,7 +18,7 @@
 		}
 		label { 
 			display: block; 
-			width: 100px; 
+			width: 150px; 
 			float: left; 
 		}	
 		#inputs div {
@@ -61,8 +61,12 @@
 			<input id="includeMultiplex" type="checkbox" value="1"></input>
 		</div>
 		<div>
+			<label for="sync">Sync</label>
+			<input id="sync" type="checkbox" value="0"></input>
+		</div>
+		<div>
 			<label for="maxSiteswaps">Max Siteswaps</label>
-			<input id="maxSiteswaps" value="200"></input>
+			<input id="maxSiteswaps" value="1000"></input>
 		</div>
 		<div>
 			<button id="go" onclick="findSiteswaps();">Find Siteswaps</button>
@@ -72,9 +76,9 @@
 			Click a siteswap to show cycle on graph.
 			<br/>
 			Click a node to show edges.
-			<br/>
-			<progress style="display:none;" id="graphProgress" value="0" max="1"></progress>
-			<!--<div style="display:none;" id="graphProgress"><br/>Building graph...</div>-->
+			<br/><br/>
+			<!--<progress style="display:none;" id="graphProgress" value="0" max="1"></progress>-->
+			<div style="display:none;" id="graphProgress"><br/>Building graph...</div>
 		</div>		
 	</div>
 	<div id="siteswaps" style="overflow-y:auto;">
@@ -117,6 +121,7 @@ function findSiteswaps() {
 		includeExcited: $('#includeExcited')[0].checked,
 		includeMultiplex: $('#includeMultiplex')[0].checked,
 		async: true,
+		sync: $('#sync')[0].checked,
 		callbacks: {
 			updateGraphProgress: function (progress) {				
 				$('#graphProgress').val(progress);
@@ -194,6 +199,7 @@ function findSiteswaps() {
 		nodes.append("circle")
 			.attr("id",function(d,i) {return 'node'+i})
 			.on("click", function(d,i) {
+				showSiteswap();
 				showNode(i);
 			})
 			.attr("r","5")
@@ -221,7 +227,7 @@ function findSiteswaps() {
 						"y2": function(d){return d.target.y;}
 			});
 
-			edgeLabels.attr("transform", function(d) { return "translate(" + (d.source.x + .3*(d.target.x-d.source.x)) + "," + (d.source.y + .3*(d.target.y-d.source.y)) + ")"; });
+			edgeLabels.attr("transform", function(d) { return "translate(" + (d.source.x + .15*(d.target.x-d.source.x)) + "," + (d.source.y + .15*(d.target.y-d.source.y)) + ")"; });
 
 			nodes.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
@@ -263,14 +269,7 @@ function showSiteswap(siteswapIx) {
 	var edgeLabels = svg.selectAll(".edgeLabel").style("display","none");
 	$('#activeSiteswapContainer').hide();
 	if (siteswapIx !== undefined) {
-		$('#activeSiteswap').text(graph.siteswaps[siteswapIx].map(function(a) { 
-			var s = graph.edges[a].value;
-			if (s > 9) {
-				return String.fromCharCode(87+parseInt(s));
-			} else {
-				return s;
-			}
-		}).join(''));
+		$('#activeSiteswap').text(graph.formattedSiteswaps[siteswapIx]);
 		$('#activeSiteswapContainer').show();
 		for (var i = 0; i < graph.siteswaps[siteswapIx].length; i++) {
 			var edge = graph.edges[graph.siteswaps[siteswapIx][i]];
