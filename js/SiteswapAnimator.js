@@ -528,7 +528,17 @@ function SiteswapAnimator(containerId) {
 			camera.position.x = camRadius * Math.sin( camTheta ) * Math.cos( camPhi );
 			camera.position.y = camRadius * Math.sin( camPhi );
 			camera.position.z = camRadius * Math.cos( camTheta ) * Math.cos( camPhi );
-			camera.lookAt(new THREE.Vector3(0,1,0));
+			var lookAt = new THREE.Vector3(0,0,0);
+			if (siteswap !== undefined) {
+				for (var i = 0; i < siteswap.jugglers.length; i++) {
+					lookAt.x += siteswap.jugglers[i].position.x;
+					lookAt.z += siteswap.jugglers[i].position.z;
+				}
+				lookAt.x /= siteswap.jugglers.length;
+				lookAt.z /= siteswap.jugglers.length;
+				lookAt.y = 1;
+			}			
+			camera.lookAt(lookAt);
 		} else if (cameraMode == 'juggler') {
 			/* need to update x and y to reflect the position of the juggler you are possessing */
 			camera.position.x = 0;

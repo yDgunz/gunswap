@@ -13,6 +13,7 @@
 	<script src="js/BounceGA.js"></script>
 	<script src="js/Siteswap.js"></script>
 	<script src="js/SiteswapAnimator.js"></script>
+	<script src="js/SiteswapGraph.js"></script>
 	<script src="js/index.js"></script>
 
 	<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
@@ -107,7 +108,42 @@
 			<ul id="examplesList"></ul>
 		</div>
 		<div id="explorer">
-			<p>The siteswap explorer is currently under development. <a href="SiteswapGraph.html" target="_blank">Try it out here!</a></p>
+			<div id="explorerInputs">		
+				<div>
+					<button id="explorerFindSiteswaps" onclick="findSiteswaps();">Find Siteswaps</button>
+				</div>	
+				<div>
+					<label for="explorerNumProps">Num Props</label>
+					<input id="explorerNumProps" value="3"></input>
+				</div>
+				<div>
+					<label for="explorerMaxPeriod">Max Period</label>
+					<input id="explorerMaxPeriod" value="5"></input>
+				</div>
+				<div>
+					<label for="explorerIncludeExcited">Excited</label>
+					<input id="explorerIncludeExcited" type="checkbox" value="1" checked></input>
+				</div>
+				<div>
+					<label for="explorerIncludeMultiplex">Multiplex</label>
+					<input id="explorerIncludeMultiplex" type="checkbox" value="1"></input>
+				</div>
+				<div>
+					<label for="explorerSync">Sync</label>
+					<input id="explorerSync" type="checkbox" value="0"></input>
+				</div>
+				<div>
+					<label for="explorerMaxSiteswaps">Max Siteswaps</label>
+					<input id="explorerMaxSiteswaps" value="1000"></input>
+				</div>					
+			</div>
+			<div>
+				<p>Click a siteswap below to see it animated. Check out the siteswap graph animator <a href="siteswapGraph.html">here</a>.</p>
+			</div>
+			<div id="siteswaps" style="overflow-y:auto;">
+				<ul id="siteswapsList">
+				</ul>
+			</div>
 		</div>
 		<div id="gif">
 			<p>Move the camera to the desired position and click "Generate GIF" to create a looped GIF for the pattern.</p>

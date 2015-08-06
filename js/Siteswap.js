@@ -83,9 +83,9 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		validPassRe,
 		validSiteswapRe;
 
-	setDefaultOptions();
-
 	validateSyntax();
+
+	setDefaultOptions();	
 	
 	if (siteswap.errorMessage) { return siteswap; }
 	
@@ -132,6 +132,30 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			siteswap.surfaces = [{position:{x:0,y:0,z:0}, normal:{x:0,y:1,z:0}, scale: 5}];
 		} else {
 			siteswap.surfaces = options.surfaces;
+		}
+
+		siteswap.jugglers = [];
+		if (options.jugglers === undefined) {
+			for (var i = 0; i < siteswap.numJugglers; i++) {
+				siteswap.jugglers.push(
+					{
+						position: {x:0,z:-2*i},
+						rotation: i*Math.PI
+					}
+				);
+			}
+		} else {
+			if (siteswap.numJugglers != options.jugglers.length) {
+				throw "Number of jugglers doesn\'t match";
+			}
+			for (var i = 0; i < options.jugglers.length; i++) {
+				siteswap.jugglers.push(
+					{
+						position: options.jugglers[i].position,
+						rotation: options.jugglers[i].rotation
+					}
+				);
+			}
 		}
 
 		// set up axes on surfaces
@@ -596,17 +620,6 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 			// clear flight path cache
 			flightPathCache = {};
-
-			/* initialize jugglers */
-			siteswap.jugglers = [];		
-			for (var i = 0; i < siteswap.numJugglers; i++) {
-				siteswap.jugglers.push(
-					{
-						position: {x:0,z:-2*i}, 
-						rotation: i*Math.PI
-					}
-				);
-			}
 
 			/* initialize prop positions */
 			var propPositions = [];
