@@ -2402,9 +2402,9 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		validPassRe,
 		validSiteswapRe;
 
-	setDefaultOptions();
-
 	validateSyntax();
+
+	setDefaultOptions();	
 	
 	if (siteswap.errorMessage) { return siteswap; }
 	
@@ -2451,6 +2451,30 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			siteswap.surfaces = [{position:{x:0,y:0,z:0}, normal:{x:0,y:1,z:0}, scale: 5}];
 		} else {
 			siteswap.surfaces = options.surfaces;
+		}
+
+		siteswap.jugglers = [];
+		if (options.jugglers === undefined) {
+			for (var i = 0; i < siteswap.numJugglers; i++) {
+				siteswap.jugglers.push(
+					{
+						position: {x:0,z:-2*i},
+						rotation: i*Math.PI
+					}
+				);
+			}
+		} else {
+			if (siteswap.numJugglers != options.jugglers.length) {
+				throw "Number of jugglers doesn\'t match";
+			}
+			for (var i = 0; i < options.jugglers.length; i++) {
+				siteswap.jugglers.push(
+					{
+						position: options.jugglers[i].position,
+						rotation: options.jugglers[i].rotation
+					}
+				);
+			}
 		}
 
 		// set up axes on surfaces
@@ -2915,17 +2939,6 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 			// clear flight path cache
 			flightPathCache = {};
-
-			/* initialize jugglers */
-			siteswap.jugglers = [];		
-			for (var i = 0; i < siteswap.numJugglers; i++) {
-				siteswap.jugglers.push(
-					{
-						position: {x:0,z:-2*i}, 
-						rotation: i*Math.PI
-					}
-				);
-			}
 
 			/* initialize prop positions */
 			var propPositions = [];
@@ -4042,7 +4055,17 @@ function SiteswapAnimator(containerId) {
 			camera.position.x = camRadius * Math.sin( camTheta ) * Math.cos( camPhi );
 			camera.position.y = camRadius * Math.sin( camPhi );
 			camera.position.z = camRadius * Math.cos( camTheta ) * Math.cos( camPhi );
-			camera.lookAt(new THREE.Vector3(0,1,0));
+			var lookAt = new THREE.Vector3(0,0,0);
+			if (siteswap !== undefined) {
+				for (var i = 0; i < siteswap.jugglers.length; i++) {
+					lookAt.x += siteswap.jugglers[i].position.x;
+					lookAt.z += siteswap.jugglers[i].position.z;
+				}
+				lookAt.x /= siteswap.jugglers.length;
+				lookAt.z /= siteswap.jugglers.length;
+				lookAt.y = 1;
+			}			
+			camera.lookAt(lookAt);
 		} else if (cameraMode == 'juggler') {
 			/* need to update x and y to reflect the position of the juggler you are possessing */
 			camera.position.x = 0;
@@ -4108,8 +4131,7 @@ exports.SiteswapAnimator = SiteswapAnimator;
 
 	displayMenu('Examples');
 
-	updateAdvancedInputsFromBasic();
-	updateAdvancedLabels();
+	updateAdvancedInputsFromBasic();	
 
 	$('#menuContainer').height($(window).height());
 
@@ -4154,6 +4176,7 @@ function updateAdvancedInputsFromBasic() {
 		beatDuration: $('#beatDuration').val(),
 		dwellPath: $('#dwellPath').val()
 	}));
+	updateAdvancedLabels();
 }
 
 function applyInputDefaults(inputs) {
@@ -4168,6 +4191,7 @@ function applyInputDefaults(inputs) {
 	inputs.emptyTossScale = inputs.emptyTossScale === undefined ? .025 : inputs.emptyTossScale;
 	inputs.emptyCatchScale = inputs.emptyCatchScale === undefined ? .025 : inputs.emptyCatchScale;
 	inputs.armAngle = inputs.armAngle === undefined ? .1 : inputs.armAngle;
+	inputs.jugglers = inputs.jugglers === undefined ? [{position: {x: 0, z: 0}, rotation: 0}] : inputs.jugglers;
 	inputs.surfaces = inputs.surfaces === undefined ? [] : inputs.surfaces;
 	return inputs;
 }
@@ -4184,7 +4208,13 @@ function bindInputs(inputs) {
 		}
 	}
 	inputsText += inputs.dwellPath + "\n";
-	inputsText += inputs.matchVelocity + " " + inputs.dwellCatchScale + " " + inputs.dwellTossScale + " " + inputs.emptyTossScale + " " + inputs.emptyCatchScale + " " + inputs.armAngle;
+	inputsText += inputs.matchVelocity + " " + inputs.dwellCatchScale + " " + inputs.dwellTossScale + " " + inputs.emptyTossScale + " " + inputs.emptyCatchScale + " " + inputs.armAngle + "\n";
+	for (var i = 0; i < inputs.jugglers.length; i++) {
+		inputsText += inputs.jugglers[i].position.x + " " + inputs.jugglers[i].position.z + " " + inputs.jugglers[i].rotation;
+		if (i < inputs.jugglers.length-1) {
+			inputsText += " ";
+		}
+	}
 	if (inputs.surfaces.length > 0) {
 		inputsText += "\n"
 	}
@@ -4260,8 +4290,20 @@ function parseInputs(inputs) {
 	var emptyCatchScale = parseFloat(dwellPathConfigs[4]);
 	var armAngle = parseFloat(dwellPathConfigs[5]);
 
+	var jugglerPositions = lines[5].split(' ');
+	var jugglers = undefined;
+	for (var i = 0; i < jugglerPositions.length; i+=3) {
+		if (jugglers === undefined) {
+			jugglers = [];
+		}
+		jugglers.push({
+			position: {x: parseFloat(jugglerPositions[i]), z: parseFloat(jugglerPositions[i+1])},
+			rotation: parseFloat(jugglerPositions[i+2])
+		});
+	}
+
 	var surfaces= [];
-	for (var i = 5; i < lines.length; i++) {
+	for (var i = 6; i < lines.length; i++) {
 		var surfaceLine = lines[i].split(' ');
 		surfaces.push({
 			position: {
@@ -4291,7 +4333,8 @@ function parseInputs(inputs) {
 		emptyTossScale: emptyTossScale,
 		emptyCatchScale: emptyCatchScale,
 		armAngle: armAngle,
-		surfaces: surfaces
+		surfaces: surfaces,
+		jugglers: jugglers
 	};
 }
 
@@ -4311,7 +4354,8 @@ function go() {
 			emptyTossScale: 	inputs.emptyTossScale,
 			emptyCatchScale: 	inputs.emptyCatchScale,
 			armAngle: 			inputs.armAngle,
-			surfaces: 			inputs.surfaces
+			surfaces: 			inputs.surfaces,
+			jugglers: 			inputs.jugglers
 		});
 
 	if (siteswap.errorMessage) {
@@ -4323,7 +4367,7 @@ function go() {
 		$('#errorMessage').hide();
 
 		var drawHands = false;
-		if (siteswap.props[0].type == 'ball') {
+		if (siteswap.props[0].type == 'ball' && siteswap.numJugglers == 1) {
 			drawHands = true;
 		}
 
@@ -4495,4 +4539,36 @@ function generateGIF() {
 
 	addFrame();
 
+}
+
+function findSiteswaps() {
+	$('#siteswapsList').empty();
+	$('#graphContainer').empty();	
+	$('#activeSiteswapContainer').hide();
+
+	var excludeInput = $('#exclude').val();
+
+	var config = {
+		minPeriod: 1, 
+		maxPeriod: parseInt($("#explorerMaxPeriod").val()),
+		numProps: parseInt($("#explorerNumProps").val()),
+		maxSiteswaps: parseInt($("#explorerMaxSiteswaps").val()),
+		includeExcited: $('#explorerIncludeExcited')[0].checked,
+		includeMultiplex: $('#explorerIncludeMultiplex')[0].checked,
+		async: true,
+		sync: $('#explorerSync')[0].checked,
+		callbacks: {
+			siteswapFound: function (siteswap, siteswapIx, excited) {
+				$('#siteswapsList').append('<li><a class="' + (excited ? 'excited' : 'ground') + '" href="#" onclick="runSiteswap(\''+siteswap+'\')">'+siteswap+'</a></li>');
+			}
+		}
+	};
+	
+	SiteswapGraph.siteswapGraph(config);
+}
+
+function runSiteswap(s) {
+	$('#siteswap').val(s);
+	updateAdvancedInputsFromBasic();
+	go();
 }
