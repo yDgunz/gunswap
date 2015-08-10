@@ -16,7 +16,7 @@
 		},{
 			"name": "Passing siteswap - 4 count passing",
 			"siteswap": "<3|3><3|3><3|3><3P|3P>",
-			"jugglers": [{"position": {"x": 0, "z": 0}, "rotation": 0}]
+			"jugglers": [{"position": {"x": 0, "z": 0}, "rotation": 0},{"position": {"x": 0, "z": -2}, "rotation": 3.14}]
 		},{
 			"name": "Clubs - 5 club cascade",
 			"siteswap": "5",
