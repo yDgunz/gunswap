@@ -1,5 +1,4 @@
 Gunswap is a web-based juggling animator.
 
-App: http://ydgunz.github.io/gunswap/
-Dev blog: http://gunswap.blogspot.com/
+Project page: http://ydgunz.github.io/gunswap/
 Example GIFs: http://imgur.com/a/3QcTQ
