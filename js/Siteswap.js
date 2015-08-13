@@ -998,7 +998,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						jugglerHandPositions[juggler][hand].push(tmpJugglerHandPositions[juggler][hand]);
 						jugglerElbowPositions[juggler][hand].push(
 							getElbowPosition(
-								{x:siteswap.jugglers[juggler].position.x+Math.cos(siteswap.jugglers[juggler].rotation)*(hand == LEFT ? - 1 : 1)*.225,y:1.425,z:siteswap.jugglers[juggler].position.z+Math.sin(siteswap.jugglers[juggler].rotation)*0}, // shoulder
+								{x:siteswap.jugglers[juggler].position.x+Math.cos(siteswap.jugglers[juggler].rotation)*(hand == LEFT ? - 1 : 1)*.225,y:1.425,z:siteswap.jugglers[juggler].position.z+Math.sin(siteswap.jugglers[juggler].rotation)*(hand == LEFT ? - 1 : 1)*.225}, // shoulder
 								tmpJugglerHandPositions[juggler][hand], // hand position
 								.45, // half arm length
 								siteswap.armAngle, // chicken wing factor
@@ -1144,9 +1144,9 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		var dwellPosition = Bezier.interpolateBezierSpline(P,t,v_0,v_T,v_0scale,v_Tscale,matchVelocity);
 
 		return {
-			x: siteswap.jugglers[juggler].position.x + (dwellPosition.z - .4125)*Math.sin(siteswap.jugglers[juggler].rotation) + ((hand == LEFT ? -1 : 1)*dwellPosition.x)*Math.cos(siteswap.jugglers[juggler].rotation),
+			x: siteswap.jugglers[juggler].position.x + ((hand == LEFT ? -1 : 1)*dwellPosition.x)*Math.cos(siteswap.jugglers[juggler].rotation) - (dwellPosition.z - .4125)*Math.sin(siteswap.jugglers[juggler].rotation),
 			y: 1.0125 + dwellPosition.y,
-			z: siteswap.jugglers[juggler].position.z + (dwellPosition.z - .4125)*Math.cos(siteswap.jugglers[juggler].rotation) + ((hand == LEFT ? -1 : 1)*dwellPosition.x)*Math.sin(siteswap.jugglers[juggler].rotation)
+			z: siteswap.jugglers[juggler].position.z + ((hand == LEFT ? -1 : 1)*dwellPosition.x)*Math.sin(siteswap.jugglers[juggler].rotation) + (dwellPosition.z - .4125)*Math.cos(siteswap.jugglers[juggler].rotation)
 		};
 	}
 

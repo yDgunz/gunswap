@@ -134,7 +134,8 @@ function SiteswapAnimator(containerId) {
 					}
 				}
 			}
-			camRadius = highestPoint+.5;
+			// commenting out so cam radius doesn't reset every time
+			//camRadius = highestPoint+.5;
 
 			/* clear out all meshes from scene */
 			for (var i = 0; i < propMeshes.length; i++) {
@@ -333,7 +334,7 @@ function SiteswapAnimator(containerId) {
 
 			function transformVector(x,y,z) {
 				return new THREE.Vector3(
-					siteswap.jugglers[i].position.x+(Math.cos(siteswap.jugglers[i].rotation)*x+Math.sin(siteswap.jugglers[i].rotation)*z),
+					siteswap.jugglers[i].position.x+(Math.cos(siteswap.jugglers[i].rotation)*x-Math.sin(siteswap.jugglers[i].rotation)*z),
 					y,
 					siteswap.jugglers[i].position.z+(Math.cos(siteswap.jugglers[i].rotation)*z+Math.sin(siteswap.jugglers[i].rotation)*x)
 				);
