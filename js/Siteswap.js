@@ -691,21 +691,21 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 					var tossTime = curToss.beat*siteswap.beatDuration+curToss.dwellDuration;
 					var catchTime = nextToss.beat*siteswap.beatDuration;
-					if (tossTime >= catchTime && catchTime >= currentTime) { 
-						tossTime -= (siteswap.beatDuration*siteswap.states.length);
-					}
-					if (tossTime >= catchTime && catchTime < currentTime) {
+					if (tossTime > catchTime && catchTime <= currentTime) {
 						catchTime += (siteswap.beatDuration*siteswap.states.length);	
+					}					
+					else if (tossTime > catchTime && catchTime > currentTime) { 
+						tossTime -= (siteswap.beatDuration*siteswap.states.length);
 					}
 
 					var lastTossTime = prevToss.beat*siteswap.beatDuration+curToss.dwellDuration;
 					var lastCatchTime = curToss.beat*siteswap.beatDuration;
-					if (lastTossTime >= lastCatchTime && lastCatchTime >= currentTime) { 
-						lastTossTime -= (siteswap.beatDuration*siteswap.states.length);
-					}
-					if (lastTossTime >= lastCatchTime && lastCatchTime < currentTime) {
+					if (lastTossTime > lastCatchTime && lastCatchTime <= currentTime) {
 						lastCatchTime += (siteswap.beatDuration*siteswap.states.length);	
 					}
+					else if (lastTossTime > lastCatchTime && lastCatchTime > currentTime) { 
+						lastTossTime -= (siteswap.beatDuration*siteswap.states.length);
+					} 
 
 					if (currentTime < tossTime) {
 						/* interpolate dwell path */
@@ -769,7 +769,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						} else if (curToss.catchType == 'penguin') {
 							catchAngle -= 2*Math.PI;
 						}
-						pos.angle = catchAngle + t*(tossAngle-catchAngle);
+						pos.angle = catchAngle + t*(tossAngle-catchAngle);						
 						if (curToss.hand == RIGHT)
 							pos.angle *= -1;
 
