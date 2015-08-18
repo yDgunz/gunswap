@@ -108,7 +108,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		siteswap.validationOnly = (options.validationOnly === undefined ? false : options.validationOnly);		
 		siteswap.beatDuration = (options.beatDuration === undefined ? .2 : options.beatDuration);		
 		siteswap.dwellDuration = (options.dwellRatio === undefined ? siteswap.beatDuration*.5 : siteswap.beatDuration*options.dwellRatio);
-		siteswap.numStepsPerBeat = (options.numStepsPerBeat === undefined ? Math.floor(siteswap.beatDuration*100) : options.numStepsPerBeat);
+		siteswap.numStepsPerBeat = (options.numStepsPerBeat === undefined ? Math.floor(siteswap.beatDuration*200) : options.numStepsPerBeat);
 		siteswap.matchVelocity = (options.matchVelocity === undefined ? false : options.matchVelocity);
 		siteswap.dwellCatchScale = (options.dwellCatchScale === undefined ? 0.05 : options.dwellCatchScale);
 		siteswap.dwellTossScale = (options.dwellTossScale === undefined ? 0.05 : options.dwellTossScale);

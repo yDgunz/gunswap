@@ -24,6 +24,7 @@ function SiteswapAnimator(containerId) {
 		surfaceMeshes = [],
 		jugglerHandVertices,
 		jugglerElbowVertices,
+		highestPoint,
 		startTime,
 		siteswap,
 		renderMode = '3D',
@@ -126,7 +127,7 @@ function SiteswapAnimator(containerId) {
 			}
 
 			/* find highest point in the pattern */
-			var highestPoint = 0;
+			highestPoint = 0;
 			for (var i = 0; i < siteswap.propPositions.length; i++) {
 				for (var j = 0; j < siteswap.propPositions[i].length; j++) {
 					if (siteswap.propPositions[i][j].y > highestPoint) {
@@ -134,8 +135,7 @@ function SiteswapAnimator(containerId) {
 					}
 				}
 			}
-			// commenting out so cam radius doesn't reset every time
-			//camRadius = highestPoint+.5;
+			camRadius = highestPoint+.5;
 
 			/* clear out all meshes from scene */
 			for (var i = 0; i < propMeshes.length; i++) {
@@ -537,7 +537,7 @@ function SiteswapAnimator(containerId) {
 				}
 				lookAt.x /= siteswap.jugglers.length;
 				lookAt.z /= siteswap.jugglers.length;
-				lookAt.y = 1;
+				lookAt.y = highestPoint/2;
 			}			
 			camera.lookAt(lookAt);
 		} else if (cameraMode == 'juggler') {
@@ -586,7 +586,7 @@ function SiteswapAnimator(containerId) {
 		isMouseDown = false;
 	}
 
-	function onDocumentMouseWheel( event ) { camRadius -= event.wheelDeltaY*.01; }
+	function onDocumentMouseWheel( event ) { camRadius -= event.wheelDeltaY*.002; }
 
 	this.updateAnimationSpeed = function(speed) {
 		this.animationSpeed = speed;
