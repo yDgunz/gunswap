@@ -267,8 +267,7 @@ function SiteswapAnimator(containerId) {
 
 				/* apply current rotation */
 				propMeshes[i][j].quaternion.set(1,0,0,0);
-				var q = new THREE.Quaternion();
-				q.setFromAxisAngle((new THREE.Vector3(siteswap.propRotations[i][stepIx].x,siteswap.propRotations[i][stepIx].y,siteswap.propRotations[i][stepIx].z)).normalize(), siteswap.propRotations[i][stepIx].th);
+				var q = siteswap.propRotations[i][stepIx];
 				propMeshes[i][j].quaternion.multiplyQuaternions(q, propMeshes[i][j].quaternion);
 
 			}

@@ -259,6 +259,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			var targetJuggler = juggler;
 
 			var pIx = siteswapStr.indexOf("P");
+			var isPass = false;
 			if (
 				pIx > 0 &&
 				siteswapStr[pIx+1] != "}" // check that the next character isn't a }, in which case this is a catch/toss penguin modifier
@@ -267,7 +268,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 					targetJuggler = parseInt(siteswapStr[pIx+1])-1;
 				} else {
 					targetJuggler = 1 - juggler;
-				}			
+				}
+				isPass = true;
 			}
 
 			var numBounces = 0;
@@ -362,6 +364,10 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			} else {
 				numSpins = Math.floor(numBeats/2);
 			}
+			// passes get an extra half spin
+			if (isPass) {
+				numSpins += .5;
+			}
 
 			tosses.push(
 				{
@@ -374,11 +380,13 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 					numBounces: numBounces,
 					bounceOrder: bounceOrder,
 					bounceType: bounceType,
-					numSpins: numSpins,
+					numSpins: numSpins,					
 					dwellPathIx: dwellPathIx,
 					dwellDuration: dwellDuration === undefined ? siteswap.dwellDuration : dwellDuration,
 					tossType: tossType,
-					catchType: catchType
+					catchType: catchType,
+					tossOrientation: new THREE.Vector3(0,0,1),
+					rotationAxis: new THREE.Vector3(1,0,0)
 				}
 			);
 
@@ -568,7 +576,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						tmpPropOrbits[prop] = [];
 					}
 
-					tmpPropOrbits[prop].push({beat: beat, juggler: toss.juggler, hand: tossHand, numBounces: toss.numBounces, bounceType: toss.bounceType, bounceOrder: toss.bounceOrder, numSpins: toss.numSpins, dwellPathIx: toss.dwellPathIx, dwellDuration: toss.dwellDuration, tossType: toss.tossType, catchType: toss.catchType });
+					tmpPropOrbits[prop].push({beat: beat, juggler: toss.juggler, hand: tossHand, numBounces: toss.numBounces, bounceType: toss.bounceType, bounceOrder: toss.bounceOrder, numSpins: toss.numSpins, dwellPathIx: toss.dwellPathIx, dwellDuration: toss.dwellDuration, tossType: toss.tossType, catchType: toss.catchType, tossOrientation: toss.tossOrientation, rotationAxis: toss.rotationAxis });
 
 					if(curState[toss.targetJuggler][catchHand][toss.numBeats-1] == undefined) {
 						curState[toss.targetJuggler][catchHand][toss.numBeats-1] = [prop];
@@ -782,12 +790,10 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 							tmpJugglerHandPositions[curToss.juggler][curToss.hand] = pos;
 						}					
 
-						propRotations[prop].push({
-							x: siteswap.dwellPath[curToss.dwellPathIx][0].rotation.x+(siteswap.dwellPath[curToss.dwellPathIx].last().rotation.x-siteswap.dwellPath[curToss.dwellPathIx][0].rotation.x)*t,
-							y: siteswap.dwellPath[curToss.dwellPathIx][0].rotation.y+(siteswap.dwellPath[curToss.dwellPathIx].last().rotation.y-siteswap.dwellPath[curToss.dwellPathIx][0].rotation.y)*t,
-							z: (curToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[curToss.dwellPathIx][0].rotation.z+((curToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[curToss.dwellPathIx].last().rotation.z-(curToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[curToss.dwellPathIx][0].rotation.z)*t,
-							th: siteswap.dwellPath[curToss.dwellPathIx][0].rotation.th+(siteswap.dwellPath[curToss.dwellPathIx].last().rotation.th-siteswap.dwellPath[curToss.dwellPathIx][0].rotation.th)*t
-						});
+						var q = getPropQuaternion(prevToss.tossOrientation, prevToss.rotationAxis, siteswap.jugglers[prevToss.juggler].rotation, prevToss.numSpins*2*Math.PI);
+						var q2 = getPropQuaternion(curToss.tossOrientation, curToss.rotationAxis, siteswap.jugglers[curToss.juggler].rotation, 0);
+						q.slerp(q2, t);
+						propRotations[prop].push(q);
 					} else {
 
 						/*
@@ -824,12 +830,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 							currentRotation = 0;
 						}
 
-						propRotations[prop].push({
-							x: siteswap.dwellPath[curToss.dwellPathIx].last().rotation.x+(siteswap.dwellPath[nextToss.dwellPathIx][0].rotation.x-siteswap.dwellPath[curToss.dwellPathIx].last().rotation.x)*(t/T),
-							y: siteswap.dwellPath[curToss.dwellPathIx].last().rotation.y+(siteswap.dwellPath[nextToss.dwellPathIx][0].rotation.y-siteswap.dwellPath[curToss.dwellPathIx].last().rotation.y)*(t/T),
-							z: (curToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[curToss.dwellPathIx].last().rotation.z+((nextToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[nextToss.dwellPathIx][0].rotation.z-(curToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[curToss.dwellPathIx].last().rotation.z)*(t/T),
-							th: currentRotation+siteswap.dwellPath[curToss.dwellPathIx].last().rotation.th+(siteswap.dwellPath[nextToss.dwellPathIx][0].rotation.th-siteswap.dwellPath[curToss.dwellPathIx].last().rotation.th)*(t/T)
-						});
+						propRotations[prop].push(getPropQuaternion(curToss.tossOrientation, curToss.rotationAxis, siteswap.jugglers[curToss.juggler].rotation, currentRotation));
 
 					}
 
@@ -1201,6 +1202,33 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 
 		return E;
+	}	
+
+	function getPropQuaternion (tossOrientation, rotationAxis, jugglerRotation, propRotation) {
+
+		T = (new THREE.Vector3()).copy(tossOrientation);
+		R = (new THREE.Vector3()).copy(rotationAxis);
+
+		// rotate by juggler's rotation
+		var Q1 = new THREE.Quaternion();
+		Q1.setFromAxisAngle(new THREE.Vector3(0,-1,0), jugglerRotation);
+		T.applyQuaternion(Q1);
+		
+		// rotate rotation axis according to toss orientation
+		var Q2 = new THREE.Quaternion();
+		Q2.setFromAxisAngle(new THREE.Vector3(T.z,0,-T.x), Math.acos(T.y));
+		R.applyQuaternion(Q1).applyQuaternion(Q2);
+		
+		// rotate according to prop rotation
+		var Q3 = new THREE.Quaternion();
+		Q3.setFromAxisAngle(R, propRotation);
+		
+		// return composite rotation
+		var q = new THREE.Quaternion();
+		q = (new THREE.Quaternion()).multiplyQuaternions(Q2,Q3);
+		
+		return q;
+
 	}
 
 }
