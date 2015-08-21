@@ -164,13 +164,13 @@ function SiteswapAnimator(containerId) {
 					geometry = new THREE.SphereGeometry( siteswap.props[i].radius, 20 );
 				}
 				else if (siteswap.props[i].type == "club") {
-					geometry = new THREE.CylinderGeometry( .008, .02, .02, 5, 4 );
+					geometry = new THREE.CylinderGeometry( .008, .02, .02, 7, 5 );
 					geometry.vertices.map(function(v) { v.y += .01; });
-					var clubHandle = new THREE.CylinderGeometry( .015, .008, .18, 5, 4 );
+					var clubHandle = new THREE.CylinderGeometry( .015, .008, .18, 7, 5 );
 					clubHandle.vertices.map(function(v) { v.y += .11; });
-					var clubBody1 = new THREE.CylinderGeometry( .04, .015, .18, 5, 4 );
+					var clubBody1 = new THREE.CylinderGeometry( .04, .015, .18, 7, 5 );
 					clubBody1.vertices.map(function(v) { v.y += .29});
-					var clubBody2 = new THREE.CylinderGeometry( .02, .04, .11, 5, 4 );
+					var clubBody2 = new THREE.CylinderGeometry( .02, .04, .11, 7, 5 );
 					clubBody2.vertices.map(function(v) { v.y += .43});
 					THREE.GeometryUtils.merge(geometry,clubHandle);
 					THREE.GeometryUtils.merge(geometry,clubBody1);
