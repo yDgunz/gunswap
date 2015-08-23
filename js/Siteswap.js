@@ -20,7 +20,7 @@ function sumThrows(str) {
 		}
 		// if the current character is a bounce marker
 		// and then next character is a {, move forward until we find a }
-		if ((str[i] == "B" || str[i] == "D" || str[i] == "T" || str[i] == "C") && str[i+1] == "{") {
+		if ((str[i] == "B" || str[i] == "D" || str[i] == "T" || str[i] == "C" || str[i] == "S") && str[i+1] == "{") {
 			i = str.indexOf("}",i)+1;
 		}
 	}
@@ -212,7 +212,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		}
 
 		/* construct the various regex patterns. see blog post for details about this */
-		var validToss = "(R|L)?([\\da-o])x?(" + passPattern + ")?(C{(C|P)?})?(T{(C|P)?})?(B({\\d*(L|HL|F|HF)?})?)?(S\\d?)?(D{\\d*\\.?\\d*})?";
+		var validToss = "(R|L)?([\\da-o])x?(" + passPattern + ")?(C{(C|P)?})?(T{(C|P)?})?(B({\\d*(L|HL|F|HF)?})?)?(S{-?\\d+(.\\d+)?(,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?)?})?(D{\\d*\\.?\\d*})?";
 		var validMultiplex = "\\[(" + validToss + ")+\\]";
 		var validSync = "\\((" + validToss + "|" + validMultiplex + "),(" + validToss + "|" + validMultiplex + ")\\)";
 		var validBeat = "(" + validToss + "|" + validMultiplex + "|" + validSync + ")";
@@ -358,18 +358,29 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			}
 
 			var numSpins;
-			var sIx = siteswapStr.indexOf("S");
-			if ( sIx > 0 && !isNaN(parseInt(siteswapStr[sIx+1])) ) {
-				numSpins = parseInt(siteswapStr[sIx+1]);				
-			} else {
-				numSpins = Math.floor(numBeats/2);
-			}
-			// passes get an extra half spin
-			if (isPass) {
-				numSpins += .1;
-			}
+			var tossOrientation = normalize({x:.1,y:.1,z:1});
 
-			numSpins += .2;
+			var sIx = siteswapStr.indexOf("S");			
+			if (sIx > 0) {
+				
+				var spinConfig = siteswapStr.substring(sIx+2,siteswapStr.indexOf('}',sIx)).match(/-?\d+(\.\d+)?/g);				
+				numSpins = parseFloat(spinConfig[0]);
+
+				if (spinConfig.length > 1) {
+					tossOrientation.x = parseFloat(spinConfig[1]);
+					tossOrientation.y = parseFloat(spinConfig[2]);
+					tossOrientation.z = parseFloat(spinConfig[3]);
+					normalize(tossOrientation);
+				}
+
+			} else {
+				numSpins = Math.floor(numBeats/2) + .2;
+				// passes get an extra bit of spin
+				if (isPass) {
+					numSpins += .1;
+				}
+
+			}
 
 			tosses.push(
 				{
@@ -387,8 +398,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 					dwellDuration: dwellDuration === undefined ? siteswap.dwellDuration : dwellDuration,
 					tossType: tossType,
 					catchType: catchType,
-					tossOrientation: (new THREE.Vector3(.1,.1,1)).normalize(),
-					rotationAxis: new THREE.Vector3(1,0,0)
+					tossOrientation: tossOrientation,
+					rotationAxis: {x:1,y:0,z:0}
 				}
 			);
 
@@ -827,11 +838,6 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						var tossRotation = 0;
 						var currentRotation = tossRotation + (t/T)*(catchRotation - tossRotation);
 
-						/* don't spin rings for now */
-						if (siteswap.props[prop].type == 'ring') {
-							currentRotation = 0;
-						}
-
 						propRotations[prop].push(getPropQuaternion(curToss.tossOrientation, curToss.rotationAxis, siteswap.jugglers[curToss.juggler].rotation, currentRotation, curToss.hand));
 
 					}
@@ -1208,8 +1214,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 	function getPropQuaternion (tossOrientation, rotationAxis, jugglerRotation, propRotation, hand) {
 
-		T = (new THREE.Vector3()).copy(tossOrientation);
-		R = (new THREE.Vector3()).copy(rotationAxis);
+		T = new THREE.Vector3(tossOrientation.x,tossOrientation.y,tossOrientation.z);
+		R = new THREE.Vector3(rotationAxis.x,rotationAxis.y,rotationAxis.z);
 		C = new THREE.Vector3(0,-1,0);
 
 		if (hand == LEFT) {

@@ -2339,7 +2339,7 @@ function sumThrows(str) {
 		}
 		// if the current character is a bounce marker
 		// and then next character is a {, move forward until we find a }
-		if ((str[i] == "B" || str[i] == "D" || str[i] == "T" || str[i] == "C") && str[i+1] == "{") {
+		if ((str[i] == "B" || str[i] == "D" || str[i] == "T" || str[i] == "C" || str[i] == "S") && str[i+1] == "{") {
 			i = str.indexOf("}",i)+1;
 		}
 	}
@@ -2427,7 +2427,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		siteswap.validationOnly = (options.validationOnly === undefined ? false : options.validationOnly);		
 		siteswap.beatDuration = (options.beatDuration === undefined ? .2 : options.beatDuration);		
 		siteswap.dwellDuration = (options.dwellRatio === undefined ? siteswap.beatDuration*.5 : siteswap.beatDuration*options.dwellRatio);
-		siteswap.numStepsPerBeat = (options.numStepsPerBeat === undefined ? Math.floor(siteswap.beatDuration*100) : options.numStepsPerBeat);
+		siteswap.numStepsPerBeat = (options.numStepsPerBeat === undefined ? Math.floor(siteswap.beatDuration*200) : options.numStepsPerBeat);
 		siteswap.matchVelocity = (options.matchVelocity === undefined ? false : options.matchVelocity);
 		siteswap.dwellCatchScale = (options.dwellCatchScale === undefined ? 0.05 : options.dwellCatchScale);
 		siteswap.dwellTossScale = (options.dwellTossScale === undefined ? 0.05 : options.dwellTossScale);
@@ -2531,7 +2531,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		}
 
 		/* construct the various regex patterns. see blog post for details about this */
-		var validToss = "(R|L)?([\\da-o])x?(" + passPattern + ")?(C{(C|P)?})?(T{(C|P)?})?(B({\\d*(L|HL|F|HF)?})?)?(S\\d?)?(D{\\d*\\.?\\d*})?";
+		var validToss = "(R|L)?([\\da-o])x?(" + passPattern + ")?(C{(C|P)?})?(T{(C|P)?})?(B({\\d*(L|HL|F|HF)?})?)?(S{-?\\d+(.\\d+)?(,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?)?})?(D{\\d*\\.?\\d*})?";
 		var validMultiplex = "\\[(" + validToss + ")+\\]";
 		var validSync = "\\((" + validToss + "|" + validMultiplex + "),(" + validToss + "|" + validMultiplex + ")\\)";
 		var validBeat = "(" + validToss + "|" + validMultiplex + "|" + validSync + ")";
@@ -2562,7 +2562,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			var patterns = siteswapStr.match(validBeatRe);
 			patterns.map(function(s,ix) {
 				dwellPathIx = getTosses(tosses, s, ix, undefined, undefined, dwellPathIx);
-			});
+				});
 		} else if (siteswapStr.match(validSyncRe)) {
 			var patterns = siteswapStr.split(",");
 			dwellPathIx = getTosses(tosses,patterns[0].substr(1),juggler,true,LEFT, dwellPathIx);
@@ -2578,6 +2578,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			var targetJuggler = juggler;
 
 			var pIx = siteswapStr.indexOf("P");
+			var isPass = false;
 			if (
 				pIx > 0 &&
 				siteswapStr[pIx+1] != "}" // check that the next character isn't a }, in which case this is a catch/toss penguin modifier
@@ -2586,7 +2587,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 					targetJuggler = parseInt(siteswapStr[pIx+1])-1;
 				} else {
 					targetJuggler = 1 - juggler;
-				}			
+				}
+				isPass = true;
 			}
 
 			var numBounces = 0;
@@ -2675,11 +2677,28 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			}
 
 			var numSpins;
-			var sIx = siteswapStr.indexOf("S");
-			if ( sIx > 0 && !isNaN(parseInt(siteswapStr[sIx+1])) ) {
-				numSpins = parseInt(siteswapStr[sIx+1]);				
+			var tossOrientation = normalize({x:.1,y:.1,z:1});
+
+			var sIx = siteswapStr.indexOf("S");			
+			if (sIx > 0) {
+				
+				var spinConfig = siteswapStr.substring(sIx+2,siteswapStr.indexOf('}',sIx)).match(/-?\d+(\.\d+)?/g);				
+				numSpins = parseFloat(spinConfig[0]);
+
+				if (spinConfig.length > 1) {
+					tossOrientation.x = parseFloat(spinConfig[1]);
+					tossOrientation.y = parseFloat(spinConfig[2]);
+					tossOrientation.z = parseFloat(spinConfig[3]);
+					normalize(tossOrientation);
+				}
+
 			} else {
-				numSpins = Math.floor(numBeats/2);
+				numSpins = Math.floor(numBeats/2) + .2;
+				// passes get an extra bit of spin
+				if (isPass) {
+					numSpins += .1;
+				}
+
 			}
 
 			tosses.push(
@@ -2693,21 +2712,23 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 					numBounces: numBounces,
 					bounceOrder: bounceOrder,
 					bounceType: bounceType,
-					numSpins: numSpins,
+					numSpins: numSpins,					
 					dwellPathIx: dwellPathIx,
 					dwellDuration: dwellDuration === undefined ? siteswap.dwellDuration : dwellDuration,
 					tossType: tossType,
-					catchType: catchType
+					catchType: catchType,
+					tossOrientation: tossOrientation,
+					rotationAxis: {x:1,y:0,z:0}
 				}
 			);
 
-		}
+			if (dwellPathIx == siteswap.dwellPath.length-1) {
+				dwellPathIx = 0;
+			} else {
+				dwellPathIx++;
+			}
 
-		if (dwellPathIx == siteswap.dwellPath.length-1) {
-			dwellPathIx = 0;
-		} else {
-			dwellPathIx++;
-		}
+		}		
 
 		return dwellPathIx;
 	}
@@ -2887,7 +2908,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						tmpPropOrbits[prop] = [];
 					}
 
-					tmpPropOrbits[prop].push({beat: beat, juggler: toss.juggler, hand: tossHand, numBounces: toss.numBounces, bounceType: toss.bounceType, bounceOrder: toss.bounceOrder, numSpins: toss.numSpins, dwellPathIx: toss.dwellPathIx, dwellDuration: toss.dwellDuration, tossType: toss.tossType, catchType: toss.catchType });
+					tmpPropOrbits[prop].push({beat: beat, juggler: toss.juggler, hand: tossHand, numBounces: toss.numBounces, bounceType: toss.bounceType, bounceOrder: toss.bounceOrder, numSpins: toss.numSpins, dwellPathIx: toss.dwellPathIx, dwellDuration: toss.dwellDuration, tossType: toss.tossType, catchType: toss.catchType, tossOrientation: toss.tossOrientation, rotationAxis: toss.rotationAxis });
 
 					if(curState[toss.targetJuggler][catchHand][toss.numBeats-1] == undefined) {
 						curState[toss.targetJuggler][catchHand][toss.numBeats-1] = [prop];
@@ -3010,21 +3031,21 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 					var tossTime = curToss.beat*siteswap.beatDuration+curToss.dwellDuration;
 					var catchTime = nextToss.beat*siteswap.beatDuration;
-					if (tossTime >= catchTime && catchTime >= currentTime) { 
-						tossTime -= (siteswap.beatDuration*siteswap.states.length);
-					}
-					if (tossTime >= catchTime && catchTime < currentTime) {
+					if (tossTime > catchTime && catchTime <= currentTime) {
 						catchTime += (siteswap.beatDuration*siteswap.states.length);	
+					}					
+					else if (tossTime > catchTime && catchTime > currentTime) { 
+						tossTime -= (siteswap.beatDuration*siteswap.states.length);
 					}
 
 					var lastTossTime = prevToss.beat*siteswap.beatDuration+curToss.dwellDuration;
 					var lastCatchTime = curToss.beat*siteswap.beatDuration;
-					if (lastTossTime >= lastCatchTime && lastCatchTime >= currentTime) { 
-						lastTossTime -= (siteswap.beatDuration*siteswap.states.length);
-					}
-					if (lastTossTime >= lastCatchTime && lastCatchTime < currentTime) {
+					if (lastTossTime > lastCatchTime && lastCatchTime <= currentTime) {
 						lastCatchTime += (siteswap.beatDuration*siteswap.states.length);	
 					}
+					else if (lastTossTime > lastCatchTime && lastCatchTime > currentTime) { 
+						lastTossTime -= (siteswap.beatDuration*siteswap.states.length);
+					} 
 
 					if (currentTime < tossTime) {
 						/* interpolate dwell path */
@@ -3088,7 +3109,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						} else if (curToss.catchType == 'penguin') {
 							catchAngle -= 2*Math.PI;
 						}
-						pos.angle = catchAngle + t*(tossAngle-catchAngle);
+						pos.angle = catchAngle + t*(tossAngle-catchAngle);						
 						if (curToss.hand == RIGHT)
 							pos.angle *= -1;
 
@@ -3101,12 +3122,10 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 							tmpJugglerHandPositions[curToss.juggler][curToss.hand] = pos;
 						}					
 
-						propRotations[prop].push({
-							x: siteswap.dwellPath[curToss.dwellPathIx][0].rotation.x+(siteswap.dwellPath[curToss.dwellPathIx].last().rotation.x-siteswap.dwellPath[curToss.dwellPathIx][0].rotation.x)*t,
-							y: siteswap.dwellPath[curToss.dwellPathIx][0].rotation.y+(siteswap.dwellPath[curToss.dwellPathIx].last().rotation.y-siteswap.dwellPath[curToss.dwellPathIx][0].rotation.y)*t,
-							z: (curToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[curToss.dwellPathIx][0].rotation.z+((curToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[curToss.dwellPathIx].last().rotation.z-(curToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[curToss.dwellPathIx][0].rotation.z)*t,
-							th: siteswap.dwellPath[curToss.dwellPathIx][0].rotation.th+(siteswap.dwellPath[curToss.dwellPathIx].last().rotation.th-siteswap.dwellPath[curToss.dwellPathIx][0].rotation.th)*t
-						});
+						var q = getPropQuaternion(prevToss.tossOrientation, prevToss.rotationAxis, siteswap.jugglers[prevToss.juggler].rotation, prevToss.numSpins*2*Math.PI, prevToss.hand);
+						var q2 = getPropQuaternion(curToss.tossOrientation, curToss.rotationAxis, siteswap.jugglers[curToss.juggler].rotation, 0, curToss.hand);
+						q.slerp(q2, t);
+						propRotations[prop].push(q);
 					} else {
 
 						/*
@@ -3138,17 +3157,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						var tossRotation = 0;
 						var currentRotation = tossRotation + (t/T)*(catchRotation - tossRotation);
 
-						/* don't spin rings for now */
-						if (siteswap.props[prop].type == 'ring') {
-							currentRotation = 0;
-						}
-
-						propRotations[prop].push({
-							x: siteswap.dwellPath[curToss.dwellPathIx].last().rotation.x+(siteswap.dwellPath[nextToss.dwellPathIx][0].rotation.x-siteswap.dwellPath[curToss.dwellPathIx].last().rotation.x)*(t/T),
-							y: siteswap.dwellPath[curToss.dwellPathIx].last().rotation.y+(siteswap.dwellPath[nextToss.dwellPathIx][0].rotation.y-siteswap.dwellPath[curToss.dwellPathIx].last().rotation.y)*(t/T),
-							z: (curToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[curToss.dwellPathIx].last().rotation.z+((nextToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[nextToss.dwellPathIx][0].rotation.z-(curToss.hand == LEFT ? 1 : -1)*siteswap.dwellPath[curToss.dwellPathIx].last().rotation.z)*(t/T),
-							th: currentRotation+siteswap.dwellPath[curToss.dwellPathIx].last().rotation.th+(siteswap.dwellPath[nextToss.dwellPathIx][0].rotation.th-siteswap.dwellPath[curToss.dwellPathIx].last().rotation.th)*(t/T)
-						});
+						propRotations[prop].push(getPropQuaternion(curToss.tossOrientation, curToss.rotationAxis, siteswap.jugglers[curToss.juggler].rotation, currentRotation, curToss.hand));
 
 					}
 
@@ -3317,7 +3326,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						jugglerHandPositions[juggler][hand].push(tmpJugglerHandPositions[juggler][hand]);
 						jugglerElbowPositions[juggler][hand].push(
 							getElbowPosition(
-								{x:siteswap.jugglers[juggler].position.x+Math.cos(siteswap.jugglers[juggler].rotation)*(hand == LEFT ? - 1 : 1)*.225,y:1.425,z:siteswap.jugglers[juggler].position.z+Math.sin(siteswap.jugglers[juggler].rotation)*0}, // shoulder
+								{x:siteswap.jugglers[juggler].position.x+Math.cos(siteswap.jugglers[juggler].rotation)*(hand == LEFT ? - 1 : 1)*.225,y:1.425,z:siteswap.jugglers[juggler].position.z+Math.sin(siteswap.jugglers[juggler].rotation)*(hand == LEFT ? - 1 : 1)*.225}, // shoulder
 								tmpJugglerHandPositions[juggler][hand], // hand position
 								.45, // half arm length
 								siteswap.armAngle, // chicken wing factor
@@ -3463,9 +3472,9 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		var dwellPosition = Bezier.interpolateBezierSpline(P,t,v_0,v_T,v_0scale,v_Tscale,matchVelocity);
 
 		return {
-			x: siteswap.jugglers[juggler].position.x + (dwellPosition.z - .4125)*Math.sin(siteswap.jugglers[juggler].rotation) + ((hand == LEFT ? -1 : 1)*dwellPosition.x)*Math.cos(siteswap.jugglers[juggler].rotation),
+			x: siteswap.jugglers[juggler].position.x + ((hand == LEFT ? -1 : 1)*dwellPosition.x)*Math.cos(siteswap.jugglers[juggler].rotation) - (dwellPosition.z - .4125)*Math.sin(siteswap.jugglers[juggler].rotation),
 			y: 1.0125 + dwellPosition.y,
-			z: siteswap.jugglers[juggler].position.z + (dwellPosition.z - .4125)*Math.cos(siteswap.jugglers[juggler].rotation) + ((hand == LEFT ? -1 : 1)*dwellPosition.x)*Math.sin(siteswap.jugglers[juggler].rotation)
+			z: siteswap.jugglers[juggler].position.z + ((hand == LEFT ? -1 : 1)*dwellPosition.x)*Math.sin(siteswap.jugglers[juggler].rotation) + (dwellPosition.z - .4125)*Math.cos(siteswap.jugglers[juggler].rotation)
 		};
 	}
 
@@ -3520,6 +3529,43 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 
 		return E;
+	}	
+
+	function getPropQuaternion (tossOrientation, rotationAxis, jugglerRotation, propRotation, hand) {
+
+		T = new THREE.Vector3(tossOrientation.x,tossOrientation.y,tossOrientation.z);
+		R = new THREE.Vector3(rotationAxis.x,rotationAxis.y,rotationAxis.z);
+		C = new THREE.Vector3(0,-1,0);
+
+		if (hand == LEFT) {
+			T.x *= -1;	
+			R.x *= -1;
+		}
+
+		// rotate by juggler's rotation
+		var Q1 = new THREE.Quaternion();
+		Q1.setFromAxisAngle(new THREE.Vector3(0,-1,0), jugglerRotation);
+		T.applyQuaternion(Q1);
+		
+		// get rotation to tossOrientation
+		var Q2 = new THREE.Quaternion();
+		Q2.setFromAxisAngle(new THREE.Vector3(T.z,0,-T.x), Math.acos(T.y));		
+		
+		// rotate rotationAxis according to tossOrientation
+		var RQ = new THREE.Quaternion();
+		RQ.setFromAxisAngle(new THREE.Vector3(0,1,0), Math.acos(-R.z*T.x + R.x*T.z));
+		R.applyQuaternion(RQ);
+		
+		// rotate according to prop rotation
+		var Q3 = new THREE.Quaternion();
+		Q3.setFromAxisAngle(R, propRotation);
+		
+		// return composite rotation
+		var q = new THREE.Quaternion();
+		q = (new THREE.Quaternion()).multiplyQuaternions(Q2,Q3);
+		
+		return q;
+
 	}
 
 }
@@ -3551,6 +3597,7 @@ function SiteswapAnimator(containerId) {
 		surfaceMeshes = [],
 		jugglerHandVertices,
 		jugglerElbowVertices,
+		highestPoint,
 		startTime,
 		siteswap,
 		renderMode = '3D',
@@ -3653,7 +3700,7 @@ function SiteswapAnimator(containerId) {
 			}
 
 			/* find highest point in the pattern */
-			var highestPoint = 0;
+			highestPoint = 0;
 			for (var i = 0; i < siteswap.propPositions.length; i++) {
 				for (var j = 0; j < siteswap.propPositions[i].length; j++) {
 					if (siteswap.propPositions[i][j].y > highestPoint) {
@@ -3690,13 +3737,13 @@ function SiteswapAnimator(containerId) {
 					geometry = new THREE.SphereGeometry( siteswap.props[i].radius, 20 );
 				}
 				else if (siteswap.props[i].type == "club") {
-					geometry = new THREE.CylinderGeometry( .008, .02, .02, 5, 4 );
+					geometry = new THREE.CylinderGeometry( .008, .02, .02, 7, 5 );
 					geometry.vertices.map(function(v) { v.y += .01; });
-					var clubHandle = new THREE.CylinderGeometry( .015, .008, .18, 5, 4 );
+					var clubHandle = new THREE.CylinderGeometry( .015, .008, .18, 7, 5 );
 					clubHandle.vertices.map(function(v) { v.y += .11; });
-					var clubBody1 = new THREE.CylinderGeometry( .04, .015, .18, 5, 4 );
+					var clubBody1 = new THREE.CylinderGeometry( .04, .015, .18, 7, 5 );
 					clubBody1.vertices.map(function(v) { v.y += .29});
-					var clubBody2 = new THREE.CylinderGeometry( .02, .04, .11, 5, 4 );
+					var clubBody2 = new THREE.CylinderGeometry( .02, .04, .11, 7, 5 );
 					clubBody2.vertices.map(function(v) { v.y += .43});
 					THREE.GeometryUtils.merge(geometry,clubHandle);
 					THREE.GeometryUtils.merge(geometry,clubBody1);
@@ -3714,6 +3761,7 @@ function SiteswapAnimator(containerId) {
 					points.push( new THREE.Vector3( .14, 0, -.01 ) );
 					points.push( new THREE.Vector3( .14, 0, .01 ) );
 					geometry = new THREE.LatheGeometry( points );
+
 				}
 
 				if (options.motionBlur) {
@@ -3791,10 +3839,17 @@ function SiteswapAnimator(containerId) {
 				propMeshes[i][j].position.y = siteswap.propPositions[i][stepIx].y;
 				propMeshes[i][j].position.z = siteswap.propPositions[i][stepIx].z;
 
-				/* apply current rotation */
+				/* apply current rotation */				
 				propMeshes[i][j].quaternion.set(1,0,0,0);
-				var q = new THREE.Quaternion();
-				q.setFromAxisAngle((new THREE.Vector3(siteswap.propRotations[i][stepIx].x,siteswap.propRotations[i][stepIx].y,siteswap.propRotations[i][stepIx].z)).normalize(), siteswap.propRotations[i][stepIx].th);
+				
+				// rotate rings so they are in correct position by default
+				if (siteswap.props[i].type == 'ring') {
+					var rotateRing = new THREE.Quaternion();
+					rotateRing.setFromAxisAngle(new THREE.Vector3(0,1,0), Math.PI/2);
+					propMeshes[i][j].quaternion.multiply(rotateRing);
+				}
+
+				var q = siteswap.propRotations[i][stepIx];
 				propMeshes[i][j].quaternion.multiplyQuaternions(q, propMeshes[i][j].quaternion);
 
 			}
@@ -3860,7 +3915,7 @@ function SiteswapAnimator(containerId) {
 
 			function transformVector(x,y,z) {
 				return new THREE.Vector3(
-					siteswap.jugglers[i].position.x+(Math.cos(siteswap.jugglers[i].rotation)*x+Math.sin(siteswap.jugglers[i].rotation)*z),
+					siteswap.jugglers[i].position.x+(Math.cos(siteswap.jugglers[i].rotation)*x-Math.sin(siteswap.jugglers[i].rotation)*z),
 					y,
 					siteswap.jugglers[i].position.z+(Math.cos(siteswap.jugglers[i].rotation)*z+Math.sin(siteswap.jugglers[i].rotation)*x)
 				);
@@ -4063,7 +4118,7 @@ function SiteswapAnimator(containerId) {
 				}
 				lookAt.x /= siteswap.jugglers.length;
 				lookAt.z /= siteswap.jugglers.length;
-				lookAt.y = 1;
+				lookAt.y = highestPoint/2;
 			}			
 			camera.lookAt(lookAt);
 		} else if (cameraMode == 'juggler') {
@@ -4112,7 +4167,7 @@ function SiteswapAnimator(containerId) {
 		isMouseDown = false;
 	}
 
-	function onDocumentMouseWheel( event ) { camRadius -= event.wheelDeltaY*.01; }
+	function onDocumentMouseWheel( event ) { camRadius -= event.wheelDeltaY*.002; }
 
 	this.updateAnimationSpeed = function(speed) {
 		this.animationSpeed = speed;
@@ -4562,8 +4617,8 @@ function updateAdvancedInputsFromBasic() {
 function applyInputDefaults(inputs) {
 	inputs.siteswap = inputs.siteswap === undefined ? "3" : inputs.siteswap;
 	inputs.props = inputs.props === undefined ? [{type: "ball", color: "red", radius: ".05", C: .97}] : inputs.props;
-	inputs.beatDuration = inputs.beatDuration === undefined ? .25 : inputs.beatDuration;
-	inputs.dwellRatio = inputs.dwellRatio === undefined ? .65 : inputs.dwellRatio;
+	inputs.beatDuration = inputs.beatDuration === undefined ? .3 : inputs.beatDuration;
+	inputs.dwellRatio = inputs.dwellRatio === undefined ? .8 : inputs.dwellRatio;
 	inputs.dwellPath = inputs.dwellPath === undefined ? "(30)(10)" : inputs.dwellPath;
 	inputs.matchVelocity = inputs.matchVelocity === undefined ? 0 : inputs.matchVelocity;
 	inputs.dwellCatchScale = inputs.dwellCatchScale === undefined ? .06 : inputs.dwellCatchScale;
@@ -4751,7 +4806,12 @@ function go() {
 			drawHands = true;
 		}
 
-		animator.init(siteswap, {drawHands: drawHands});
+		animator.init(siteswap, 
+			{
+				drawHands: drawHands
+				//, motionBlur: true
+			}
+		);
 		animator.animate();
 
 	}

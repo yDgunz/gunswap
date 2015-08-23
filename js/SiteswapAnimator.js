@@ -188,6 +188,7 @@ function SiteswapAnimator(containerId) {
 					points.push( new THREE.Vector3( .14, 0, -.01 ) );
 					points.push( new THREE.Vector3( .14, 0, .01 ) );
 					geometry = new THREE.LatheGeometry( points );
+
 				}
 
 				if (options.motionBlur) {
@@ -265,8 +266,16 @@ function SiteswapAnimator(containerId) {
 				propMeshes[i][j].position.y = siteswap.propPositions[i][stepIx].y;
 				propMeshes[i][j].position.z = siteswap.propPositions[i][stepIx].z;
 
-				/* apply current rotation */
+				/* apply current rotation */				
 				propMeshes[i][j].quaternion.set(1,0,0,0);
+				
+				// rotate rings so they are in correct position by default
+				if (siteswap.props[i].type == 'ring') {
+					var rotateRing = new THREE.Quaternion();
+					rotateRing.setFromAxisAngle(new THREE.Vector3(0,1,0), Math.PI/2);
+					propMeshes[i][j].quaternion.multiply(rotateRing);
+				}
+
 				var q = siteswap.propRotations[i][stepIx];
 				propMeshes[i][j].quaternion.multiplyQuaternions(q, propMeshes[i][j].quaternion);
 

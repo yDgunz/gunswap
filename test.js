@@ -224,15 +224,15 @@ describe('Spin modifiers', function() {
 	describe('Default spins', function() {
 		it('"531" should spin 2, 1 and 0 times', function() {
 			var s = Siteswap.CreateSiteswap('531',{validationOnly: true});
-			assert.equal(s.tosses[0][0].numSpins,2);
-			assert.equal(s.tosses[1][0].numSpins,1);
-			assert.equal(s.tosses[2][0].numSpins,0);
+			assert.equal(Math.floor(s.tosses[0][0].numSpins),2);
+			assert.equal(Math.floor(s.tosses[1][0].numSpins),1);
+			assert.equal(Math.floor(s.tosses[2][0].numSpins),0);
 		});
 	});
 
 	describe('User defined spins', function () {
 		it('"5S03S11S2" should spin 0, 1 and 2 times', function() {
-			var s = Siteswap.CreateSiteswap('5S03S11S2',{validationOnly: true});
+			var s = Siteswap.CreateSiteswap('5S{0}3S{1}1S{2}',{validationOnly: true});
 			assert.equal(s.tosses[0][0].numSpins,0);
 			assert.equal(s.tosses[1][0].numSpins,1);
 			assert.equal(s.tosses[2][0].numSpins,2);
