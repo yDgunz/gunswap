@@ -51,8 +51,8 @@
 
 <body>
 
-<div id="container" style="width:1024px;margin:0 auto;">
-	<div id="nav" style="width:50%;float:left">
+<div id="container" style="width:100%;margin:0 auto;">
+	<div id="nav" style="float:left">
 		<ul>
 			<li><a href="#basic">Basic</a></li>
 			<li><a href="#advanced">Advanced</a></li>
@@ -142,7 +142,7 @@
 			<div>
 				<p>Click a siteswap below to see it animated. Check out the siteswap graph animator <a href="/gunswap/SiteswapGraph.html">here</a>.</p>
 			</div>
-			<div id="siteswaps" style="overflow-y:auto;">
+			<div id="siteswaps" style="height:300px;overflow-y:auto;">
 				<ul id="siteswapsList">
 				</ul>
 			</div>
@@ -157,7 +157,7 @@
 			<p>Learn more about gunswap at the <a href="/gunswap/index.html">project page</a>.</p>
 		</div>
 	</div>
-	<div id="animatorContainer" style="width:49%;height:100%;float:left;" class="ui-widget ui-widget-content ui-corner-all">
+	<div id="animatorContainer" style="float:left;" class="ui-widget ui-widget-content ui-corner-all">
 		<div id="animatorControls" style="padding-left:5px;">						
 			<select id="cameraMode" onchange="updateCameraMode();">
 				<option value="sky">Sky</option>
@@ -166,10 +166,11 @@
 			<button onclick="zoomIn();">Z-In</button>
 			<button onclick="zoomOut();">Z-Out</button>
 			Speed <input type="range" onchange="updateAnimationSpeed();" id="animationSpeed" min="0" max="1" value=".6" step=".01"></input>
+			Paths <input type="checkbox" onchange="updateDisplayPropPaths();" id="showPropPathsCheckbox"></input>
 			<p>Click/drag to rotate, scroll to zoom</p>
 			<p>If animation slows down, refresh page</p>						
 		</div>
-		<div id="animatorCanvasContainer" style="width:99%;height:600px;">
+		<div id="animatorCanvasContainer">
 		</div>
 	</div>
 </div>

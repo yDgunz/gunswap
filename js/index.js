@@ -4,9 +4,9 @@ window.onload = function () {
 
 	updateAdvancedInputsFromBasic();	
 
-	$('#menuContainer').height($(window).height());
+	window.animator = new SiteswapAnimator.SiteswapAnimator('animatorCanvasContainer', {displayPropPaths: false});
 
-	window.animator = new SiteswapAnimator.SiteswapAnimator('animatorCanvasContainer');
+	window.onresize();
 
 	buildExamples();
 
@@ -17,8 +17,21 @@ window.onload = function () {
 }
 
 window.onresize = function () {
-	//animator.resize($('#animatorContainer').width()-25, $(window).height()-40);
-	$('#menuContainer').height($(window).height());
+	var windowWidth = $(window).width();
+	var windowHeight = $(window).height();
+
+	$('#nav').height($(window).height()-20);
+	$('#nav').width(450);
+
+	var animatorWidth = windowWidth-475;
+
+	$('#animatorContainer').height(windowHeight-15);
+	$('#animatorContainer').width(animatorWidth);
+
+	$('#animatorCanvasContainer').height(windowHeight-100);
+	$('#animatorCanvasContainer').width(animatorWidth);	
+
+	animator.resize(animatorWidth, windowHeight-110);
 }
 
 function displayMenu(menu) {
@@ -266,6 +279,15 @@ function updateAnimationSpeed() {
 function updateCameraMode() {
 	cameraMode = $('#cameraMode').val();
 	animator.updateCameraMode(cameraMode);
+}
+
+function updateDisplayPropPaths() {
+	animator.displayPropPaths = !animator.displayPropPaths;
+	if (animator.displayPropPaths) {
+		animator.showPropPaths();
+	} else {
+		animator.hidePropPaths();
+	}
 }
 
 function updateAdvancedLabels() {
