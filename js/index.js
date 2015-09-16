@@ -1,6 +1,6 @@
 window.onload = function () {
 
-	displayMenu('Examples');
+	//displayMenu('Examples');
 
 	updateAdvancedInputsFromBasic();	
 
@@ -17,21 +17,38 @@ window.onload = function () {
 }
 
 window.onresize = function () {
-	var windowWidth = $(window).width();
-	var windowHeight = $(window).height();
+	var windowWidth = $(window).width()-2;
+	var windowHeight = $(window).height()-2;
 
-	$('#nav').height($(window).height()-20);
-	$('#nav').width(450);
+	if (windowWidth >= windowHeight) {
 
-	var animatorWidth = windowWidth-475;
+		$('#controlsContainer').attr("style","float:left;");
+		$('#animatorCanvasContainer').attr("style","float:left;");
 
-	$('#animatorContainer').height(windowHeight-15);
-	$('#animatorContainer').width(animatorWidth);
+		$('#controlsContainer').height($(window).height()-10);
+		$('#controlsContainer').width(500);
 
-	$('#animatorCanvasContainer').height(windowHeight-100);
-	$('#animatorCanvasContainer').width(animatorWidth);	
+		var animatorWidth = windowWidth-505;
 
-	animator.resize(animatorWidth, windowHeight-110);
+		$('#animatorCanvasContainer').height(windowHeight);
+		$('#animatorCanvasContainer').width(animatorWidth);	
+
+		animator.resize(animatorWidth, windowHeight);
+
+	} else {
+
+		$('#controlsContainer').attr("style","");
+		$('#animatorCanvasContainer').attr("style","");
+
+		$('#controlsContainer').height(300);
+		$('#controlsContainer').width(windowWidth);
+
+		$('#animatorCanvasContainer').height(windowHeight-305);
+		$('#animatorCanvasContainer').width(windowWidth);	
+
+		animator.resize(windowWidth, windowHeight-305);
+
+	}
 }
 
 function displayMenu(menu) {

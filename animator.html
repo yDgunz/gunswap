@@ -16,6 +16,7 @@
 	<script src="js/SiteswapGraph.js"></script>
 	<script src="js/index.js"></script>
 
+	<link rel="stylesheet" type="text/css" href="css/normalize.css">
 	<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
 
 	<style>
@@ -51,14 +52,14 @@
 
 <body>
 
-<div id="container" style="width:100%;margin:0 auto;">
-	<div id="nav" style="float:left">
+<div id="controlsContainer">
+	<div id="nav">
 		<ul>
-			<li><a href="#basic">Basic</a></li>
+			<li><a href="#basic">Basic</a></li>			
 			<li><a href="#advanced">Advanced</a></li>
+			<li><a href="#animatorControls">Animator</a></li>
 			<li><a href="#examples">Examples</a></li>
 			<li><a href="#explorer">Explorer</a></li>
-			<li><a href="#gif">GIF</a></li>
 			<li><a href="#about">About</a></li>
 		</ul>
 		<div id="basic">
@@ -105,6 +106,34 @@
 			armAngle: <span id="lblArmAngle"></span></div>
 			<div><span id="lblSurfaces"></span></div>
 		</div>
+		<div id="animatorControls">						
+			<div>
+				<button onclick="zoomIn();">Zoom In</button>
+				<button onclick="zoomOut();">Zoom Out</button>
+			</div>
+			<br/>
+			<div>
+				<label for="cameraMode">Camera</label>
+				<select id="cameraMode" onchange="updateCameraMode();">
+					<option value="sky">Sky</option>
+					<option value="juggler">Juggler</option>
+				</select>
+			</div>			
+			<div>
+				<label for="animationSpeed">Speed</label>
+				<input type="range" onchange="updateAnimationSpeed();" id="animationSpeed" min="0" max="1" value=".6" step=".01"></input>
+			</div>
+			<div>
+				<label for="showPropPathsCheckbox">Show Paths</label>
+				<input type="checkbox" onchange="updateDisplayPropPaths();" id="showPropPathsCheckbox"></input>
+			</div>
+			<p>Click/drag to rotate, scroll to zoom.</p>
+			<p>If animation slows down, refresh page.</p>
+			<p>Move the camera to the desired position and click "Generate GIF" to create a looped GIF for the pattern.</p>
+			<button onclick="generateGIF();">Generate GIF</button><br/><br/>
+			<progress style="display:none;" id="gifProgress" value="0" max="1"></progress>
+			<span id="gifLink"></span>						
+		</div>
 		<div id="examples">
 			<p>Clicking an example below will run the animation and apply the inputs to the Advanced controls.</p>
 			<ul id="examplesList"></ul>
@@ -147,36 +176,14 @@
 				</ul>
 			</div>
 		</div>
-		<div id="gif">
-			<p>Move the camera to the desired position and click "Generate GIF" to create a looped GIF for the pattern.</p>
-			<button onclick="generateGIF();">Generate GIF</button><br/><br/>
-			<progress style="display:none;" id="gifProgress" value="0" max="1"></progress>
-			<span id="gifLink"></span>
-		</div>
 		<div id="about">
 			<p>Learn more about gunswap at the <a href="/gunswap/index.html">project page</a>.</p>
 		</div>
-	</div>
-	<div id="animatorContainer" style="float:left;" class="ui-widget ui-widget-content ui-corner-all">
-		<div id="animatorControls" style="padding-left:5px;">						
-			<select id="cameraMode" onchange="updateCameraMode();">
-				<option value="sky">Sky</option>
-				<option value="juggler">Juggler</option>
-			</select>
-			<button onclick="zoomIn();">Z-In</button>
-			<button onclick="zoomOut();">Z-Out</button>
-			Speed <input type="range" onchange="updateAnimationSpeed();" id="animationSpeed" min="0" max="1" value=".6" step=".01"></input>
-			Paths <input type="checkbox" onchange="updateDisplayPropPaths();" id="showPropPathsCheckbox"></input>
-			<p>Click/drag to rotate, scroll to zoom</p>
-			<p>If animation slows down, refresh page</p>						
-		</div>
-		<div id="animatorCanvasContainer">
-		</div>
-	</div>
+	</div>	
 </div>
 
-
-
+<div id="animatorCanvasContainer">
+</div>
 
 </body>
 

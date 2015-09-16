@@ -30,7 +30,7 @@ function SiteswapAnimator(containerId, options) {
 		siteswap,
 		renderMode = '3D',
 		context,
-		randomColors = ['red','white','blue','green','black','yellow','purple'],
+		randomColors = ['red','blue','green','black','yellow','purple'],
 		drawHands = false;
 
 	this.displayPropPaths = options.displayPropPaths === true ? true : false;
@@ -72,8 +72,11 @@ function SiteswapAnimator(containerId, options) {
 
 		//add the event listeners for mouse interaction
 		renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
+		renderer.domElement.addEventListener( 'touchmove', onDocumentMouseMove, false );
 		renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
+		renderer.domElement.addEventListener( 'touchstart', onDocumentMouseDown, false );
 		renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
+		renderer.domElement.addEventListener( 'touchend', onDocumentMouseDown, false );
 		renderer.domElement.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
 
 		onMouseDownPosition = new THREE.Vector2();
