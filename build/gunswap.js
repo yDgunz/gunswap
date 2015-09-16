@@ -3573,7 +3573,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 })(typeof exports === 'undefined'? this['SiteswapJS']={}: exports);
 ;(function(exports){
 
-function SiteswapAnimator(containerId) {
+function SiteswapAnimator(containerId, options) {
 	
 	var 
 		container,
@@ -3595,6 +3595,7 @@ function SiteswapAnimator(containerId) {
 		propMeshes = [],
 		jugglerMeshes = [],
 		surfaceMeshes = [],
+		propPathLines = [],
 		jugglerHandVertices,
 		jugglerElbowVertices,
 		highestPoint,
@@ -3602,8 +3603,10 @@ function SiteswapAnimator(containerId) {
 		siteswap,
 		renderMode = '3D',
 		context,
-		randomColors = ['red','white','blue','green','black','yellow','purple'],
-		drawHands = false;	
+		randomColors = ['red','blue','green','black','yellow','purple'],
+		drawHands = false;
+
+	this.displayPropPaths = options.displayPropPaths === true ? true : false;
 
 	container = $('#' + containerId);
 
@@ -3625,15 +3628,7 @@ function SiteswapAnimator(containerId) {
 		camera = new THREE.PerspectiveCamera( 90, width / height, .05, 100 );
 		updateCamera();
 
-		scene = new THREE.Scene();
-
-		/* lights */
-		var ceilingLight = new THREE.PointLight( 0xffffff );
-		ceilingLight.position.set(0,20,0);
-		scene.add( ceilingLight );
-		var floorLight = new THREE.PointLight( 0xffffff );
-		floorLight.position.set(0,0,-2);
-		scene.add( floorLight );
+		scene = new THREE.Scene();		
 		
 		/* create the renderer and add it to the canvas container */
 		/* if browser is mobile, render using canvas */
@@ -3650,8 +3645,11 @@ function SiteswapAnimator(containerId) {
 
 		//add the event listeners for mouse interaction
 		renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
+		renderer.domElement.addEventListener( 'touchmove', onDocumentMouseMove, false );
 		renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
+		renderer.domElement.addEventListener( 'touchstart', onDocumentMouseDown, false );
 		renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
+		renderer.domElement.addEventListener( 'touchend', onDocumentMouseDown, false );
 		renderer.domElement.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
 
 		onMouseDownPosition = new THREE.Vector2();
@@ -3711,16 +3709,21 @@ function SiteswapAnimator(containerId) {
 			camRadius = highestPoint+.5;
 
 			/* clear out all meshes from scene */
-			for (var i = 0; i < propMeshes.length; i++) {
-				for (var j = 0; j < propMeshes[i].length; j++) {
-					scene.remove(propMeshes[i][j]);
-				}
-			}
+			for( var i = scene.children.length - 1; i >= 0; i--) { scene.remove(scene.children[i]); }
+
+			/* lights */
+			var ceilingLight = new THREE.PointLight( 0xffffff );
+			ceilingLight.position.set(0,20,0);
+			scene.add( ceilingLight );
+			var floorLight = new THREE.PointLight( 0xffffff );
+			floorLight.position.set(0,0,-2);
+			scene.add( floorLight );
+
 			propMeshes = [];
-			jugglerMeshes.map(function(a) { scene.remove(a); });
 			jugglerMeshes = [];
 			jugglerHandVertices = [];
 			jugglerElbowVertices = [];
+			propPathLines = [];
 
 			drawHands = options.drawHands ? options.drawHands : 0;
 
@@ -3794,6 +3797,10 @@ function SiteswapAnimator(containerId) {
 
 				propMeshes.push( tmpPropMeshes );
 				
+			}
+
+			if (this.displayPropPaths) {
+				buildPropPaths();			
 			}
 
 		}
@@ -3876,10 +3883,6 @@ function SiteswapAnimator(containerId) {
 	}
 
 	function drawSurfaces() {
-		// clear out surfaces from scene
-		for (var i = 0; i < surfaceMeshes.length; i++) {
-			scene.remove(surfaceMeshes[i]);
-		}
 
 		siteswap.surfaces.map(function(a) {
 			var surface = {
@@ -4044,6 +4047,34 @@ function SiteswapAnimator(containerId) {
 			jugglerMeshes.push(jugglerMesh);
 
 		}
+	}
+
+	function buildPropPaths() {
+
+		for (var i = 0; i < siteswap.propPositions.length; i++) {
+			var propPathGeom = new THREE.Geometry();
+			for (var j = 0; j < siteswap.propPositions[i].length; j++) {
+				var propPosition = siteswap.propPositions[i][j];
+				var eps = .0025;
+				propPathGeom.vertices.push(new THREE.Vector3(propPosition.x+(Math.random()-.5)*eps,propPosition.y+(Math.random()-.5)*eps,propPosition.z+(Math.random()-.5)*eps));
+			}
+			var propPathLine = new THREE.Line(propPathGeom, new THREE.LineBasicMaterial({color: siteswap.props[i].color}));
+			propPathLines.push(propPathLine);
+			scene.add(propPathLine);
+		}
+
+	}
+
+	this.hidePropPaths = function() {
+		propPathLines.map(function(a) { a.visible = false; });
+	}
+
+	this.showPropPaths = function() {
+		if (propPathLines.length == 0) {
+			buildPropPaths();
+		} else {
+			propPathLines.map(function(a) { a.visible = true; });
+		}		
 	}
 
 	function updateHandAndElbowPositions(step) {
@@ -4564,13 +4595,13 @@ exports.siteswapGraph = function(config, outputs) {
 })(typeof exports === 'undefined'? this['SiteswapGraph'] = {} : exports);
 ;window.onload = function () {
 
-	displayMenu('Examples');
+	//displayMenu('Examples');
 
 	updateAdvancedInputsFromBasic();	
 
-	$('#menuContainer').height($(window).height());
+	window.animator = new SiteswapAnimator.SiteswapAnimator('animatorCanvasContainer', {displayPropPaths: false});
 
-	window.animator = new SiteswapAnimator.SiteswapAnimator('animatorCanvasContainer');
+	window.onresize();
 
 	buildExamples();
 
@@ -4581,8 +4612,38 @@ exports.siteswapGraph = function(config, outputs) {
 }
 
 window.onresize = function () {
-	//animator.resize($('#animatorContainer').width()-25, $(window).height()-40);
-	$('#menuContainer').height($(window).height());
+	var windowWidth = $(window).width()-2;
+	var windowHeight = $(window).height()-2;
+
+	if (windowWidth >= windowHeight) {
+
+		$('#controlsContainer').attr("style","float:left;");
+		$('#animatorCanvasContainer').attr("style","float:left;");
+
+		$('#controlsContainer').height($(window).height()-10);
+		$('#controlsContainer').width(500);
+
+		var animatorWidth = windowWidth-505;
+
+		$('#animatorCanvasContainer').height(windowHeight);
+		$('#animatorCanvasContainer').width(animatorWidth);	
+
+		animator.resize(animatorWidth, windowHeight);
+
+	} else {
+
+		$('#controlsContainer').attr("style","");
+		$('#animatorCanvasContainer').attr("style","");
+
+		$('#controlsContainer').height(300);
+		$('#controlsContainer').width(windowWidth);
+
+		$('#animatorCanvasContainer').height(windowHeight-305);
+		$('#animatorCanvasContainer').width(windowWidth);	
+
+		animator.resize(windowWidth, windowHeight-305);
+
+	}
 }
 
 function displayMenu(menu) {
@@ -4830,6 +4891,15 @@ function updateAnimationSpeed() {
 function updateCameraMode() {
 	cameraMode = $('#cameraMode').val();
 	animator.updateCameraMode(cameraMode);
+}
+
+function updateDisplayPropPaths() {
+	animator.displayPropPaths = !animator.displayPropPaths;
+	if (animator.displayPropPaths) {
+		animator.showPropPaths();
+	} else {
+		animator.hidePropPaths();
+	}
 }
 
 function updateAdvancedLabels() {
