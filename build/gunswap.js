@@ -3645,11 +3645,11 @@ function SiteswapAnimator(containerId, options) {
 
 		//add the event listeners for mouse interaction
 		renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
-		renderer.domElement.addEventListener( 'touchmove', onDocumentMouseMove, false );
+		renderer.domElement.addEventListener( 'touchmove', onDocumentTouchMove, false );
 		renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
-		renderer.domElement.addEventListener( 'touchstart', onDocumentMouseDown, false );
+		renderer.domElement.addEventListener( 'touchstart', onDocumentTouchStart, false );
 		renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
-		renderer.domElement.addEventListener( 'touchend', onDocumentMouseDown, false );
+		renderer.domElement.addEventListener( 'touchend', onDocumentMouseUp, false );
 		renderer.domElement.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
 
 		onMouseDownPosition = new THREE.Vector2();
@@ -4175,12 +4175,38 @@ function SiteswapAnimator(containerId, options) {
 		onMouseDownPosition.y = event.clientY;
 	}
 
+	function onDocumentTouchStart( event ) {
+		isMouseDown = true;
+		onMouseDownTheta = camTheta;
+		onMouseDownPhi = camPhi;
+		onMouseDownPosition.x = event.changedTouches[0].clientX;
+		onMouseDownPosition.y = event.changedTouches[0].clientY;
+	}
+
 	function onDocumentMouseMove( event ) {
 		event.preventDefault();
 		if ( isMouseDown ) {
 			camTheta = - ( ( event.clientX - onMouseDownPosition.x ) * 0.01 ) + onMouseDownTheta;
 			
 			var dy = event.clientY - onMouseDownPosition.y;
+			
+			var newCamPhi = ( ( dy ) * 0.01 ) + onMouseDownPhi;
+
+			if (newCamPhi < Math.PI/2 && newCamPhi > -Math.PI/2) {
+				camPhi = newCamPhi;
+			}
+		}
+
+		updateCamera();
+		renderer.render(scene, camera);
+	}
+
+	function onDocumentTouchMove( event ) {
+		event.preventDefault();
+		if ( isMouseDown ) {
+			camTheta = - ( ( event.changedTouches[0].clientX - onMouseDownPosition.x ) * 0.01 ) + onMouseDownTheta;
+			
+			var dy = event.changedTouches[0].clientY - onMouseDownPosition.y;
 			
 			var newCamPhi = ( ( dy ) * 0.01 ) + onMouseDownPhi;
 
