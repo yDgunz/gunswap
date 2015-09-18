@@ -17,33 +17,62 @@
 	<script src="js/index.js"></script>
 
 	<link rel="stylesheet" type="text/css" href="css/normalize.css">
-	<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
 
 	<style>
 	
+	html {
+		overflow: hidden;
+	}
 	body {
 		font-family: "Trebuchet MS", "Helvetica", "Arial",  "Verdana", "sans-serif";
-		font-size:65%;
 	}
 	label { 
 		display: block; 
-		width: 100px; 
+		width: 150px; 
 		float: left; 
 	}
-	#basic div {
+	#basicMenu div {
 		padding: 5px;
 	}
-	#explorer div {
+	#explorerMenu div {
 		padding: 5px;
 	}
-	#examples ul {
+	#examplesMenu ul {
 		list-style-type: none;
 	}
-	#examples a {
+	#examplesMenu a {
 		text-decoration: none;
 	}
-	#examples a:hover {
+	#examplesMenu a:hover {
 		text-decoration: underline;
+	}
+
+	#nav ul {
+		display: table;
+    	width: 100%;
+    	margin: 0px;
+    	padding: 0px;
+	}
+	#nav ul li {
+		display: table-cell;
+	}	
+	#nav a {
+		display: block;
+		border-right: 1px solid white;
+		border-left: 1px solid white;
+		text-align: center;
+		margin: 0px;
+		background: #000;
+		padding: 5px;
+		color: white;
+		cursor: pointer;
+	}
+	#nav .selected {
+		background: #FFF;
+		color: black;
+	}	
+	.controlDiv {
+		padding: 10px;
 	}
 	
 	</style>
@@ -55,130 +84,134 @@
 <div id="controlsContainer">
 	<div id="nav">
 		<ul>
-			<li><a href="#basic">Basic</a></li>			
-			<li><a href="#advanced">Advanced</a></li>
-			<li><a href="#animatorControls">Animator</a></li>
-			<li><a href="#examples">Examples</a></li>
-			<li><a href="#explorer">Explorer</a></li>
-			<li><a href="#about">About</a></li>
+			<li><a id="animator" onclick="displayMenu('animator');">Juggler</a></li>
+			<li><a id="basic" onclick="displayMenu('basic');">Basic</a></li>
+			<li><a id="advanced" onclick="displayMenu('advanced');">Advanced</a></li>
+			<li><a id="animatorControls" onclick="displayMenu('animatorControls');">Animator</a></li>
+			<li><a id="examples" onclick="displayMenu('examples');">Examples</a></li>
+			<li><a id="explorer" onclick="displayMenu('explorer');">Explorer</a></li>
+			<li><a id="about" onclick="displayMenu('about');">About</a></li>
 		</ul>
-		<div id="basic">
-			<button onclick="updateAdvancedInputsFromBasic();go();">Juggle!</button>
-			<div id="errorMessage"></div>
-			<div>
-				<label for="siteswap">Siteswap</label>
-				<input id="siteswap" value="3" onchange="updateAdvancedInputsFromBasic();"></input>
-			</div>
-			<div>
-				<label for="prop">Prop</label>
-				<select id="prop" onchange="updateAdvancedInputsFromBasic();">					
-					<option value="ball">Ball</option>
-					<option value="club">Club</option>
-					<option value="ring">Ring</option>
-				</select>
-			</div>
-			<div>
-				<label for="dwellPath">Hand Movement</label>
-				<select id="dwellPath" onchange="updateAdvancedInputsFromBasic();">
-					<option value="(30)(10)">Cascade</option>
-					<option value="(10)(30)">Reverse Cascade</option>
-					<option value="(30)(10).(10)(30)">Shower</option>
-					<option value="(-20)(20).(20)(-20)">Windmill</option>
-					<option value="(2.5)(-30).(-2.5)(30).(0)(-30)">Mills Mess</option>						
-				</select>
-			</div>
-			<div>
-				<label for="beatDuration">Height</label>
-				<input id="beatDuration" type="range" min=".05" max=".5" value=".3" step=".005" onchange="updateAdvancedInputsFromBasic();"></input>
-			</div>		    
+	</div>
+	<div id="animatorMenu" class="controlDiv">
+	</div>
+	<div id="basicMenu" class="controlDiv">
+		<button onclick="updateAdvancedInputsFromBasic();go();">Juggle!</button>
+		<br/><br/>
+		<div id="errorMessage"></div>
+		<div>
+			<label for="siteswap">Siteswap</label>
+			<input id="siteswap" value="3" onchange="updateAdvancedInputsFromBasic();"></input>
 		</div>
-		<div id="advanced">
-			<button onclick="go();">Juggle!</button>
-			 | <a href="/gunswap/syntax.html">Syntax Help</a>
-			<br/><br/>
-			<div id="errorMessage"></div>
-			<textarea id="inputsAdvanced" rows="8" cols="40" onchange="updateAdvancedLabels();" style="font-family:monospace;font-size:150%;"></textarea><br/><br/>
-			<div>siteswap: <span id="lblSiteswap"></span></div>
-			<div>beatDuration: <span id="lblBeatDuration"></span>, dwellRatio: <span id="lblDwellRatio"></span></div>
-			<div>props: <span id="lblProps"></span></div>
-			<div>dwellPath: <span id="lblDwellPath"></span></div>
-			<div>matchVelocity: <span id="lblMatchVelocity"></span>, dwellCatchScale: <span id="lblDwellCatchScale"></span>, dwellTossScale: <span id="lblDwellTossScale"></span>, emptyTossScale: <span id="lblEmptyTossScale"></span>, emptyCatchScale: <span id="lblEmptyCatchScale"></span>,
-			armAngle: <span id="lblArmAngle"></span></div>
-			<div><span id="lblSurfaces"></span></div>
+		<div>
+			<label for="prop">Prop</label>
+			<select id="prop" onchange="updateAdvancedInputsFromBasic();">					
+				<option value="ball">Ball</option>
+				<option value="club">Club</option>
+				<option value="ring">Ring</option>
+			</select>
 		</div>
-		<div id="animatorControls">						
-			<div>
-				<button onclick="zoomIn();">Zoom In</button>
-				<button onclick="zoomOut();">Zoom Out</button>
-			</div>
-			<br/>
-			<div>
-				<label for="cameraMode">Camera</label>
-				<select id="cameraMode" onchange="updateCameraMode();">
-					<option value="sky">Sky</option>
-					<option value="juggler">Juggler</option>
-				</select>
-			</div>			
-			<div>
-				<label for="animationSpeed">Speed</label>
-				<input type="range" onchange="updateAnimationSpeed();" id="animationSpeed" min="0" max="1" value=".6" step=".01"></input>
-			</div>
-			<div>
-				<label for="showPropPathsCheckbox">Show Paths</label>
-				<input type="checkbox" onchange="updateDisplayPropPaths();" id="showPropPathsCheckbox"></input>
-			</div>
-			<p>Click/drag to rotate, scroll to zoom.</p>
-			<p>If animation slows down, refresh page.</p>
-			<p>Move the camera to the desired position and click "Generate GIF" to create a looped GIF for the pattern.</p>
-			<button onclick="generateGIF();">Generate GIF</button><br/><br/>
-			<progress style="display:none;" id="gifProgress" value="0" max="1"></progress>
-			<span id="gifLink"></span>						
+		<div>
+			<label for="dwellPath">Hand Movement</label>
+			<select id="dwellPath" onchange="updateAdvancedInputsFromBasic();">
+				<option value="(30)(10)">Cascade</option>
+				<option value="(10)(30)">Reverse Cascade</option>
+				<option value="(30)(10).(10)(30)">Shower</option>
+				<option value="(-20)(20).(20)(-20)">Windmill</option>
+				<option value="(2.5)(-30).(-2.5)(30).(0)(-30)">Mills Mess</option>						
+			</select>
 		</div>
-		<div id="examples">
-			<p>Clicking an example below will run the animation and apply the inputs to the Advanced controls.</p>
-			<ul id="examplesList"></ul>
+		<div>
+			<label for="beatDuration">Height</label>
+			<input id="beatDuration" type="range" min=".05" max=".5" value=".3" step=".005" onchange="updateAdvancedInputsFromBasic();"></input>
+		</div>		    
+	</div>
+	<div id="advancedMenu" class="controlDiv">
+		<button onclick="go();">Juggle!</button>
+		 | <a href="/gunswap/syntax.html">Syntax Help</a>
+		<br/><br/>
+		<div id="errorMessage"></div>
+		<textarea id="inputsAdvanced" rows="8" cols="40" onchange="updateAdvancedLabels();" style="font-family:monospace;font-size:150%;"></textarea><br/><br/>
+		<div>siteswap: <span id="lblSiteswap"></span></div>
+		<div>beatDuration: <span id="lblBeatDuration"></span>, dwellRatio: <span id="lblDwellRatio"></span></div>
+		<div>props: <span id="lblProps"></span></div>
+		<div>dwellPath: <span id="lblDwellPath"></span></div>
+		<div>matchVelocity: <span id="lblMatchVelocity"></span>, dwellCatchScale: <span id="lblDwellCatchScale"></span>, dwellTossScale: <span id="lblDwellTossScale"></span>, emptyTossScale: <span id="lblEmptyTossScale"></span>, emptyCatchScale: <span id="lblEmptyCatchScale"></span>,
+		armAngle: <span id="lblArmAngle"></span></div>
+		<div><span id="lblSurfaces"></span></div>
+	</div>
+	<div id="animatorControlsMenu" class="controlDiv">						
+		<div>
+			<button onclick="zoomIn();">Zoom In</button>
+			<button onclick="zoomOut();">Zoom Out</button>
 		</div>
-		<div id="explorer">
-			<div id="explorerInputs">		
-				<div>
-					<button id="explorerFindSiteswaps" onclick="findSiteswaps();">Find Siteswaps</button>
-				</div>	
-				<div>
-					<label for="explorerNumProps">Num Props</label>
-					<input id="explorerNumProps" value="3"></input>
-				</div>
-				<div>
-					<label for="explorerMaxPeriod">Max Period</label>
-					<input id="explorerMaxPeriod" value="5"></input>
-				</div>
-				<div>
-					<label for="explorerIncludeExcited">Excited</label>
-					<input id="explorerIncludeExcited" type="checkbox" value="1" checked></input>
-				</div>
-				<div>
-					<label for="explorerIncludeMultiplex">Multiplex</label>
-					<input id="explorerIncludeMultiplex" type="checkbox" value="1"></input>
-				</div>
-				<div>
-					<label for="explorerSync">Sync</label>
-					<input id="explorerSync" type="checkbox" value="0"></input>
-				</div>
-				<div>
-					<label for="explorerMaxSiteswaps">Max Siteswaps</label>
-					<input id="explorerMaxSiteswaps" value="1000"></input>
-				</div>					
+		<br/>
+		<div>
+			<label for="cameraMode">Camera</label>
+			<select id="cameraMode" onchange="updateCameraMode();">
+				<option value="sky">Sky</option>
+				<option value="juggler">Juggler</option>
+			</select>
+		</div>			
+		<div>
+			<label for="animationSpeed">Speed</label>
+			<input type="range" onchange="updateAnimationSpeed();" id="animationSpeed" min="0" max="1" value=".6" step=".01"></input>
+		</div>
+		<div>
+			<label for="showPropPathsCheckbox">Show Paths</label>
+			<input type="checkbox" onchange="updateDisplayPropPaths();" id="showPropPathsCheckbox"></input>
+		</div>
+		<p>Click/drag to rotate, scroll to zoom.</p>
+		<p>If animation slows down, refresh page.</p>
+		<p>Move the camera to the desired position and click "Generate GIF" to create a looped GIF for the pattern.</p>
+		<button onclick="generateGIF();">Generate GIF</button><br/><br/>
+		<progress style="display:none;" id="gifProgress" value="0" max="1"></progress>
+		<span id="gifLink"></span>						
+	</div>
+	<div id="examplesMenu" class="controlDiv">
+		<p>Clicking an example below will run the animation and apply the inputs to the Advanced controls.</p>
+		<ul id="examplesList"></ul>
+	</div>
+	<div id="explorerMenu" class="controlDiv">
+		<div id="explorerInputs">		
+			<div>
+				<button id="explorerFindSiteswaps" onclick="findSiteswaps();">Find Siteswaps</button>
+			</div>	
+			<div>
+				<label for="explorerNumProps">Num Props</label>
+				<input id="explorerNumProps" value="3"></input>
 			</div>
 			<div>
-				<p>Click a siteswap below to see it animated. Check out the siteswap graph animator <a href="/gunswap/SiteswapGraph.html">here</a>.</p>
+				<label for="explorerMaxPeriod">Max Period</label>
+				<input id="explorerMaxPeriod" value="5"></input>
 			</div>
-			<div id="siteswaps" style="height:300px;overflow-y:auto;">
-				<ul id="siteswapsList">
-				</ul>
+			<div>
+				<label for="explorerIncludeExcited">Excited</label>
+				<input id="explorerIncludeExcited" type="checkbox" value="1" checked></input>
 			</div>
+			<div>
+				<label for="explorerIncludeMultiplex">Multiplex</label>
+				<input id="explorerIncludeMultiplex" type="checkbox" value="1"></input>
+			</div>
+			<div>
+				<label for="explorerSync">Sync</label>
+				<input id="explorerSync" type="checkbox" value="0"></input>
+			</div>
+			<div>
+				<label for="explorerMaxSiteswaps">Max Siteswaps</label>
+				<input id="explorerMaxSiteswaps" value="1000"></input>
+			</div>					
 		</div>
-		<div id="about">
-			<p>Learn more about gunswap at the <a href="/gunswap/index.html">project page</a>.</p>
+		<div>
+			<p>Click a siteswap below to see it animated. Check out the siteswap graph animator <a href="/gunswap/SiteswapGraph.html">here</a>.</p>
 		</div>
+		<div id="siteswaps" style="height:300px;overflow-y:auto;">
+			<ul id="siteswapsList">
+			</ul>
+		</div>
+	</div>
+	<div id="aboutMenu" class="controlDiv">
+		<p>Learn more about gunswap at the <a href="/gunswap/index.html">project page</a>.</p>
 	</div>	
 </div>
 

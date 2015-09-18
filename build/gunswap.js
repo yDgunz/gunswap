@@ -4619,9 +4619,9 @@ exports.siteswapGraph = function(config, outputs) {
 }
 
 })(typeof exports === 'undefined'? this['SiteswapGraph'] = {} : exports);
-;window.onload = function () {
+;var twoWindow = false;
 
-	//displayMenu('Examples');
+window.onload = function () {
 
 	updateAdvancedInputsFromBasic();	
 
@@ -4633,62 +4633,50 @@ exports.siteswapGraph = function(config, outputs) {
 
 	go();
 
-	$('#nav').tabs();
-
-}
-
-window.onresize = function () {
-	var windowWidth = $(window).width()-2;
-	var windowHeight = $(window).height()-2;
-
-	if (windowWidth >= windowHeight) {
-
-		$('#controlsContainer').attr("style","float:left;");
-		$('#animatorCanvasContainer').attr("style","float:left;");
-
-		$('#controlsContainer').height($(window).height()-10);
-		$('#controlsContainer').width(500);
-
-		var animatorWidth = windowWidth-505;
-
-		$('#animatorCanvasContainer').height(windowHeight);
-		$('#animatorCanvasContainer').width(animatorWidth);	
-
-		animator.resize(animatorWidth, windowHeight);
-
-	} else {
-
-		$('#controlsContainer').attr("style","");
-		$('#animatorCanvasContainer').attr("style","");
-
-		$('#controlsContainer').height(300);
-		$('#controlsContainer').width(windowWidth);
-
-		$('#animatorCanvasContainer').height(windowHeight-305);
-		$('#animatorCanvasContainer').width(windowWidth);	
-
-		animator.resize(windowWidth, windowHeight-305);
-
-	}
 }
 
 function displayMenu(menu) {
-	$('#menuBasic').hide();
-	$('#menuAdvanced').hide();
-	$('#menuExamples').hide();
-	$('#menuHelp').hide();
-	$('#menuAbout').hide();
-	$('#menuGIF').hide();
-	$('#menu' + menu).show();
+	$('.controlDiv').hide()
+	$('#'+menu+'Menu').show();
+	$('#nav a').removeClass('selected')
+	$('#nav #' +menu).addClass('selected')
+}
 
-	$('#navBasic').removeClass('activeNav');
-	$('#navAdvanced').removeClass('activeNav');
-	$('#navExamples').removeClass('activeNav');
-	$('#navHelp').removeClass('activeNav');
-	$('#navAbout').removeClass('activeNav');
-	$('#navGIF').removeClass('activeNav');
-	$('#nav' + menu).addClass('activeNav');	
+window.onresize = function () {
+	var windowWidth = $(window).width()-10;
+	var windowHeight = $(window).height()-30;
+	var controlsWidth = 500;
+	var animatorWidth = windowWidth-controlsWidth;
+	var minAnimatorWidth = 250;
+	var animatorHeight = windowHeight;
 
+	if (animatorWidth > minAnimatorWidth) {
+		$('#nav #animator').hide();
+		$('#animatorCanvasContainer').appendTo($('body'));
+		$('#animatorMenu').removeClass('controlDiv');
+		displayMenu('basic');
+		twoWindow = true;
+	} else {
+		$('#nav #animator').show();
+		$('#animatorCanvasContainer').appendTo($('#controlsContainer #animatorMenu'));
+		$('#animatorMenu').addClass('controlDiv');
+		displayMenu('animator');
+		animatorWidth = windowWidth;
+		controlsWidth = windowWidth;
+		twoWindow = false;
+		animatorHeight = windowHeight - $('#animatorCanvasContainer').offset().top;
+	}
+
+	$('#controlsContainer').attr("style","float:left;");
+	$('#animatorCanvasContainer').attr("style","float:left;");
+
+	$('#controlsContainer').height(windowHeight);
+	$('#controlsContainer').width(controlsWidth);
+
+	$('#animatorCanvasContainer').height(animatorHeight);
+	$('#animatorCanvasContainer').width(animatorWidth);	
+
+	animator.resize(animatorWidth, windowHeight);
 }
 
 function updateAdvancedInputsFromBasic() {
@@ -4861,6 +4849,10 @@ function parseInputs(inputs) {
 }
 
 function go() {
+
+	if (!twoWindow) {
+		displayMenu('animator');
+	}
 
 	var inputs = parseInputs($('#inputsAdvanced').val());
 
