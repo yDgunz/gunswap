@@ -2,6 +2,8 @@
 <html>
 
 <head>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 	
 	<!--<script src="build/gunswap.min.js"></script>-->
 	<script src="js/lib/jquery-1.10.2.min.js"></script>
@@ -16,6 +18,7 @@
 	<script src="js/SiteswapGraph.js"></script>
 	<script src="js/index.js"></script>
 
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
 	<link rel="stylesheet" type="text/css" href="css/normalize.css">
 
 	<style>
@@ -31,7 +34,7 @@
 		width: 150px; 
 		float: left; 
 	}
-	#basicMenu div {
+	#animatorControlsMenu div {
 		padding: 5px;
 	}
 	#explorerMenu div {
@@ -58,8 +61,8 @@
 	}	
 	#nav a {
 		display: block;
-		border-right: 1px solid white;
-		border-left: 1px solid white;
+		border-right: 1px solid #fff;
+		border-left: 1px solid #fff;
 		text-align: center;
 		margin: 0px;
 		background: #000;
@@ -84,18 +87,17 @@
 <div id="controlsContainer">
 	<div id="nav">
 		<ul>
-			<li><a id="animator" onclick="displayMenu('animator');">Juggler</a></li>
-			<li><a id="basic" onclick="displayMenu('basic');">Basic</a></li>
-			<li><a id="advanced" onclick="displayMenu('advanced');">Advanced</a></li>
-			<li><a id="animatorControls" onclick="displayMenu('animatorControls');">Animator</a></li>
-			<li><a id="examples" onclick="displayMenu('examples');">Examples</a></li>
-			<li><a id="explorer" onclick="displayMenu('explorer');">Explorer</a></li>
-			<li><a id="about" onclick="displayMenu('about');">About</a></li>
+			<li><a id="animator" onclick="displayMenu('animator');"><span class="glyphicon glyphicon-play"></span> Play</a></li>
+			<li><a id="animatorControls" onclick="displayMenu('animatorControls');"><span class="glyphicon glyphicon-cog"></span> Controls</a></li>
+			<li><a id="explorer" onclick="displayMenu('explorer');"><span class="glyphicon glyphicon-search"></span> Explorer</a></li>
+			<li><a id="about" onclick="displayMenu('about');"><span class="glyphicon glyphicon-question-sign"></span> Help</a></li>
 		</ul>
 	</div>
 	<div id="animatorMenu" class="controlDiv">
 	</div>
-	<div id="basicMenu" class="controlDiv">
+	<div id="animatorControlsMenu" class="controlDiv">						
+		
+		<!-- BASIC -->
 		<button onclick="updateAdvancedInputsFromBasic();go();">Juggle!</button>
 		<br/><br/>
 		<div id="errorMessage"></div>
@@ -124,9 +126,9 @@
 		<div>
 			<label for="beatDuration">Height</label>
 			<input id="beatDuration" type="range" min=".05" max=".5" value=".3" step=".005" onchange="updateAdvancedInputsFromBasic();"></input>
-		</div>		    
-	</div>
-	<div id="advancedMenu" class="controlDiv">
+		</div>
+
+		<!-- ADVANCED -->
 		<button onclick="go();">Juggle!</button>
 		 | <a href="/gunswap/syntax.html">Syntax Help</a>
 		<br/><br/>
@@ -139,8 +141,8 @@
 		<div>matchVelocity: <span id="lblMatchVelocity"></span>, dwellCatchScale: <span id="lblDwellCatchScale"></span>, dwellTossScale: <span id="lblDwellTossScale"></span>, emptyTossScale: <span id="lblEmptyTossScale"></span>, emptyCatchScale: <span id="lblEmptyCatchScale"></span>,
 		armAngle: <span id="lblArmAngle"></span></div>
 		<div><span id="lblSurfaces"></span></div>
-	</div>
-	<div id="animatorControlsMenu" class="controlDiv">						
+		
+		<!-- ANIMATOR CONTROLS -->
 		<div>
 			<button onclick="zoomIn();">Zoom In</button>
 			<button onclick="zoomOut();">Zoom Out</button>
@@ -166,11 +168,8 @@
 		<p>Move the camera to the desired position and click "Generate GIF" to create a looped GIF for the pattern.</p>
 		<button onclick="generateGIF();">Generate GIF</button><br/><br/>
 		<progress style="display:none;" id="gifProgress" value="0" max="1"></progress>
-		<span id="gifLink"></span>						
-	</div>
-	<div id="examplesMenu" class="controlDiv">
-		<p>Clicking an example below will run the animation and apply the inputs to the Advanced controls.</p>
-		<ul id="examplesList"></ul>
+		<span id="gifLink"></span>
+
 	</div>
 	<div id="explorerMenu" class="controlDiv">
 		<div id="explorerInputs">		
@@ -212,6 +211,8 @@
 	</div>
 	<div id="aboutMenu" class="controlDiv">
 		<p>Learn more about gunswap at the <a href="/gunswap/index.html">project page</a>.</p>
+		<p>Below are some examples, click one to play the animation.</p>
+		<ul id="examplesList"></ul>
 	</div>	
 </div>
 

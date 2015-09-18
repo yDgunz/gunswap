@@ -23,7 +23,7 @@ function displayMenu(menu) {
 
 window.onresize = function () {
 	var windowWidth = $(window).width()-10;
-	var windowHeight = $(window).height()-30;
+	var windowHeight = $(window).height()-10;
 	var controlsWidth = 500;
 	var animatorWidth = windowWidth-controlsWidth;
 	var minAnimatorWidth = 250;
@@ -36,6 +36,9 @@ window.onresize = function () {
 		displayMenu('basic');
 		twoWindow = true;
 	} else {
+		if (controlsWidth > windowWidth) {
+			controlsWidth = windowWidth;
+		}
 		$('#nav #animator').show();
 		$('#animatorCanvasContainer').appendTo($('#controlsContainer #animatorMenu'));
 		$('#animatorMenu').addClass('controlDiv');
