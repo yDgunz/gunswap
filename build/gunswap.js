@@ -2531,7 +2531,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		}
 
 		/* construct the various regex patterns. see blog post for details about this */
-		var validToss = "(R|L)?([\\da-o])x?(" + passPattern + ")?(C{(C|P)?})?(T{(C|P)?})?(B({\\d*(L|HL|F|HF)?})?)?(S{-?\\d+(.\\d+)?(,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?)?})?(D{\\d*\\.?\\d*})?";
+		var validToss = "(R|L)?([\\da-o])x?A?(" + passPattern + ")?(C{(C|P)?})?(T{(C|P)?})?(B({\\d*(L|HL|F|HF)?})?)?(S{-?\\d+(.\\d+)?(,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?)?})?(D{\\d*\\.?\\d*})?";
 		var validMultiplex = "\\[(" + validToss + ")+\\]";
 		var validSync = "\\((" + validToss + "|" + validMultiplex + "),(" + validToss + "|" + validMultiplex + ")\\)";
 		var validBeat = "(" + validToss + "|" + validMultiplex + "|" + validSync + ")";
@@ -2718,7 +2718,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 					tossType: tossType,
 					catchType: catchType,
 					tossOrientation: tossOrientation,
-					rotationAxis: {x:1,y:0,z:0}
+					rotationAxis: {x:1,y:0,z:0},
+					hold: numBeats == 2 && !crossing && siteswapStr.indexOf("A") == -1 ? true : false
 				}
 			);
 
@@ -2908,7 +2909,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						tmpPropOrbits[prop] = [];
 					}
 
-					tmpPropOrbits[prop].push({beat: beat, juggler: toss.juggler, hand: tossHand, numBounces: toss.numBounces, bounceType: toss.bounceType, bounceOrder: toss.bounceOrder, numSpins: toss.numSpins, dwellPathIx: toss.dwellPathIx, dwellDuration: toss.dwellDuration, tossType: toss.tossType, catchType: toss.catchType, tossOrientation: toss.tossOrientation, rotationAxis: toss.rotationAxis });
+					tmpPropOrbits[prop].push({beat: beat, numBeats: toss.numBeats, juggler: toss.juggler, hand: tossHand, numBounces: toss.numBounces, bounceType: toss.bounceType, bounceOrder: toss.bounceOrder, numSpins: toss.numSpins, dwellPathIx: toss.dwellPathIx, dwellDuration: toss.dwellDuration, tossType: toss.tossType, catchType: toss.catchType, tossOrientation: toss.tossOrientation, rotationAxis: toss.rotationAxis, hold: toss.hold });
 
 					if(curState[toss.targetJuggler][catchHand][toss.numBeats-1] == undefined) {
 						curState[toss.targetJuggler][catchHand][toss.numBeats-1] = [prop];
@@ -3133,9 +3134,46 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						*/
 
 						var T = catchTime - tossTime;
-						var t = currentTime - tossTime;
+						var t = currentTime - tossTime;						
+						var pos;
 
-						var pos = interpolateFlightPath(
+						// if the current toss is held (ie. a 2) then don't leave the hand 
+						// so this is the same code as the empty hand's path
+						if (curToss.hold) {
+							//getDwellPosition(P,juggler,hand,t,v_0,v_T,v_0scale,v_Tscale,matchVelocity)		
+
+							var p0 = getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,1);
+							var pT = getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0);
+
+							var v_0 = interpolateFlightPath(
+								p0,
+								pT,
+								T,
+								0
+							);
+							var v_T = interpolateFlightPath(
+								p0,
+								pT,
+								T,
+								T
+							);
+							
+							pos = getDwellPosition(
+								[siteswap.dwellPath[curToss.dwellPathIx].last(),siteswap.dwellPath[nextToss.dwellPathIx][0]]
+								, curToss.juggler
+								, curToss.hand
+								, t/T
+								, v_0
+								, v_T
+								, siteswap.emptyTossScale
+								, siteswap.emptyCatchScale
+							);
+
+						} else {
+
+							// if not holding prop then interpolate flight path
+
+							pos = interpolateFlightPath(
 								getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,1), /* p0 */
 								getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0), /* p1 */
 								T,
@@ -3148,6 +3186,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 									C: siteswap.props[prop].C
 								}
 							);
+						}						
 
 						pos.dwell = false;
 
@@ -3231,10 +3270,10 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 								propLastToss = siteswap.propOrbits[nextTossProp][nextTossOrbit-1];
 							}
 
-							if (lastTossOrbit == 0) {
-								propNextToss = siteswap.propOrbits[lastTossProp].last();
+							if (lastTossOrbit == siteswap.propOrbits[lastTossProp].length-1) {
+								propNextToss = siteswap.propOrbits[lastTossProp][0];
 							} else {
-								propNextToss = siteswap.propOrbits[lastTossProp][lastTossOrbit-1];
+								propNextToss = siteswap.propOrbits[lastTossProp][lastTossOrbit+1];
 							}
 
 							var nextCatchTime = nextToss.beat*siteswap.beatDuration;
@@ -3257,8 +3296,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 							var v_0 = interpolateFlightPath(
 								getDwellPosition(siteswap.dwellPath[lastToss.dwellPathIx],lastToss.juggler,lastToss.hand,1), /* p0 */
 								getDwellPosition(siteswap.dwellPath[propNextToss.dwellPathIx],propNextToss.juggler,propNextToss.hand,0), /* p1 */
-								(propNextCatchTime - lastThrowTime),
-								0,								
+								lastToss.numBeats*siteswap.beatDuration-lastToss.dwellDuration,
+								0,
 								{
 									numBounces: lastToss.numBounces, 
 									bounceType: lastToss.bounceType,
@@ -3270,8 +3309,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 							var v_T = interpolateFlightPath(
 								getDwellPosition(siteswap.dwellPath[propLastToss.dwellPathIx],propLastToss.juggler,propLastToss.hand,1), /* p0 */
 								getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0), /* p1 */
-								(nextCatchTime - propLastThrowTime),
-								(nextCatchTime - propLastThrowTime),
+								propLastToss.numBeats*siteswap.beatDuration-propLastToss.dwellDuration,
+								propLastToss.numBeats*siteswap.beatDuration-propLastToss.dwellDuration,
 								{
 									numBounces: propLastToss.numBounces, 
 									bounceType: propLastToss.bounceType,
@@ -3298,12 +3337,13 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 								, lastToss.juggler
 								, lastToss.hand
 								, 1
-							);
+							);							
 
 							var catchDiff = {x: v_T.x - correctCatch.x, y: v_T.y - correctCatch.y, z: v_T.z - correctCatch.z};
 							pos.x += (t)*catchDiff.x;
 							pos.y += (t)*catchDiff.y;
-							pos.z += (t)*catchDiff.z;
+							pos.z += (t)*catchDiff.z;						
+
 							var catchAngle = Math.atan2(-v_T.dx,-v_T.dy);
 							var tossAngle = Math.atan2(v_0.dx,v_0.dy);
 							if (lastToss.tossType == 'claw') {
@@ -3317,8 +3357,9 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 								catchAngle -= 2*Math.PI;
 							}
 							pos.angle = tossAngle + t*(catchAngle-tossAngle);
-							if (hand == RIGHT)
+							if (hand == RIGHT) {
 								pos.angle *= -1;
+							}
 
 							tmpJugglerHandPositions[juggler][hand] = pos;
 						}					
@@ -4623,6 +4664,8 @@ exports.siteswapGraph = function(config, outputs) {
 
 window.onload = function () {
 
+	displayMenu('pattern');
+
 	updateAdvancedInputsFromBasic();	
 
 	window.animator = new SiteswapAnimator.SiteswapAnimator('animatorCanvasContainer', {displayPropPaths: false});
@@ -4638,13 +4681,15 @@ window.onload = function () {
 function displayMenu(menu) {
 	$('.controlDiv').hide()
 	$('#'+menu+'Menu').show();
-	$('#nav a').removeClass('selected')
-	$('#nav #' +menu).addClass('selected')
+	$('#nav a').removeClass('selected');
+	$('#nav a').addClass('unselected');
+	$('#nav #' +menu).addClass('selected');
+	$('#nav #' +menu).removeClass('unselected');
 }
 
 window.onresize = function () {
-	var windowWidth = $(window).width()-10;
-	var windowHeight = $(window).height()-30;
+	var windowWidth = $(window).width()-5;
+	var windowHeight = $(window).height()-10;
 	var controlsWidth = 500;
 	var animatorWidth = windowWidth-controlsWidth;
 	var minAnimatorWidth = 250;
@@ -4653,28 +4698,29 @@ window.onresize = function () {
 	if (animatorWidth > minAnimatorWidth) {
 		$('#nav #animator').hide();
 		$('#animatorCanvasContainer').appendTo($('body'));
-		$('#animatorMenu').removeClass('controlDiv');
-		displayMenu('basic');
+		$('#animatorMenu').removeClass('controlDiv');		
 		twoWindow = true;
 	} else {
+		if (controlsWidth > windowWidth) {
+			controlsWidth = windowWidth;
+		}
 		$('#nav #animator').show();
 		$('#animatorCanvasContainer').appendTo($('#controlsContainer #animatorMenu'));
 		$('#animatorMenu').addClass('controlDiv');
-		displayMenu('animator');
 		animatorWidth = windowWidth;
 		controlsWidth = windowWidth;
 		twoWindow = false;
 		animatorHeight = windowHeight - $('#animatorCanvasContainer').offset().top;
 	}
 
-	$('#controlsContainer').attr("style","float:left;");
-	$('#animatorCanvasContainer').attr("style","float:left;");
-
 	$('#controlsContainer').height(windowHeight);
 	$('#controlsContainer').width(controlsWidth);
 
 	$('#animatorCanvasContainer').height(animatorHeight);
 	$('#animatorCanvasContainer').width(animatorWidth);	
+
+	// explorer
+	$('#siteswaps').height(windowHeight-$('#siteswaps').offset().top);
 
 	animator.resize(animatorWidth, windowHeight);
 }
@@ -4692,7 +4738,7 @@ function updateAdvancedInputsFromBasic() {
 function applyInputDefaults(inputs) {
 	inputs.siteswap = inputs.siteswap === undefined ? "3" : inputs.siteswap;
 	inputs.props = inputs.props === undefined ? [{type: "ball", color: "red", radius: ".05", C: .97}] : inputs.props;
-	inputs.beatDuration = inputs.beatDuration === undefined ? .3 : inputs.beatDuration;
+	inputs.beatDuration = inputs.beatDuration === undefined ? .28 : inputs.beatDuration;
 	inputs.dwellRatio = inputs.dwellRatio === undefined ? .8 : inputs.dwellRatio;
 	inputs.dwellPath = inputs.dwellPath === undefined ? "(30)(10)" : inputs.dwellPath;
 	inputs.matchVelocity = inputs.matchVelocity === undefined ? 0 : inputs.matchVelocity;
@@ -4887,7 +4933,7 @@ function go() {
 
 		animator.init(siteswap, 
 			{
-				drawHands: drawHands
+				drawHands: $('#drawHands')[0].checked
 				//, motionBlur: true
 			}
 		);
@@ -5070,6 +5116,7 @@ function generateGIF() {
 }
 
 function findSiteswaps() {
+	window.onresize();
 	$('#siteswapsList').empty();
 	$('#graphContainer').empty();	
 	$('#activeSiteswapContainer').hide();
@@ -5099,4 +5146,10 @@ function runSiteswap(s) {
 	$('#siteswap').val(s);
 	updateAdvancedInputsFromBasic();
 	go();
+}
+
+function updateDrawHandsForProp() {
+	if ($('#prop').val() != 'ball') {
+		$('#drawHands')[0].checked = false;
+	}
 }

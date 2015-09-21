@@ -2,6 +2,8 @@ var twoWindow = false;
 
 window.onload = function () {
 
+	displayMenu('pattern');
+
 	updateAdvancedInputsFromBasic();	
 
 	window.animator = new SiteswapAnimator.SiteswapAnimator('animatorCanvasContainer', {displayPropPaths: false});
@@ -17,12 +19,14 @@ window.onload = function () {
 function displayMenu(menu) {
 	$('.controlDiv').hide()
 	$('#'+menu+'Menu').show();
-	$('#nav a').removeClass('selected')
-	$('#nav #' +menu).addClass('selected')
+	$('#nav a').removeClass('selected');
+	$('#nav a').addClass('unselected');
+	$('#nav #' +menu).addClass('selected');
+	$('#nav #' +menu).removeClass('unselected');
 }
 
 window.onresize = function () {
-	var windowWidth = $(window).width()-10;
+	var windowWidth = $(window).width()-5;
 	var windowHeight = $(window).height()-10;
 	var controlsWidth = 500;
 	var animatorWidth = windowWidth-controlsWidth;
@@ -32,8 +36,7 @@ window.onresize = function () {
 	if (animatorWidth > minAnimatorWidth) {
 		$('#nav #animator').hide();
 		$('#animatorCanvasContainer').appendTo($('body'));
-		$('#animatorMenu').removeClass('controlDiv');
-		displayMenu('basic');
+		$('#animatorMenu').removeClass('controlDiv');		
 		twoWindow = true;
 	} else {
 		if (controlsWidth > windowWidth) {
@@ -42,21 +45,20 @@ window.onresize = function () {
 		$('#nav #animator').show();
 		$('#animatorCanvasContainer').appendTo($('#controlsContainer #animatorMenu'));
 		$('#animatorMenu').addClass('controlDiv');
-		displayMenu('animator');
 		animatorWidth = windowWidth;
 		controlsWidth = windowWidth;
 		twoWindow = false;
 		animatorHeight = windowHeight - $('#animatorCanvasContainer').offset().top;
 	}
 
-	$('#controlsContainer').attr("style","float:left;");
-	$('#animatorCanvasContainer').attr("style","float:left;");
-
 	$('#controlsContainer').height(windowHeight);
 	$('#controlsContainer').width(controlsWidth);
 
 	$('#animatorCanvasContainer').height(animatorHeight);
 	$('#animatorCanvasContainer').width(animatorWidth);	
+
+	// explorer
+	$('#siteswaps').height(windowHeight-$('#siteswaps').offset().top);
 
 	animator.resize(animatorWidth, windowHeight);
 }
@@ -74,7 +76,7 @@ function updateAdvancedInputsFromBasic() {
 function applyInputDefaults(inputs) {
 	inputs.siteswap = inputs.siteswap === undefined ? "3" : inputs.siteswap;
 	inputs.props = inputs.props === undefined ? [{type: "ball", color: "red", radius: ".05", C: .97}] : inputs.props;
-	inputs.beatDuration = inputs.beatDuration === undefined ? .3 : inputs.beatDuration;
+	inputs.beatDuration = inputs.beatDuration === undefined ? .28 : inputs.beatDuration;
 	inputs.dwellRatio = inputs.dwellRatio === undefined ? .8 : inputs.dwellRatio;
 	inputs.dwellPath = inputs.dwellPath === undefined ? "(30)(10)" : inputs.dwellPath;
 	inputs.matchVelocity = inputs.matchVelocity === undefined ? 0 : inputs.matchVelocity;
@@ -269,7 +271,7 @@ function go() {
 
 		animator.init(siteswap, 
 			{
-				drawHands: drawHands
+				drawHands: $('#drawHands')[0].checked
 				//, motionBlur: true
 			}
 		);
@@ -452,6 +454,7 @@ function generateGIF() {
 }
 
 function findSiteswaps() {
+	window.onresize();
 	$('#siteswapsList').empty();
 	$('#graphContainer').empty();	
 	$('#activeSiteswapContainer').hide();
@@ -481,4 +484,10 @@ function runSiteswap(s) {
 	$('#siteswap').val(s);
 	updateAdvancedInputsFromBasic();
 	go();
+}
+
+function updateDrawHandsForProp() {
+	if ($('#prop').val() != 'ball') {
+		$('#drawHands')[0].checked = false;
+	}
 }

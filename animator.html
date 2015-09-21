@@ -31,14 +31,26 @@
 	}
 	label { 
 		display: block; 
-		width: 150px; 
+		width: 100px; 
 		float: left; 
+	}
+	#patternMenu div {
+		padding: 5px;
+	}
+	.control {
+		width: 200px;
+	}
+	#patternMenu textarea {
+		width: 350px;	
 	}
 	#animatorControlsMenu div {
 		padding: 5px;
 	}
 	#explorerMenu div {
 		padding: 5px;
+	}
+	#explorerMenu input {
+		width:40px;
 	}
 	#examplesMenu ul {
 		list-style-type: none;
@@ -49,7 +61,20 @@
 	#examplesMenu a:hover {
 		text-decoration: underline;
 	}
-
+	#siteswapsList {
+		list-style: none;
+		font-size: 20px;
+		padding-left: 0px;
+	}
+	#siteswapsList a {
+		display: block;
+		text-align: center;
+		border-bottom: 1px solid #999;
+		text-decoration: none;
+	}
+	#siteswapsList a:hover {
+		background-color: #ddd;
+	}
 	#nav ul {
 		display: table;
     	width: 100%;
@@ -58,22 +83,29 @@
 	}
 	#nav ul li {
 		display: table-cell;
+	}
+	.selected {
+		background: #FFF;
+		color: black;
 	}	
+	.unselected {
+		background: #000;
+		color: white;
+	}
+	.unselected:hover {
+		background: #555;
+		color: white;
+	}
 	#nav a {
 		display: block;
 		border-right: 1px solid #fff;
 		border-left: 1px solid #fff;
 		text-align: center;
-		margin: 0px;
-		background: #000;
-		padding: 5px;
-		color: white;
+		margin: 0px;		
+		padding: 5px;		
 		cursor: pointer;
+		text-decoration: none;
 	}
-	#nav .selected {
-		background: #FFF;
-		color: black;
-	}	
 	.controlDiv {
 		padding: 10px;
 	}
@@ -84,63 +116,70 @@
 
 <body>
 
-<div id="controlsContainer">
+<div id="controlsContainer" style="float:left;">
 	<div id="nav">
 		<ul>
 			<li><a id="animator" onclick="displayMenu('animator');"><span class="glyphicon glyphicon-play"></span> Play</a></li>
-			<li><a id="animatorControls" onclick="displayMenu('animatorControls');"><span class="glyphicon glyphicon-cog"></span> Controls</a></li>
+			<li><a id="pattern" onclick="displayMenu('pattern');"><span class="glyphicon glyphicon-cog"></span> Controls</a></li>
+			<li><a id="animatorControls" onclick="displayMenu('animatorControls');"><span class="glyphicon glyphicon-facetime-video"></span> Camera</a></li>
 			<li><a id="explorer" onclick="displayMenu('explorer');"><span class="glyphicon glyphicon-search"></span> Explorer</a></li>
 			<li><a id="about" onclick="displayMenu('about');"><span class="glyphicon glyphicon-question-sign"></span> Help</a></li>
 		</ul>
 	</div>
 	<div id="animatorMenu" class="controlDiv">
 	</div>
-	<div id="animatorControlsMenu" class="controlDiv">						
-		
+	<div id="patternMenu" class="controlDiv">
 		<!-- BASIC -->
-		<button onclick="updateAdvancedInputsFromBasic();go();">Juggle!</button>
+		<button onclick="go();">Juggle!</button>
 		<br/><br/>
 		<div id="errorMessage"></div>
 		<div>
 			<label for="siteswap">Siteswap</label>
-			<input id="siteswap" value="3" onchange="updateAdvancedInputsFromBasic();"></input>
+			<input id="siteswap" class="control" value="3" onchange="updateAdvancedInputsFromBasic();"></input>
 		</div>
 		<div>
 			<label for="prop">Prop</label>
-			<select id="prop" onchange="updateAdvancedInputsFromBasic();">					
+			<select id="prop" class="control" onchange="updateDrawHandsForProp();updateAdvancedInputsFromBasic();">
 				<option value="ball">Ball</option>
 				<option value="club">Club</option>
 				<option value="ring">Ring</option>
 			</select>
 		</div>
 		<div>
-			<label for="dwellPath">Hand Movement</label>
-			<select id="dwellPath" onchange="updateAdvancedInputsFromBasic();">
+			<label for="dwellPath">Dwell</label>
+			<select id="dwellPath" class="control" onchange="updateAdvancedInputsFromBasic();">
 				<option value="(30)(10)">Cascade</option>
 				<option value="(10)(30)">Reverse Cascade</option>
 				<option value="(30)(10).(10)(30)">Shower</option>
 				<option value="(-20)(20).(20)(-20)">Windmill</option>
-				<option value="(2.5)(-30).(-2.5)(30).(0)(-30)">Mills Mess</option>						
+				<option value="(2.5)(-30).(-2.5)(30).(0)(-30)">Mills Mess</option>
 			</select>
 		</div>
 		<div>
 			<label for="beatDuration">Height</label>
-			<input id="beatDuration" type="range" min=".05" max=".5" value=".3" step=".005" onchange="updateAdvancedInputsFromBasic();"></input>
+			<input id="beatDuration" class="control" type="range" min=".05" max=".5" value=".28" step=".005" onchange="updateAdvancedInputsFromBasic();"></input>
+		</div>
+		<div>
+			<label for="drawHands">Show Hands</label>
+			<input id="drawHands" type="checkbox" checked></input>
 		</div>
 
-		<!-- ADVANCED -->
-		<button onclick="go();">Juggle!</button>
-		 | <a href="/gunswap/syntax.html">Syntax Help</a>
-		<br/><br/>
-		<div id="errorMessage"></div>
-		<textarea id="inputsAdvanced" rows="8" cols="40" onchange="updateAdvancedLabels();" style="font-family:monospace;font-size:150%;"></textarea><br/><br/>
-		<div>siteswap: <span id="lblSiteswap"></span></div>
-		<div>beatDuration: <span id="lblBeatDuration"></span>, dwellRatio: <span id="lblDwellRatio"></span></div>
-		<div>props: <span id="lblProps"></span></div>
-		<div>dwellPath: <span id="lblDwellPath"></span></div>
-		<div>matchVelocity: <span id="lblMatchVelocity"></span>, dwellCatchScale: <span id="lblDwellCatchScale"></span>, dwellTossScale: <span id="lblDwellTossScale"></span>, emptyTossScale: <span id="lblEmptyTossScale"></span>, emptyCatchScale: <span id="lblEmptyCatchScale"></span>,
-		armAngle: <span id="lblArmAngle"></span></div>
-		<div><span id="lblSurfaces"></span></div>
+		<!-- ADVANCED -->		
+		<p>Advanced | <a href="/gunswap/syntax.html">Syntax Help</a></p>
+		<textarea id="inputsAdvanced" rows="8" cols="40" onchange="updateAdvancedLabels();" style="font-family:monospace;"></textarea><br/>		
+		<br/>
+		<!-- hide these for now -->
+		<div id="advancedLabels" style="display:none;">
+			<div>siteswap: <span id="lblSiteswap"></span></div>
+			<div>beatDuration: <span id="lblBeatDuration"></span>, dwellRatio: <span id="lblDwellRatio"></span></div>
+			<div>props: <span id="lblProps"></span></div>
+			<div>dwellPath: <span id="lblDwellPath"></span></div>
+			<div>matchVelocity: <span id="lblMatchVelocity"></span>, dwellCatchScale: <span id="lblDwellCatchScale"></span>, dwellTossScale: <span id="lblDwellTossScale"></span>, emptyTossScale: <span id="lblEmptyTossScale"></span>, emptyCatchScale: <span id="lblEmptyCatchScale"></span>,
+			armAngle: <span id="lblArmAngle"></span></div>
+			<div><span id="lblSurfaces"></span></div>
+		</div>
+	</div>
+	<div id="animatorControlsMenu" class="controlDiv">								
 		
 		<!-- ANIMATOR CONTROLS -->
 		<div>
@@ -150,14 +189,14 @@
 		<br/>
 		<div>
 			<label for="cameraMode">Camera</label>
-			<select id="cameraMode" onchange="updateCameraMode();">
+			<select id="cameraMode" class="control" onchange="updateCameraMode();">
 				<option value="sky">Sky</option>
 				<option value="juggler">Juggler</option>
 			</select>
 		</div>			
 		<div>
 			<label for="animationSpeed">Speed</label>
-			<input type="range" onchange="updateAnimationSpeed();" id="animationSpeed" min="0" max="1" value=".6" step=".01"></input>
+			<input type="range" class="control" onchange="updateAnimationSpeed();" id="animationSpeed" min="0" max="1" value=".6" step=".01"></input>
 		</div>
 		<div>
 			<label for="showPropPathsCheckbox">Show Paths</label>
@@ -176,47 +215,49 @@
 			<div>
 				<button id="explorerFindSiteswaps" onclick="findSiteswaps();">Find Siteswaps</button>
 			</div>	
-			<div>
-				<label for="explorerNumProps">Num Props</label>
-				<input id="explorerNumProps" value="3"></input>
+			<div style="float:left;width:50%">
+				<div>
+					<label for="explorerNumProps">Num Props</label>
+					<input id="explorerNumProps" value="3"></input>
+				</div>
+				<div>
+					<label for="explorerMaxPeriod">Max Period</label>
+					<input id="explorerMaxPeriod" value="5"></input>
+				</div>
+				<div>
+					<label for="explorerMaxSiteswaps">Max Siteswaps</label>
+					<input id="explorerMaxSiteswaps" value="1000"></input>
+				</div>
 			</div>
-			<div>
-				<label for="explorerMaxPeriod">Max Period</label>
-				<input id="explorerMaxPeriod" value="5"></input>
+			<div style="float:left;width:50%;">
+				<div>
+					<label for="explorerIncludeExcited">Excited</label>
+					<input id="explorerIncludeExcited" type="checkbox" value="1" checked></input>
+				</div>
+				<div>
+					<label for="explorerIncludeMultiplex">Multiplex</label>
+					<input id="explorerIncludeMultiplex" type="checkbox" value="1"></input>
+				</div>
+				<div>
+					<label for="explorerSync">Sync</label>
+					<input id="explorerSync" type="checkbox" value="0"></input>
+				</div>				
 			</div>
-			<div>
-				<label for="explorerIncludeExcited">Excited</label>
-				<input id="explorerIncludeExcited" type="checkbox" value="1" checked></input>
-			</div>
-			<div>
-				<label for="explorerIncludeMultiplex">Multiplex</label>
-				<input id="explorerIncludeMultiplex" type="checkbox" value="1"></input>
-			</div>
-			<div>
-				<label for="explorerSync">Sync</label>
-				<input id="explorerSync" type="checkbox" value="0"></input>
-			</div>
-			<div>
-				<label for="explorerMaxSiteswaps">Max Siteswaps</label>
-				<input id="explorerMaxSiteswaps" value="1000"></input>
-			</div>					
 		</div>
-		<div>
-			<p>Click a siteswap below to see it animated. Check out the siteswap graph animator <a href="/gunswap/SiteswapGraph.html">here</a>.</p>
-		</div>
-		<div id="siteswaps" style="height:300px;overflow-y:auto;">
+		<div id="siteswaps" style="width:100%;overflow-y:auto;">
 			<ul id="siteswapsList">
 			</ul>
 		</div>
 	</div>
 	<div id="aboutMenu" class="controlDiv">
 		<p>Learn more about gunswap at the <a href="/gunswap/index.html">project page</a>.</p>
+		<p>Check out the <a href="/gunswap/SiteswapGraph.html">siteswap graph animator</a>.</p>
 		<p>Below are some examples, click one to play the animation.</p>
 		<ul id="examplesList"></ul>
 	</div>	
 </div>
 
-<div id="animatorCanvasContainer">
+<div id="animatorCanvasContainer" style="float:left;">
 </div>
 
 </body>
