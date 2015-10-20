@@ -2,7 +2,7 @@ function getURLQueryStringParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
         results = regex.exec(location.search);
-    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
 /* used for deep cloning of various arrays/objects */
@@ -852,7 +852,7 @@ function sumThrows(str) {
 		// if the current character is a bounce marker
 		// and then next character is a {, move forward until we find a }
 		if ((str[i] == "B" || str[i] == "D" || str[i] == "T" || str[i] == "C" || str[i] == "S") && str[i+1] == "{") {
-			i = str.indexOf("}",i)+1;
+			i = str.indexOf("}",i);
 		}
 	}
 
@@ -873,6 +873,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		siteswap: 				siteswapStr,
 		validSyntax: 			false,
 		validPattern: 			false,
+		collision:              undefined,
 		multiplex: 				undefined,
 		sync: 					undefined,
 		pass: 					undefined,
@@ -902,7 +903,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		emptyTossScale:			undefined,
 		emptyCatchScale:		undefined,
 		armAngle: 				undefined,
-		surfaces: 				undefined,
+		surfaces: 				undefined,		
 		errorMessage:  			undefined
 	};
 
@@ -976,8 +977,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				);
 			}
 		} else {
-			if (siteswap.numJugglers != options.jugglers.length) {
-				throw "Number of jugglers doesn\'t match";
+			if (siteswap.validSyntax && siteswap.numJugglers != options.jugglers.length) {
+				siteswap.errorMessage = "Number of jugglers doesn\'t match";
 			}
 			for (var i = 0; i < options.jugglers.length; i++) {
 				siteswap.jugglers.push(
@@ -1057,7 +1058,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		validPassRe = new RegExp(validPass,"g");
 		validSiteswapRe = new RegExp(validSiteswap,"g");
 
-		if (siteswapStr.match(validSiteswapRe)) {
+		if (siteswapStr.match(validSiteswapRe) == siteswapStr) {
 			siteswap.validSyntax = true;
 			siteswap.multiplex = siteswapStr.match(validMultiplexRe) ? true : false;
 			siteswap.sync = siteswapStr.match(validSyncRe) ? true : false;
@@ -1081,8 +1082,15 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			dwellPathIx = getTosses(tosses,patterns[1].substr(0,patterns[1].length-1),juggler,true,RIGHT, dwellPathIx);
 		} else if (siteswapStr.match(validMultiplexRe)) {
 			var patterns = siteswapStr.match(validTossRe);
-			patterns.map(function(s) {
+			patterns.map(function(s,ix,arr) {
 				dwellPathIx = getTosses(tosses,s,juggler, undefined, hand, dwellPathIx);
+				if (ix < arr.length-1) {
+					if (dwellPathIx == 0) {
+						dwellPathIx = siteswap.dwellPath.length-1;
+					} else {
+						dwellPathIx--;
+					}					
+				}
 			});
 		} else {
 			/* will work from "a" to "z" */
@@ -1551,18 +1559,85 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						tossTime -= (siteswap.beatDuration*siteswap.states.length);
 					}
 
-					var lastTossTime = prevToss.beat*siteswap.beatDuration+curToss.dwellDuration;
+					var lastTossTime = prevToss.beat*siteswap.beatDuration+prevToss.dwellDuration;
 					var lastCatchTime = curToss.beat*siteswap.beatDuration;
 					if (lastTossTime > lastCatchTime && lastCatchTime <= currentTime) {
 						lastCatchTime += (siteswap.beatDuration*siteswap.states.length);	
 					}
 					else if (lastTossTime > lastCatchTime && lastCatchTime > currentTime) { 
 						lastTossTime -= (siteswap.beatDuration*siteswap.states.length);
-					} 
+					}
 
 					if (currentTime < tossTime) {
 						/* interpolate dwell path */
-						var launch = interpolateFlightPath(
+
+						var launches = [];
+						var landings = [];
+
+						// iterate over all other props to see if any others are in the hand now as well
+						if (siteswap.multiplex) {
+							for (var i = 0; i < siteswap.propOrbits.length; i++) {
+								if (i != prop) {
+									for (j = 0; j < siteswap.propOrbits[i].length; j++) {
+										var multiplexCurToss = siteswap.propOrbits[i][j];
+
+										if (curToss.beat == multiplexCurToss.beat && curToss.juggler == multiplexCurToss.juggler && curToss.hand == multiplexCurToss.hand) {
+											
+											var multiplexNextToss = j == siteswap.propOrbits[i].length-1 ? siteswap.propOrbits[i][0] : siteswap.propOrbits[i][j+1];
+											var multiplexPrevToss = j == 0 ? siteswap.propOrbits[i][siteswap.propOrbits[i].length-1] : siteswap.propOrbits[i][j-1];
+
+											var multiplexTossTime = multiplexCurToss.beat*siteswap.beatDuration+multiplexCurToss.dwellDuration;
+											var multiplexCatchTime = multiplexNextToss.beat*siteswap.beatDuration;
+											if (multiplexTossTime > multiplexCatchTime && multiplexCatchTime <= currentTime) {
+												multiplexCatchTime += (siteswap.beatDuration*siteswap.states.length);	
+											}					
+											else if (multiplexTossTime > multiplexCatchTime && multiplexCatchTime > currentTime) { 
+												multiplexTossTime -= (siteswap.beatDuration*siteswap.states.length);
+											}
+
+											var multiplexLastTossTime = multiplexPrevToss.beat*siteswap.beatDuration+multiplexPrevToss.dwellDuration;
+											var multiplexLastCatchTime = multiplexCurToss.beat*siteswap.beatDuration;
+											if (multiplexLastTossTime > multiplexLastCatchTime && multiplexLastCatchTime <= currentTime) {
+												multiplexLastCatchTime += (siteswap.beatDuration*siteswap.states.length);	
+											}
+											else if (multiplexLastTossTime > multiplexLastCatchTime && multiplexLastCatchTime > currentTime) { 
+												multiplexLastTossTime -= (siteswap.beatDuration*siteswap.states.length);
+											}
+
+											launches.push(interpolateFlightPath(
+												getDwellPosition(siteswap.dwellPath[multiplexCurToss.dwellPathIx],multiplexCurToss.juggler,multiplexCurToss.hand,1), /* p0 */
+												getDwellPosition(siteswap.dwellPath[multiplexNextToss.dwellPathIx],multiplexNextToss.juggler,multiplexNextToss.hand,0), /* p1 */
+												(multiplexCatchTime - multiplexTossTime),
+												0,								
+												{
+													numBounces: multiplexCurToss.numBounces, 
+													bounceType: multiplexCurToss.bounceType, 
+													bounceOrder: multiplexCurToss.bounceOrder,
+													R: siteswap.props[i].radius, 
+													C: siteswap.props[i].C
+												}
+											));
+
+											landings.push(interpolateFlightPath(
+												getDwellPosition(siteswap.dwellPath[multiplexPrevToss.dwellPathIx],multiplexPrevToss.juggler,multiplexPrevToss.hand,1), /* p0 */
+												getDwellPosition(siteswap.dwellPath[multiplexCurToss.dwellPathIx],multiplexCurToss.juggler,multiplexCurToss.hand,0), /* p1 */
+												(multiplexLastCatchTime - multiplexLastTossTime),
+												(multiplexLastCatchTime - multiplexLastTossTime),
+												{
+													numBounces: multiplexPrevToss.numBounces, 
+													bounceType: multiplexPrevToss.bounceType,
+													bounceOrder: multiplexPrevToss.bounceOrder, 
+													R: siteswap.props[i].radius, 
+													C: siteswap.props[i].C
+												}
+											));										
+										}
+									}
+								}
+							}
+						}						
+
+						launches.push(interpolateFlightPath(
 								getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,1), /* p0 */
 								getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0), /* p1 */
 								(catchTime - tossTime),
@@ -1574,9 +1649,9 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 									R: siteswap.props[prop].radius, 
 									C: siteswap.props[prop].C
 								}
-							);
+							));
 
-						var land = interpolateFlightPath(
+						landings.push(interpolateFlightPath(
 								getDwellPosition(siteswap.dwellPath[prevToss.dwellPathIx],prevToss.juggler,prevToss.hand,1), /* p0 */
 								getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,0), /* p1 */
 								(lastCatchTime - lastTossTime),
@@ -1588,7 +1663,28 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 									R: siteswap.props[prop].radius, 
 									C: siteswap.props[prop].C
 								}
-							);
+							));
+
+						var land = {dx: 0, dy: 0, dz: 0, x: 0, y: 0, z:0};
+						var launch = {dx: 0, dy: 0, dz: 0, x: 0, y: 0, z:0};
+						for (i = 0; i < landings.length; i++) {
+							land.dx += landings[i].dx/landings.length;
+							land.dy += landings[i].dy/landings.length;
+							land.dz += landings[i].dz/landings.length;
+							land.x += landings[i].x/landings.length;
+							land.y += landings[i].y/landings.length;
+							land.z += landings[i].z/landings.length;
+
+							launch.dx += launches[i].dx/landings.length;
+							launch.dy += launches[i].dy/landings.length;
+							launch.dz += launches[i].dz/landings.length;
+							launch.x += launches[i].x/landings.length;
+							launch.y += launches[i].y/landings.length;
+							launch.z += launches[i].z/landings.length;
+						}
+
+						//var land = landings.last();
+						//var launch = launches.last();
 
 						var t = 1-(tossTime - currentTime)/curToss.dwellDuration;
 						var pos = getDwellPosition(
@@ -1710,7 +1806,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 						propRotations[prop].push(getPropQuaternion(curToss.tossOrientation, curToss.rotationAxis, siteswap.jugglers[curToss.juggler].rotation, currentRotation, curToss.hand));
 
-					}
+					}					
 
 				}
 
@@ -1897,6 +1993,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			siteswap.propRotations = propRotations;
 			siteswap.jugglerHandPositions = jugglerHandPositions;
 			siteswap.jugglerElbowPositions = jugglerElbowPositions;
+
+			siteswap.collision = checkForCollision();
 
 		} catch(e) {
 			siteswap.errorMessage = e.message;
@@ -2119,6 +2217,31 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		
 		return q;
 
+	}
+
+	function checkForCollision() {
+		var r1, r2;
+		// iterate over each props positions array
+		for (var i = 0; i < siteswap.propPositions.length; i++) {			
+			r1 = siteswap.props[i].radius;
+			// iterate over all positions
+			for (var j = 0; j < siteswap.propPositions[i].length; j++) {				
+				// check position against all other props at that time
+				for (var k = i+1; k < siteswap.propPositions.length; k++) {
+					r2 = siteswap.props[i].radius;
+					if (
+						Math.sqrt(
+							Math.pow(siteswap.propPositions[i][j].x-siteswap.propPositions[k][j].x,2)+
+							Math.pow(siteswap.propPositions[i][j].y-siteswap.propPositions[k][j].y,2)+
+							Math.pow(siteswap.propPositions[i][j].z-siteswap.propPositions[k][j].z,2)
+						) <= (r1+r2)
+					) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 }
