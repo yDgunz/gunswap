@@ -12,6 +12,8 @@ window.onload = function () {
 
 	buildExamples();
 
+	bindInputs(applyInputDefaults(getInputsFromQueryString()));
+
 	go();
 
 }
@@ -86,7 +88,7 @@ function applyInputDefaults(inputs) {
 	inputs.emptyCatchScale = inputs.emptyCatchScale === undefined ? .025 : inputs.emptyCatchScale;
 	inputs.armAngle = inputs.armAngle === undefined ? .1 : inputs.armAngle;
 	inputs.jugglers = inputs.jugglers === undefined ? [{position: {x: 0, z: 0}, rotation: 0}] : inputs.jugglers;
-	inputs.surfaces = inputs.surfaces === undefined ? [] : inputs.surfaces;
+	inputs.surfaces = inputs.surfaces === undefined ? [{position: {x: 0, y: 0, z:0}, normal: {x: 0, y:1, z:0}, scale: 2}] : inputs.surfaces;
 	return inputs;
 }
 
@@ -259,10 +261,15 @@ function go() {
 	if (siteswap.errorMessage) {
 		animator.paused = true;
 		$('#errorMessage').show();
-		$('#errorMessage').text(siteswap.errorMessage);
+		$('#message').text(siteswap.errorMessage);
 	} else {
 
-		$('#errorMessage').hide();
+		if (siteswap.collision) {
+			$('#errorMessage').show();
+			$('#message').text("This pattern has collisions.");
+		} else {
+			$('#errorMessage').hide();
+		}		
 
 		var drawHands = false;
 		if (siteswap.props[0].type == 'ball' && siteswap.numJugglers == 1) {
@@ -291,7 +298,14 @@ function updateAnimationSpeed() {
 }
 
 function updateCameraMode() {
-	cameraMode = $('#cameraMode').val();
+	var mode = $('#cameraMode').val();
+	cameraMode = {mode: mode};
+	if (mode == "custom") {
+		var cameraCustomPosition = $('#cameraCustomPosition').val().split(",");
+		cameraMode.x = parseFloat(cameraCustomPosition[0]);
+		cameraMode.y = parseFloat(cameraCustomPosition[1]);
+		cameraMode.z = parseFloat(cameraCustomPosition[2]);
+	}
 	animator.updateCameraMode(cameraMode);
 }
 
@@ -490,4 +504,21 @@ function updateDrawHandsForProp() {
 	if ($('#prop').val() != 'ball') {
 		$('#drawHands')[0].checked = false;
 	}
+}
+
+function showHideCameraCustomPosition() {
+	if ($('#cameraMode').val() == "custom") {
+		$('#cameraCustomPositionContainer').show();
+	} else {
+		$('#cameraCustomPositionContainer').hide();
+	}
+}
+
+function getInputsFromQueryString() {
+	var inputs = {};
+	var siteswap = getURLQueryStringParameterByName("siteswap");
+	if(siteswap !== null) {
+		inputs.siteswap = siteswap;
+	}
+	return inputs;
 }

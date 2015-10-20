@@ -2,7 +2,7 @@ function getURLQueryStringParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
         results = regex.exec(location.search);
-    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
 /* used for deep cloning of various arrays/objects */

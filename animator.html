@@ -17,9 +17,9 @@
 	<script src="js/SiteswapAnimator.js"></script>
 	<script src="js/SiteswapGraph.js"></script>
 	<script src="js/index.js"></script>
-
-	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+	
 	<link rel="stylesheet" type="text/css" href="css/normalize.css">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
 
 	<style>
 	
@@ -108,6 +108,11 @@
 	}
 	.controlDiv {
 		padding: 10px;
+	}	
+	.alert {
+		color: #a94442;
+		border-color: #ebccd1;
+		background-color: #f2dede;
 	}
 	
 	</style>
@@ -132,7 +137,10 @@
 		<!-- BASIC -->
 		<button onclick="go();">Juggle!</button>
 		<br/><br/>
-		<div id="errorMessage"></div>
+		<div id="errorMessage" class="alert" style="display:none;">
+			<span class="glyphicon glyphicon-exclamation-sign"></span>	
+			<span id="message">	
+		</div>
 		<div>
 			<label for="siteswap">Siteswap</label>
 			<input id="siteswap" class="control" value="3" onchange="updateAdvancedInputsFromBasic();"></input>
@@ -189,10 +197,15 @@
 		<br/>
 		<div>
 			<label for="cameraMode">Camera</label>
-			<select id="cameraMode" class="control" onchange="updateCameraMode();">
+			<select id="cameraMode" class="control" onchange="showHideCameraCustomPosition();updateCameraMode();">
 				<option value="sky">Sky</option>
 				<option value="juggler">Juggler</option>
+				<option value="custom">Custom</option>
 			</select>
+			<span id="cameraCustomPositionContainer" style="display:none;">
+				<input id="cameraCustomPosition" style="width:100px;" value="1,1,-1">
+				<button onclick="updateCameraMode();">Update</button>
+			</span>
 		</div>			
 		<div>
 			<label for="animationSpeed">Speed</label>

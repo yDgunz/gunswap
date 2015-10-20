@@ -18,7 +18,7 @@ function SiteswapAnimator(containerId, options) {
 		onMouseDownTheta, 
 		onMouseDownPhi, 
 		onMouseDownPosition,
-		cameraMode = 'sky',
+		cameraMode = {mode: 'sky'},
 		propMeshes = [],
 		jugglerMeshes = [],
 		surfaceMeshes = [],
@@ -482,7 +482,7 @@ function SiteswapAnimator(containerId, options) {
 			var propPathGeom = new THREE.Geometry();
 			for (var j = 0; j < siteswap.propPositions[i].length; j++) {
 				var propPosition = siteswap.propPositions[i][j];
-				var eps = .0025;
+				var eps = .001;
 				propPathGeom.vertices.push(new THREE.Vector3(propPosition.x+(Math.random()-.5)*eps,propPosition.y+(Math.random()-.5)*eps,propPosition.z+(Math.random()-.5)*eps));
 			}
 			var propPathLine = new THREE.Line(propPathGeom, new THREE.LineBasicMaterial({color: siteswap.props[i].color}));
@@ -564,7 +564,7 @@ function SiteswapAnimator(containerId, options) {
 	}
 
 	function updateCamera() {
-		if (cameraMode == 'sky') {
+		if (cameraMode.mode == 'sky') {
 			camera.position.x = camRadius * Math.sin( camTheta ) * Math.cos( camPhi );
 			camera.position.y = camRadius * Math.sin( camPhi );
 			camera.position.z = camRadius * Math.cos( camTheta ) * Math.cos( camPhi );
@@ -579,13 +579,17 @@ function SiteswapAnimator(containerId, options) {
 				lookAt.y = highestPoint/2;
 			}			
 			camera.lookAt(lookAt);
-		} else if (cameraMode == 'juggler') {
+		} else if (cameraMode.mode == 'juggler') {
 			/* need to update x and y to reflect the position of the juggler you are possessing */
 			camera.position.x = 0;
 			camera.position.y = 1.6125;
 			camera.position.z = 0;
 			//camera.lookAt(new THREE.Vector3(Math.sin(camTheta),3,Math.cos(camTheta)));
 			camera.lookAt(new THREE.Vector3(Math.sin(camTheta)*Math.cos(camPhi),1.6125-Math.sin(camPhi),Math.cos(camTheta)*Math.cos(camPhi)));
+		} else if (cameraMode.mode == 'custom') {
+			var cameraPosition = new THREE.Vector3(cameraMode.x,cameraMode.y,cameraMode.z);
+			camera.position = cameraPosition;
+			camera.lookAt(new THREE.Vector3(cameraPosition.x-Math.sin(camTheta)*Math.cos(camPhi),cameraPosition.y-Math.sin(camPhi),cameraPosition.z-Math.cos(camTheta)*Math.cos(camPhi)));
 		}
 	}
 
