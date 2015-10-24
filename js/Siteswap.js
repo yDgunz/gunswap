@@ -147,7 +147,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			}
 		} else {
 			if (siteswap.validSyntax && siteswap.numJugglers != options.jugglers.length) {
-				siteswap.errorMessage = "Number of jugglers doesn\'t match";
+				siteswap.errorMessage = "Number of jugglers doesn\'t match. For passing patterns make sure you define all necessary juggler positions. See syntax help for more information.";
 			}
 			for (var i = 0; i < options.jugglers.length; i++) {
 				siteswap.jugglers.push(
