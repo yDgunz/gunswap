@@ -128,6 +128,7 @@
 			<li><a id="pattern" onclick="displayMenu('pattern');"><span class="glyphicon glyphicon-cog"></span> Controls</a></li>
 			<li><a id="animatorControls" onclick="displayMenu('animatorControls');"><span class="glyphicon glyphicon-facetime-video"></span> Camera</a></li>
 			<li><a id="explorer" onclick="displayMenu('explorer');"><span class="glyphicon glyphicon-search"></span> Explorer</a></li>
+			<li><a id="saved" onclick="displayMenu('saved');"><span class="glyphicon glyphicon-save"></span> Saved</a></li>
 			<li><a id="about" onclick="displayMenu('about');"><span class="glyphicon glyphicon-question-sign"></span> Help</a></li>
 		</ul>
 	</div>
@@ -135,7 +136,7 @@
 	</div>
 	<div id="patternMenu" class="controlDiv">
 		<!-- BASIC -->
-		<button onclick="go();">Juggle!</button>
+		<button onclick="go();">Juggle!</button>		
 		<br/><br/>
 		<div id="errorMessage" class="alert" style="display:none;">
 			<span class="glyphicon glyphicon-exclamation-sign"></span>	
@@ -186,6 +187,7 @@
 			armAngle: <span id="lblArmAngle"></span></div>
 			<div><span id="lblSurfaces"></span></div>
 		</div>
+		<a id="saveURL"></a>
 	</div>
 	<div id="animatorControlsMenu" class="controlDiv">								
 		
@@ -261,6 +263,15 @@
 			<ul id="siteswapsList">
 			</ul>
 		</div>
+	</div>
+	<div id="savedMenu" class="controlDiv">		
+		<div>
+			<label for="savedName">Saved Name</label>
+			<input id="savedName" class="control" placeholder="Name"></input>
+		</div>
+		<button onclick="saveCurrentSiteswap();">Save</button><br/><br/>
+		<button onclick="clearSavedSiteswaps();">Clear All</button> 
+		<ul id="savedList"></ul>
 	</div>
 	<div id="aboutMenu" class="controlDiv">
 		<p>Learn more about gunswap at the <a href="/gunswap/index.html">project page</a>.</p>

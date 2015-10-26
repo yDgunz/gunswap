@@ -1,4 +1,5 @@
 var twoWindow = false;
+var saveQueryString;
 
 window.onload = function () {
 
@@ -241,6 +242,16 @@ function go() {
 	}
 
 	var inputs = parseInputs($('#inputsAdvanced').val());
+
+	var saveURL = window.location.href.replace("#","");
+	if (saveURL.indexOf("?") > -1) {
+		saveURL = saveURL.substring(0,saveURL.indexOf("?"));
+	}
+
+	saveQueryString = "?v=16&siteswap=" + encodeURIComponent(inputs.siteswap) + "&beatDuration=" + inputs.beatDuration + "&dwellPath=" + inputs.inputDwellPath; 
+
+	$('#saveURL').text(saveURL + saveQueryString);
+	$('#saveURL').attr("href",saveURL + saveQueryString);	
 
 	window.siteswap = SiteswapJS.CreateSiteswap(inputs.siteswap, 
 		{
@@ -517,8 +528,50 @@ function showHideCameraCustomPosition() {
 function getInputsFromQueryString() {
 	var inputs = {};
 	var siteswap = getURLQueryStringParameterByName("siteswap");
+	var props = JSON.parse(getURLQueryStringParameterByName("props"));
+	var beatDuration = getURLQueryStringParameterByName("beatDuration");
+	var dwellPath = getURLQueryStringParameterByName("dwellPath");
+	
 	if(siteswap !== null) {
 		inputs.siteswap = siteswap;
 	}
+	if (props !== null) {
+		inputs.props = props;
+	}
+	if (beatDuration !== null) {
+		inputs.beatDuration = beatDuration;
+	}
+	if (dwellPath !== null) {
+		inputs.dwellPath = dwellPath;
+	}
+
 	return inputs;
+}
+
+function saveCurrentSiteswap() {
+	var savedSiteswaps = getSavedSiteswaps();
+	savedSiteswaps.push({name: $('#savedName').val(), queryString: saveQueryString});
+	window.localStorage.setItem("savedSiteswaps",JSON.stringify(savedSiteswaps));
+	refreshSavedSiteswapsList();
+}
+
+function getSavedSiteswaps() {	
+	if (window.localStorage.getItem("savedSiteswaps") === null) {
+		window.localStorage.setItem("savedSiteswaps", "[]");
+	} 
+	return JSON.parse(window.localStorage.getItem("savedSiteswaps"));	
+}
+
+function refreshSavedSiteswapsList() {
+	var savedSiteswaps = getSavedSiteswaps();
+	var savedList = $('#savedList');
+	savedList.empty();
+	for(var i = 0; i < savedSiteswaps.length; i++) {
+		savedList.append('<li>'+ savedSiteswaps[i].name +'</li>');
+	}	
+}
+
+function clearSavedSiteswaps() {
+	window.localStorage.clear();
+	refreshSavedSiteswapsList();
 }
