@@ -1,5 +1,4 @@
 var twoWindow = false;
-var saveQueryString;
 
 window.onload = function () {
 
@@ -12,6 +11,7 @@ window.onload = function () {
 	window.onresize();
 
 	buildExamples();
+	refreshSavedSiteswapsList();
 
 	bindInputs(applyInputDefaults(getInputsFromQueryString()));
 
@@ -19,13 +19,14 @@ window.onload = function () {
 
 }
 
-function displayMenu(menu) {
+function displayMenu(menu) {	
 	$('.controlDiv').hide()
 	$('#'+menu+'Menu').show();
 	$('#nav a').removeClass('selected');
 	$('#nav a').addClass('unselected');
 	$('#nav #' +menu).addClass('selected');
-	$('#nav #' +menu).removeClass('unselected');
+	$('#nav #' +menu).removeClass('unselected');	
+	window.onresize();
 }
 
 window.onresize = function () {
@@ -60,10 +61,15 @@ window.onresize = function () {
 	$('#animatorCanvasContainer').height(animatorHeight);
 	$('#animatorCanvasContainer').width(animatorWidth);	
 
-	// explorer
-	$('#siteswaps').height(windowHeight-$('#siteswaps').offset().top);
+	// resize divs containing lists
+	$('#generatedSiteswaps').height(windowHeight-$('#generatedSiteswaps').offset().top);
+	$('#exampleSiteswaps').height(windowHeight-$('#exampleSiteswaps').offset().top);
+	$('#savedSiteswaps').height(windowHeight-$('#exampleSiteswaps').offset().top);
+	$('#patternMenu').height(windowHeight-$('#patternMenu').offset().top);
 
-	animator.resize(animatorWidth, windowHeight);
+	if (animator.resize) {
+		animator.resize(animatorWidth, windowHeight);
+	}	
 }
 
 function updateAdvancedInputsFromBasic() {
@@ -248,7 +254,7 @@ function go() {
 		saveURL = saveURL.substring(0,saveURL.indexOf("?"));
 	}
 
-	saveQueryString = "?v=16&siteswap=" + encodeURIComponent(inputs.siteswap) + "&beatDuration=" + inputs.beatDuration + "&dwellPath=" + inputs.inputDwellPath; 
+	var saveQueryString = "?v=16&siteswap=" + encodeURIComponent(inputs.siteswap) + "&beatDuration=" + inputs.beatDuration + "&dwellPath=" + inputs.inputDwellPath; 
 
 	$('#saveURL').text(saveURL + saveQueryString);
 	$('#saveURL').attr("href",saveURL + saveQueryString);	
@@ -550,7 +556,7 @@ function getInputsFromQueryString() {
 
 function saveCurrentSiteswap() {
 	var savedSiteswaps = getSavedSiteswaps();
-	savedSiteswaps.push({name: $('#savedName').val(), queryString: saveQueryString});
+	savedSiteswaps.push({name: $('#savedName').val(), version: 16, inputs: $('#inputsAdvanced').val()});
 	window.localStorage.setItem("savedSiteswaps",JSON.stringify(savedSiteswaps));
 	refreshSavedSiteswapsList();
 }
@@ -567,11 +573,19 @@ function refreshSavedSiteswapsList() {
 	var savedList = $('#savedList');
 	savedList.empty();
 	for(var i = 0; i < savedSiteswaps.length; i++) {
-		savedList.append('<li>'+ savedSiteswaps[i].name +'</li>');
+		savedList.append('<li><a href="#" onclick="runSavedSiteswap(' + i + ');">'+ savedSiteswaps[i].name +'</a><a href="#" onclick="deleteSavedSiteswap(' + i + ');"><span class="glyphicon glyphicon-remove"></span></a></li>');
 	}	
 }
 
-function clearSavedSiteswaps() {
-	window.localStorage.clear();
+function runSavedSiteswap(savedSiteswapIndex) {
+	var savedSiteswaps = getSavedSiteswaps();
+	$('#inputsAdvanced').val(savedSiteswaps[savedSiteswapIndex].inputs);
+	go();
+}
+
+function deleteSavedSiteswap(savedSiteswapIndex) {
+	var savedSiteswaps = getSavedSiteswaps();
+	savedSiteswaps.splice(savedSiteswapIndex);
+	window.localStorage.setItem("savedSiteswaps",JSON.stringify(savedSiteswaps));
 	refreshSavedSiteswapsList();
 }
