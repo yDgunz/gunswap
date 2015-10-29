@@ -559,6 +559,8 @@ function saveCurrentSiteswap() {
 	savedSiteswaps.push({name: $('#savedName').val(), version: 16, inputs: $('#inputsAdvanced').val()});
 	window.localStorage.setItem("savedSiteswaps",JSON.stringify(savedSiteswaps));
 	refreshSavedSiteswapsList();
+	$('#saveSuccess').show(1000);
+	setTimeout(function() { $('#saveSuccess').hide(1000); }, 2000);
 }
 
 function getSavedSiteswaps() {	
@@ -573,7 +575,7 @@ function refreshSavedSiteswapsList() {
 	var savedList = $('#savedList');
 	savedList.empty();
 	for(var i = 0; i < savedSiteswaps.length; i++) {
-		savedList.append('<li><a href="#" onclick="runSavedSiteswap(' + i + ');">'+ savedSiteswaps[i].name +'</a><a href="#" onclick="deleteSavedSiteswap(' + i + ');"><span class="glyphicon glyphicon-remove"></span></a></li>');
+		savedList.append('<li><a href="#" class="deleteLink" onclick="deleteSavedSiteswap(' + i + ');"><span class="glyphicon glyphicon-remove"></span></a><a href="#" onclick="runSavedSiteswap(' + i + ');">'+ savedSiteswaps[i].name +'</a></li>');
 	}	
 }
 

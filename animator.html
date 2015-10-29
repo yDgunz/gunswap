@@ -117,6 +117,13 @@
 		border-color: #ebccd1;
 		background-color: #f2dede;
 	}
+	.success {
+		color: white;
+		background-color: #5cb85c; 
+	}
+	.deleteLink {
+		color: #a94442;
+	}
 	
 	</style>
 
@@ -194,6 +201,7 @@
 			<label for="savedName">Save As</label>
 			<input id="savedName" class="control" placeholder="Name"></input>
 			<button onclick="saveCurrentSiteswap();">Save</button>
+			<span id="saveSuccess" class="success" style="display:none;">Saved!</span>
 		</div>	
 		<p>URL for this pattern (note: URL only preserves siteswap, beat duration, props and dwell path.)</p>
 		<a id="saveURL"></a>
