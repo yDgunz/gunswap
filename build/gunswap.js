@@ -2455,7 +2455,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		}
 
 		siteswap.jugglers = [];
-		if (options.jugglers === undefined) {
+		// if no juggler's were specified or there was a mismatch, just default to jugglers facing eachother
+		if (options.jugglers === undefined || siteswap.numJugglers != options.jugglers.length) {				
 			for (var i = 0; i < siteswap.numJugglers; i++) {
 				siteswap.jugglers.push(
 					{
@@ -2465,9 +2466,6 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				);
 			}
 		} else {
-			if (siteswap.validSyntax && siteswap.numJugglers != options.jugglers.length) {
-				siteswap.errorMessage = "Number of jugglers doesn\'t match. For passing patterns make sure you define all necessary juggler positions. See syntax help for more information.";
-			}
 			for (var i = 0; i < options.jugglers.length; i++) {
 				siteswap.jugglers.push(
 					{
@@ -4800,6 +4798,7 @@ window.onload = function () {
 	window.onresize();
 
 	buildExamples();
+	refreshSavedSiteswapsList();
 
 	bindInputs(applyInputDefaults(getInputsFromQueryString()));
 
@@ -4807,13 +4806,14 @@ window.onload = function () {
 
 }
 
-function displayMenu(menu) {
+function displayMenu(menu) {	
 	$('.controlDiv').hide()
 	$('#'+menu+'Menu').show();
 	$('#nav a').removeClass('selected');
 	$('#nav a').addClass('unselected');
 	$('#nav #' +menu).addClass('selected');
-	$('#nav #' +menu).removeClass('unselected');
+	$('#nav #' +menu).removeClass('unselected');	
+	window.onresize();
 }
 
 window.onresize = function () {
@@ -4848,10 +4848,15 @@ window.onresize = function () {
 	$('#animatorCanvasContainer').height(animatorHeight);
 	$('#animatorCanvasContainer').width(animatorWidth);	
 
-	// explorer
-	$('#siteswaps').height(windowHeight-$('#siteswaps').offset().top);
+	// resize divs containing lists
+	$('#generatedSiteswaps').height(windowHeight-$('#generatedSiteswaps').offset().top);
+	$('#exampleSiteswaps').height(windowHeight-$('#exampleSiteswaps').offset().top);
+	$('#savedSiteswaps').height(windowHeight-$('#exampleSiteswaps').offset().top);
+	$('#patternMenu').height(windowHeight-$('#patternMenu').offset().top);
 
-	animator.resize(animatorWidth, windowHeight);
+	if (animator.resize) {
+		animator.resize(animatorWidth, windowHeight);
+	}	
 }
 
 function updateAdvancedInputsFromBasic() {
@@ -5030,6 +5035,16 @@ function go() {
 	}
 
 	var inputs = parseInputs($('#inputsAdvanced').val());
+
+	var saveURL = window.location.href.replace("#","");
+	if (saveURL.indexOf("?") > -1) {
+		saveURL = saveURL.substring(0,saveURL.indexOf("?"));
+	}
+
+	var saveQueryString = "?v=16&siteswap=" + encodeURIComponent(inputs.siteswap) + "&beatDuration=" + inputs.beatDuration + "&dwellPath=" + inputs.inputDwellPath; 
+
+	$('#saveURL').text(saveURL + saveQueryString);
+	$('#saveURL').attr("href",saveURL + saveQueryString);	
 
 	window.siteswap = SiteswapJS.CreateSiteswap(inputs.siteswap, 
 		{
@@ -5306,8 +5321,60 @@ function showHideCameraCustomPosition() {
 function getInputsFromQueryString() {
 	var inputs = {};
 	var siteswap = getURLQueryStringParameterByName("siteswap");
+	var props = JSON.parse(getURLQueryStringParameterByName("props"));
+	var beatDuration = getURLQueryStringParameterByName("beatDuration");
+	var dwellPath = getURLQueryStringParameterByName("dwellPath");
+	
 	if(siteswap !== null) {
 		inputs.siteswap = siteswap;
 	}
+	if (props !== null) {
+		inputs.props = props;
+	}
+	if (beatDuration !== null) {
+		inputs.beatDuration = beatDuration;
+	}
+	if (dwellPath !== null) {
+		inputs.dwellPath = dwellPath;
+	}
+
 	return inputs;
+}
+
+function saveCurrentSiteswap() {
+	var savedSiteswaps = getSavedSiteswaps();
+	savedSiteswaps.push({name: $('#savedName').val(), version: 16, inputs: $('#inputsAdvanced').val()});
+	window.localStorage.setItem("savedSiteswaps",JSON.stringify(savedSiteswaps));
+	refreshSavedSiteswapsList();
+	$('#saveSuccess').show(1000);
+	setTimeout(function() { $('#saveSuccess').hide(1000); }, 2000);
+}
+
+function getSavedSiteswaps() {	
+	if (window.localStorage.getItem("savedSiteswaps") === null) {
+		window.localStorage.setItem("savedSiteswaps", "[]");
+	} 
+	return JSON.parse(window.localStorage.getItem("savedSiteswaps"));	
+}
+
+function refreshSavedSiteswapsList() {
+	var savedSiteswaps = getSavedSiteswaps();
+	var savedList = $('#savedList');
+	savedList.empty();
+	for(var i = 0; i < savedSiteswaps.length; i++) {
+		savedList.append('<li><a href="#" class="deleteLink" onclick="deleteSavedSiteswap(' + i + ');"><span class="glyphicon glyphicon-remove"></span></a><a href="#" onclick="runSavedSiteswap(' + i + ');">'+ savedSiteswaps[i].name +'</a></li>');
+	}	
+}
+
+function runSavedSiteswap(savedSiteswapIndex) {
+	var savedSiteswaps = getSavedSiteswaps();
+	$('#inputsAdvanced').val(savedSiteswaps[savedSiteswapIndex].inputs);
+	go();
+}
+
+function deleteSavedSiteswap(savedSiteswapIndex) {
+	var savedSiteswaps = getSavedSiteswaps();
+	savedSiteswaps.splice(savedSiteswapIndex);
+	window.localStorage.setItem("savedSiteswaps",JSON.stringify(savedSiteswaps));
+	refreshSavedSiteswapsList();
 }
