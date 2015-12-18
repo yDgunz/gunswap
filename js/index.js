@@ -62,10 +62,10 @@ window.onresize = function () {
 	$('#animatorCanvasContainer').width(animatorWidth);	
 
 	// resize divs containing lists
-	$('#generatedSiteswaps').height(windowHeight-$('#generatedSiteswaps').offset().top);
-	$('#exampleSiteswaps').height(windowHeight-$('#exampleSiteswaps').offset().top);
-	$('#savedSiteswaps').height(windowHeight-$('#exampleSiteswaps').offset().top);
-	$('#patternMenu').height(windowHeight-$('#patternMenu').offset().top);
+	$('#generatedSiteswaps').height(windowHeight-$('#generatedSiteswaps').offset().top-10);
+	$('#exampleSiteswaps').height(windowHeight-$('#exampleSiteswaps').offset().top-10);
+	$('#savedSiteswaps').height(windowHeight-$('#exampleSiteswaps').offset().top-10);
+	$('#patternMenu').height(windowHeight-$('#patternMenu').offset().top-10);
 
 	if (animator.resize) {
 		animator.resize(animatorWidth, windowHeight);

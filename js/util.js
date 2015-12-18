@@ -44,7 +44,29 @@ if (!Array.prototype.last){
     Array.prototype.last = function(){
         return this[this.length - 1];
     };
-};
+}
+
+if (!Array.prototype.getNextCyclic){
+    Array.prototype.getNextCyclic = function(i){
+    	i = i % this.length;
+        if (this.length - 1 == i) {
+        	return this[0];
+        } else {
+        	return this[i+1];
+        }
+    };
+}
+
+if (!Array.prototype.getPreviousCyclic){
+    Array.prototype.getPreviousCyclic = function(i){
+        i = i % this.length;
+        if (i == 0) {
+        	return this[this.length-1];
+        } else {
+        	return this[i-1];
+        }
+    };
+}
 
 function cross(a,b) {
 	return {
