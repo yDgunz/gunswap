@@ -723,7 +723,70 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						lastTossTime -= (siteswap.beatDuration*siteswap.states.length);
 					}
 
-					if (currentTime < tossTime) {
+					if (curToss.hold) {
+
+						var dwellPath = cloneObject(siteswap.dwellPath[curToss.dwellPathIx]);
+						dwellPath.push(siteswap.dwellPath[nextToss.dwellPathIx][0]);					
+
+						// velocity of last catch
+						var v_0 = interpolateFlightPath(
+							getDwellPosition(siteswap.dwellPath[prevToss.dwellPathIx],prevToss.juggler,prevToss.hand,1),
+							getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,0),
+							prevToss.numBeats*siteswap.beatDuration-prevToss.dwellDuration,
+							0
+						);
+
+						// velocity of toss if it wasn't held
+						var T = curToss.numBeats*siteswap.beatDuration-curToss.dwellDuration;
+						var v_T = interpolateFlightPath(
+							getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,1),
+							getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0),
+							T,
+							T
+						);
+						
+						pos = getDwellPosition(
+							dwellPath
+							, curToss.juggler
+							, curToss.hand
+							, (currentTime-(tossTime-curToss.dwellDuration))/(catchTime-(tossTime-curToss.dwellDuration)) // can't use lastCatchTime since it may be > catchTime
+							, v_0
+							, v_T
+							, siteswap.emptyTossScale
+							, siteswap.emptyCatchScale
+						);
+
+						var catchAngle = Math.atan2(-v_0.dx,-v_0.dy);
+						var tossAngle = Math.atan2(v_T.dx,v_T.dy);
+						if (curToss.tossType == 'claw') {
+							tossAngle -= Math.PI;
+						} else if (curToss.tossTypeId == 'penguin') {
+							tossAngle -= 2*Math.PI;
+						}
+						if (curToss.catchType == 'claw') {
+							catchAngle -= Math.PI;
+						} else if (curToss.catchType == 'penguin') {
+							catchAngle -= 2*Math.PI;
+						}
+						pos.angle = catchAngle + (currentTime-(tossTime-curToss.dwellDuration))/(catchTime-(tossTime-curToss.dwellDuration))*(tossAngle-catchAngle);						
+						if (curToss.hand == RIGHT)
+							pos.angle *= -1;
+
+						pos.dwell = true;
+						
+						propPositions[prop].push(pos);
+						
+						/* assign juggler hand positions */
+						if (tmpJugglerHandPositions[curToss.juggler][curToss.hand] == undefined) {
+							tmpJugglerHandPositions[curToss.juggler][curToss.hand] = pos;
+						}					
+
+						var q = getPropQuaternion(curToss.tossOrientation, curToss.rotationAxis, siteswap.jugglers[curToss.juggler].rotation, 0, curToss.hand);
+						var q2 = getPropQuaternion(nextToss.tossOrientation, nextToss.rotationAxis, siteswap.jugglers[nextToss.juggler].rotation, 0, nextToss.hand);
+						q.slerp(q2, (currentTime-(tossTime-curToss.dwellDuration))/(catchTime-(tossTime-curToss.dwellDuration)));
+						propRotations[prop].push(q);
+
+					} else if (currentTime < tossTime) {
 						/* interpolate dwell path */
 
 						var launches = [];
@@ -898,57 +961,23 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 						var T = catchTime - tossTime;
 						var t = currentTime - tossTime;						
-						var pos;
+						var pos;							
 
-						// if the current toss is held (ie. a 2) then don't leave the hand 
-						if (curToss.hold) {
-							
-							// the dwell path for the held toss is going to include the first 
-							var p0 = getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,1);
-							var pT = getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0);
+						// if not holding prop then interpolate flight path
 
-							var v_0 = interpolateFlightPath(
-								p0,
-								pT,
-								T,
-								0
-							);
-							var v_T = interpolateFlightPath(
-								p0,
-								pT,
-								T,
-								T
-							);
-							
-							pos = getDwellPosition(
-								[siteswap.dwellPath[curToss.dwellPathIx].last(),siteswap.dwellPath[nextToss.dwellPathIx][0]]
-								, curToss.juggler
-								, curToss.hand
-								, t/T
-								, v_0
-								, v_T
-								, siteswap.emptyTossScale
-								, siteswap.emptyCatchScale
-							);
-
-						} else {
-
-							// if not holding prop then interpolate flight path
-
-							pos = interpolateFlightPath(
-								getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,1), /* p0 */
-								getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0), /* p1 */
-								T,
-								t,
-								{
-									numBounces: curToss.numBounces, 
-									bounceType: curToss.bounceType, 
-									bounceOrder: curToss.bounceOrder,
-									R: siteswap.props[prop].radius, 
-									C: siteswap.props[prop].C
-								}
-							);
-						}						
+						pos = interpolateFlightPath(
+							getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,1), /* p0 */
+							getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0), /* p1 */
+							T,
+							t,
+							{
+								numBounces: curToss.numBounces, 
+								bounceType: curToss.bounceType, 
+								bounceOrder: curToss.bounceOrder,
+								R: siteswap.props[prop].radius, 
+								C: siteswap.props[prop].C
+							}
+						);
 
 						pos.dwell = false;
 
