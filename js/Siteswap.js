@@ -382,10 +382,19 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				}
 
 			} else {
-				numSpins = Math.floor(numBeats/2) + .2;
-				// passes get an extra bit of spin
-				if (isPass) {
-					numSpins += .1;
+				
+				// if all props are balls then no spin
+				var allBalls = true;
+				siteswap.props.forEach(function(prop) { if (prop.type != 'ball') { allBalls = false; } });
+
+				if (allBalls) {
+					numSpins = 0;
+				} else {
+					numSpins = Math.floor(numBeats/2) + .2;
+					// passes get an extra bit of spin
+					if (isPass) {
+						numSpins += .1;
+					}
 				}
 
 			}
