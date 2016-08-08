@@ -223,7 +223,7 @@ describe('Spin modifiers', function() {
 
 	describe('Default spins', function() {
 		it('"531" should spin 2, 1 and 0 times', function() {
-			var s = Siteswap.CreateSiteswap('531',{validationOnly: true});
+			var s = Siteswap.CreateSiteswap('531',{validationOnly: true, props:[{type: 'club', radius: .05, C: .95}]});
 			assert.equal(Math.floor(s.tosses[0][0].numSpins),2);
 			assert.equal(Math.floor(s.tosses[1][0].numSpins),1);
 			assert.equal(Math.floor(s.tosses[2][0].numSpins),0);
