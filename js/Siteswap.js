@@ -124,7 +124,12 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		}
 
 		if (options.dwellPath === undefined) {
-			siteswap.dwellPath = [[{x:0.3,y:0,z:0,rotation:{x:4,y:0,z:-1,th:Math.PI/2}},{x:0.1,y:0,z:0,rotation:{x:4,y:0,z:1,th:Math.PI/2}}]];
+			siteswap.dwellPath = [
+				[
+					{x:0.3,y:0,z:0,rotation:{x:4,y:0,z:-1,th:Math.PI/2},empty:false},
+					{x:0.1,y:0,z:0,rotation:{x:4,y:0,z:1,th:Math.PI/2},empty:false}
+				]
+			];
 		} else {
 			siteswap.dwellPath = options.dwellPath;
 		}
@@ -739,8 +744,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 						// velocity of last catch
 						var v_0 = interpolateFlightPath(
-							getDwellPosition(siteswap.dwellPath[prevToss.dwellPathIx],prevToss.juggler,prevToss.hand,1),
-							getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,0),
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[prevToss.dwellPathIx]),prevToss.juggler,prevToss.hand,1),
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,0),
 							prevToss.numBeats*siteswap.beatDuration-prevToss.dwellDuration,
 							0
 						);
@@ -748,14 +753,14 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						// velocity of toss if it wasn't held
 						var T = curToss.numBeats*siteswap.beatDuration-curToss.dwellDuration;
 						var v_T = interpolateFlightPath(
-							getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,1),
-							getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0),
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,1),
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[nextToss.dwellPathIx]),nextToss.juggler,nextToss.hand,0),
 							T,
 							T
 						);
 						
 						pos = getDwellPosition(
-							dwellPath
+							removeEmptyPositions(dwellPath)
 							, curToss.juggler
 							, curToss.hand
 							, (currentTime-(tossTime-curToss.dwellDuration))/(catchTime-(tossTime-curToss.dwellDuration)) // can't use lastCatchTime since it may be > catchTime
@@ -832,8 +837,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 											}
 
 											launches.push(interpolateFlightPath(
-												getDwellPosition(siteswap.dwellPath[multiplexCurToss.dwellPathIx],multiplexCurToss.juggler,multiplexCurToss.hand,1), /* p0 */
-												getDwellPosition(siteswap.dwellPath[multiplexNextToss.dwellPathIx],multiplexNextToss.juggler,multiplexNextToss.hand,0), /* p1 */
+												getDwellPosition(removeEmptyPositions(siteswap.dwellPath[multiplexCurToss.dwellPathIx]),multiplexCurToss.juggler,multiplexCurToss.hand,1), /* p0 */
+												getDwellPosition(removeEmptyPositions(siteswap.dwellPath[multiplexNextToss.dwellPathIx]),multiplexNextToss.juggler,multiplexNextToss.hand,0), /* p1 */
 												(multiplexCatchTime - multiplexTossTime),
 												0,								
 												{
@@ -846,8 +851,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 											));
 
 											landings.push(interpolateFlightPath(
-												getDwellPosition(siteswap.dwellPath[multiplexPrevToss.dwellPathIx],multiplexPrevToss.juggler,multiplexPrevToss.hand,1), /* p0 */
-												getDwellPosition(siteswap.dwellPath[multiplexCurToss.dwellPathIx],multiplexCurToss.juggler,multiplexCurToss.hand,0), /* p1 */
+												getDwellPosition(removeEmptyPositions(siteswap.dwellPath[multiplexPrevToss.dwellPathIx]),multiplexPrevToss.juggler,multiplexPrevToss.hand,1), /* p0 */
+												getDwellPosition(removeEmptyPositions(siteswap.dwellPath[multiplexCurToss.dwellPathIx]),multiplexCurToss.juggler,multiplexCurToss.hand,0), /* p1 */
 												(multiplexLastCatchTime - multiplexLastTossTime),
 												(multiplexLastCatchTime - multiplexLastTossTime),
 												{
@@ -865,8 +870,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						}						
 
 						launches.push(interpolateFlightPath(
-								getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,1), /* p0 */
-								getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0), /* p1 */
+								getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,1), /* p0 */
+								getDwellPosition(removeEmptyPositions(siteswap.dwellPath[nextToss.dwellPathIx]),nextToss.juggler,nextToss.hand,0), /* p1 */
 								(catchTime - tossTime),
 								0,								
 								{
@@ -879,8 +884,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 							));
 
 						landings.push(interpolateFlightPath(
-								getDwellPosition(siteswap.dwellPath[prevToss.dwellPathIx],prevToss.juggler,prevToss.hand,1), /* p0 */
-								getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,0), /* p1 */
+								getDwellPosition(removeEmptyPositions(siteswap.dwellPath[prevToss.dwellPathIx]),prevToss.juggler,prevToss.hand,1), /* p0 */
+								getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,0), /* p1 */
 								(lastCatchTime - lastTossTime),
 								(lastCatchTime - lastTossTime),
 								{
@@ -915,7 +920,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 						var t = 1-(tossTime - currentTime)/curToss.dwellDuration;
 						var pos = getDwellPosition(
-							siteswap.dwellPath[curToss.dwellPathIx]
+							removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx])
 							, curToss.juggler
 							, curToss.hand
 							, t
@@ -927,7 +932,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 						// the landing return by flight path interpolation may be slightly off (if solved by BounceGA)
 						// in this case we should find the correct landing and interpolate between the two 
-						var correctLand = getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,0);
+						var correctLand = getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,0);
 
 						var landingDiff = {x: land.x - correctLand.x, y: land.y - correctLand.y, z: land.z - correctLand.z};
 						pos.x += (1-t)*landingDiff.x;
@@ -975,8 +980,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						// if not holding prop then interpolate flight path
 
 						pos = interpolateFlightPath(
-							getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,1), /* p0 */
-							getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0), /* p1 */
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,1), /* p0 */
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[nextToss.dwellPathIx]),nextToss.juggler,nextToss.hand,0), /* p1 */
 							T,
 							t,
 							{
@@ -1002,7 +1007,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 				}
 
-				/* set hand positions that weren't set */
+				/* set hand positions that weren't set - ie. empty hands */
 				for (var juggler = 0; juggler < siteswap.numJugglers; juggler++) {
 					for (var hand = 0; hand <= 1; hand++) {
 						if(tmpJugglerHandPositions[juggler][hand] == undefined) {
@@ -1102,8 +1107,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 								}
 
 								var v_0 = interpolateFlightPath(
-									getDwellPosition(siteswap.dwellPath[lastToss.dwellPathIx],lastToss.juggler,lastToss.hand,1), /* p0 */
-									getDwellPosition(siteswap.dwellPath[propNextToss.dwellPathIx],propNextToss.juggler,propNextToss.hand,0), /* p1 */
+									getDwellPosition(removeEmptyPositions(siteswap.dwellPath[lastToss.dwellPathIx]),lastToss.juggler,lastToss.hand,1), /* p0 */
+									getDwellPosition(removeEmptyPositions(siteswap.dwellPath[propNextToss.dwellPathIx]),propNextToss.juggler,propNextToss.hand,0), /* p1 */
 									lastToss.numBeats*siteswap.beatDuration-lastToss.dwellDuration,
 									0,
 									{
@@ -1115,8 +1120,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 									}
 								);
 								var v_T = interpolateFlightPath(
-									getDwellPosition(siteswap.dwellPath[propLastToss.dwellPathIx],propLastToss.juggler,propLastToss.hand,1), /* p0 */
-									getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0), /* p1 */
+									getDwellPosition(removeEmptyPositions(siteswap.dwellPath[propLastToss.dwellPathIx]),propLastToss.juggler,propLastToss.hand,1), /* p0 */
+									getDwellPosition(removeEmptyPositions(siteswap.dwellPath[nextToss.dwellPathIx]),nextToss.juggler,nextToss.hand,0), /* p1 */
 									propLastToss.numBeats*siteswap.beatDuration-propLastToss.dwellDuration,
 									propLastToss.numBeats*siteswap.beatDuration-propLastToss.dwellDuration,
 									{
@@ -1129,8 +1134,28 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 								);
 
 								var t = (currentTime - lastThrowTime)/(nextCatchTime - lastThrowTime);
+								
+								var emptyPath = [];
+								// get toss position + empty positions (if any) from last toss
+								var lastTossPath = siteswap.dwellPath[lastToss.dwellPathIx];
+								for (var i = 0; i < lastTossPath.length; i++) {
+									if (lastTossPath[i].empty) {
+										// if this is the first empty then the last position was the toss position
+										if (emptyPath.length == 0) {
+											emptyPath.push(lastTossPath[i-1]);
+										}																				
+										emptyPath.push(lastTossPath[i]);
+									}
+								}
+								// if empty never found then just take the last position
+								if (emptyPath.length == 0) {
+									emptyPath.push(lastTossPath.last());
+								}
+								// add catch position for next toss
+								emptyPath.push(siteswap.dwellPath[nextToss.dwellPathIx][0]);
+
 								var pos = getDwellPosition(
-									[siteswap.dwellPath[lastToss.dwellPathIx].last(),siteswap.dwellPath[nextToss.dwellPathIx][0]]
+									emptyPath
 									, lastToss.juggler
 									, lastToss.hand
 									, t
@@ -1141,7 +1166,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 								);
 
 								var correctCatch = getDwellPosition(
-									[siteswap.dwellPath[lastToss.dwellPathIx].last(),siteswap.dwellPath[nextToss.dwellPathIx][0]]
+									emptyPath
 									, lastToss.juggler
 									, lastToss.hand
 									, 1
@@ -1314,12 +1339,26 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		};
 	}
 
+	function removeEmptyPositions(dwellPath) {
+
+		// remove the empty positions from the dwell path
+		var P = [];
+		for (var i = 0; i < dwellPath.length; i++) {
+			if (!dwellPath[i].empty) {
+				P.push(dwellPath[i]);
+			}
+		}
+
+		return P;
+
+	}
+
 	function getDwellPosition(P,juggler,hand,t,v_0,v_T,v_0scale,v_Tscale,matchVelocity) {
 
 		if (hand == LEFT && (v_0 || v_T)) {
 			v_0.dx *= -1;
 			v_T.dx *= -1;
-		}
+		}		
 
 		var dwellPosition = Bezier.interpolateBezierSpline(P,t,v_0,v_T,v_0scale,v_Tscale,matchVelocity);
 
