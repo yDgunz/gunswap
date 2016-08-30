@@ -10,6 +10,7 @@
 	<script src="js/lib/jquery-ui.min.js"></script>
 	<script src="js/lib/omggif.js"></script>
 	<script src="js/lib/three.min.js"></script>
+	<script src="js/lib/yaml.min.js"></script>
 	<script src="js/util.js"></script>
 	<script src="js/Bezier.js"></script>
 	<script src="js/BounceGA.js"></script>
@@ -157,11 +158,11 @@
 		</div>
 		<div>
 			<label for="siteswap">Siteswap</label>
-			<input id="siteswap" class="control" value="3" onchange="updateAdvancedInputsFromBasic();"></input>
+			<input id="siteswap" class="control" value="3" onchange="updateInputSiteswap();"></input>
 		</div>
 		<div>
 			<label for="prop">Prop</label>
-			<select id="prop" class="control" onchange="updateDrawHandsForProp();updateAdvancedInputsFromBasic();">
+			<select id="prop" class="control" onchange="updateDrawHandsForProp();updateInputProp();">
 				<option value="ball">Ball</option>
 				<option value="club">Club</option>
 				<option value="ring">Ring</option>
@@ -169,7 +170,7 @@
 		</div>
 		<div>
 			<label for="dwellPath">Dwell</label>
-			<select id="dwellPath" class="control" onchange="updateAdvancedInputsFromBasic();">
+			<select id="dwellPath" class="control" onchange="updateInputDwellPath();">
 				<option value="(30)(10)">Cascade</option>
 				<option value="(10)(30)">Reverse Cascade</option>
 				<option value="(30)(10).(10)(30)">Shower</option>
@@ -179,27 +180,17 @@
 		</div>
 		<div>
 			<label for="beatDuration">Height</label>
-			<input id="beatDuration" class="control" type="range" min=".05" max=".5" value=".28" step=".005" onchange="updateAdvancedInputsFromBasic();"></input>
+			<input id="beatDuration" class="control" type="range" min=".05" max=".5" value=".28" step=".005" onchange="updateInputBeatDuration();"></input>
 		</div>
 		<div>
 			<label for="drawHands">Show Hands</label>
-			<input id="drawHands" type="checkbox" checked></input>
+			<input id="drawHands" type="checkbox" checked onchange="updateInputDrawHands();"></input>
 		</div>
 
 		<!-- ADVANCED -->		
 		<p>Advanced | <a href="/gunswap/syntax.html">Syntax Help</a></p>
-		<textarea id="inputsAdvanced" rows="8" cols="40" onchange="updateAdvancedLabels();" style="font-family:monospace;"></textarea><br/>		
+		<textarea id="inputsAdvanced" rows="8" cols="40" style="font-family:monospace;"></textarea><br/>
 		<br/>
-		<!-- hide these for now -->
-		<div id="advancedLabels" style="display:none;">
-			<div>siteswap: <span id="lblSiteswap"></span></div>
-			<div>beatDuration: <span id="lblBeatDuration"></span>, dwellRatio: <span id="lblDwellRatio"></span></div>
-			<div>props: <span id="lblProps"></span></div>
-			<div>dwellPath: <span id="lblDwellPath"></span></div>
-			<div>matchVelocity: <span id="lblMatchVelocity"></span>, dwellCatchScale: <span id="lblDwellCatchScale"></span>, dwellTossScale: <span id="lblDwellTossScale"></span>, emptyTossScale: <span id="lblEmptyTossScale"></span>, emptyCatchScale: <span id="lblEmptyCatchScale"></span>,
-			armAngle: <span id="lblArmAngle"></span></div>
-			<div><span id="lblSurfaces"></span></div>
-		</div>			
 		<div>
 			<label for="savedName">Save As</label>
 			<input id="savedName" class="control" placeholder="Name"></input>

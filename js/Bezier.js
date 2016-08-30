@@ -79,7 +79,7 @@ exports.interpolateBezierSpline = function(P,t,v_0,v_T,v_0scale,v_Tscale,matchVe
 		}
 
 		var dwellPositionIx;
-		if (siteswap.matchVelocity) {
+		if (matchVelocity) {
 			var v_0mag = Math.sqrt(Math.pow(v_0.dx,2)+Math.pow(v_0.dy,2)+Math.pow(v_0.dz,2));
 			var v_Tmag = Math.sqrt(Math.pow(v_T.dx,2)+Math.pow(v_T.dy,2)+Math.pow(v_T.dz,2));
 			var L = path.last().dist;

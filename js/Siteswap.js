@@ -124,14 +124,73 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		}
 
 		if (options.dwellPath === undefined) {
+			
 			siteswap.dwellPath = [
 				[
 					{x:0.3,y:0,z:0,rotation:{x:4,y:0,z:-1,th:Math.PI/2},empty:false},
 					{x:0.1,y:0,z:0,rotation:{x:4,y:0,z:1,th:Math.PI/2},empty:false}
 				]
 			];
+
 		} else {
-			siteswap.dwellPath = options.dwellPath;
+
+			var customDwellPathBeats = options.dwellPath.split(').').map(function(a,ix,arr) { if (ix < arr.length-1) { return a+')'; } else { return a; } });
+			siteswap.dwellPath = [];
+			for (var i = 0; i < customDwellPathBeats.length; i++) {
+				if (customDwellPathBeats[i].indexOf("e") == -1) {
+					customDwellPathBeats[i] += "e";
+				}
+				var heldDwellPathArr = customDwellPathBeats[i].split("e")[0].match(/\(-?\d+(\.\d+)?(,-?\d+(\.\d+)?)?(,-?\d+(\.\d+)?)?(,\{-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?\})?\)/g);		
+				var emptyDwellPathArr = customDwellPathBeats[i].split("e")[1].match(/\(-?\d+(\.\d+)?(,-?\d+(\.\d+)?)?(,-?\d+(\.\d+)?)?(,\{-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?\})?\)/g);
+				var emptyDwellPathStrLen;
+				if (emptyDwellPathArr == null) {
+					emptyDwellPathArr = [];
+					emptyDwellPathStrLen = 0;
+				} else {
+					emptyDwellPathStrLen = emptyDwellPathArr.reduce(function(a,b) { return a+b }).length;
+				}
+				// this is just a check that it's a valid dwell path
+				if ( 
+					heldDwellPathArr.reduce(function(a,b) { return a+b }).length == customDwellPathBeats[i].split("e")[0].length &&
+					emptyDwellPathStrLen == customDwellPathBeats[i].split("e")[1].length
+				) {
+					
+					function parseDwellPathBeat(a,ix,empty) {
+						var xyz = a.match(/\(-?\d+(\.\d+)?(,-?\d+(\.\d+)?)?(,-?\d+(\.\d+)?)?/g)[0].match(/-?\d+(\.\d+)?/g);
+						var rot = a.match(/\{-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?\}/g); 
+						var xyzth;
+						if (rot) {
+							xyzth = rot[0].match(/-?\d+(\.\d+)?/g);
+						}
+						var rotation;
+						if (xyzth) {
+							rotation = {x:parseFloat(xyzth[0]),y:parseFloat(xyzth[1]),z:parseFloat(xyzth[2]),th:parseFloat(xyzth[3])};
+						} else if (siteswap.props[0].type == 'club') {
+							rotation = {x:4,y:0,z:(ix == 0 ? -1 : 1),th:Math.PI/2+(ix == 0 ? .5 : -.7)};
+						} else if (siteswap.props[0].type == 'ring') {
+							rotation = {x:0,y:1,z:0,th:Math.PI/2};
+						} else {
+							rotation = {x:1,y:0,z:0,th:0};
+						}
+						return {
+							x: parseFloat(xyz[0])/100,
+							y: xyz[1] ? parseFloat(xyz[1])/100 : 0,
+							z: xyz[2] ? parseFloat(xyz[2])/100 : 0,
+							rotation: rotation,
+							empty: empty
+						}
+					}
+
+					
+					siteswap.dwellPath.push(
+						heldDwellPathArr.map(function(a,ix) { return parseDwellPathBeat(a,ix,false); }).concat(emptyDwellPathArr.map(function(a,ix) { return parseDwellPathBeat(a,ix,true); }))
+					);
+
+				} else {
+					siteswap.errorMessage = 'Invalid custom dwell path';
+				}
+			}
+
 		}
 
 		if (options.surfaces === undefined) {

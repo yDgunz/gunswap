@@ -1,0 +1,97 @@
+- 
+ name: 'Basic example - 5 ball cascade'
+ siteswap: '5'
+-
+ name: 'Vanilla siteswap - 4 ball tower'
+ siteswap: '7531'
+ beatDuration: '.2'
+-
+ name: 'Synchronous siteswap - 4 ball sync fountain'
+ siteswap: '(4,4)'
+-
+ name: 'Multiplex siteswap - Gattoplex'
+ siteswap: '[54]24'
+-
+ name: 'Passing siteswap - 4 count passing'
+ siteswap: '<3|3><3|3><3|3><3P|3P>'
+ props:
+  - {type: club, color: red, radius: '.05', C: '.97'}
+ jugglers:
+  - {position: {x: 0, z: 0}, rotation: 0}
+  - {position: {x: 0, z: -2}, rotation: 3.14}
+-
+ name: 'Clubs - 5 club cascade'
+ siteswap: '5'
+ props:
+  - {type: club, color: red, radius: '.05', C: '.97'}
+-
+ name: 'Rings - 6 ring fountain'
+ siteswap: '6'
+ props:
+  - {type: ring, color: red, radius: '.05', C: '.97'}
+-
+ name: 'Dwell path - windmill'
+ siteswap: '3'
+ dwellRatio: '.7'
+ dwellPath: (-20)(20).(20)(-20)
+-
+ name: 'Dwell path - Mills Mess'
+ siteswap: '3'
+ dwellRatio: '.8'
+ dwellPath: '(2.5,5)(-30,5).(-2.5,-10)(30,-10).(0,-10)(-30,-10)'
+-
+ name: 'Toss/catch modifier - claw'
+ siteswap: '3C{C}T{C}'
+ emptyTossScale: '.15'
+ emptyCatchScale: '.15'
+-
+ name: 'Catch modifier - penguin'
+ siteswap: '3C{P}'
+ dwellPath: '(35,-10)(10)'
+-
+ name: 'Bouncing - lift bounce'
+ siteswap: 5B
+ beatDuration: '.24'
+ dwellPath: (25)(15)
+ surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1}]
+-
+ name: 'Bouncing - force bounce'
+ siteswap: '5B{F}'
+ beatDuration: '.25'
+ dwellPath: '(30)(25,-5)'
+ emptyTossScale: '.1'
+ surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1}]
+-
+ name: 'Bouncing - hyperlift bounce'
+ siteswap: '5B{HL}'
+ beatDuration: '.26'
+ dwellPath: (25)(20)
+ surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1}]
+-
+ name: 'Bouncing - hyperforce bounce'
+ siteswap: '5B{HF}'
+ beatDuration: '.14'
+ dwellPath: '(20)(25,-5)'
+ matchVelocity: '1'
+ surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1}]
+-
+ name: 'Bouncing - custom surface'
+ siteswap: 5B
+ surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: .25}, scale: 3}]
+-
+ name: 'Bouncing - multiple surfaces'
+ siteswap: '5B{10HL}5B{11HL}'
+ beatDuration: '.28'
+ dwellPath: '(30)(5,-10)'
+ surfaces:
+  - {position: {x: 1, y: 0, z: 0}, normal: {x: -.15, y: 1, z: 0}, scale: 1}
+  - {position: {x: -1, y: 0, z: 0}, normal: {x: .15, y: 1, z: 0}, scale: 1}
+-
+ name: 'Spin modifier - flats and doubles'
+ siteswap: '3S{0}3S{2}'
+ props:
+  - {type: club, color: red, radius: '.05', C: '.97'}
+-
+ name: 'Dwell modifier - 4 ball sync shower'
+ siteswap: '(4xD{.9},4xD{.4})'
+ dwellPath: (25)(15).(15)(25)
