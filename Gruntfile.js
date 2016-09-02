@@ -29,8 +29,8 @@ module.exports = function(grunt)
             },
             dist: {
                 files: {
-                    'build/Siteswap.js': ['js/util.js','js/BounceGA.js','js/Bezier.js','js/Siteswap.js'],
-                    'build/gunswap.js': ['js/lib/*.js','build/Siteswap.js','js/SiteswapAnimator.js','js/SiteswapGraph.js','js/index.js']
+                    'build/Siteswap.js': ['public/js/util.js','public/js/BounceGA.js','public/js/Bezier.js','public/js/Siteswap.js'],
+                    'build/gunswap.js': ['public/js/lib/*.js','build/Siteswap.js','public/js/SiteswapAnimator.js','public/js/SiteswapGraph.js','public/js/index.js']
                 }
             }
         },
