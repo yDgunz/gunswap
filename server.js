@@ -34,23 +34,9 @@ require('./config/passport')(passport); // pass passport for configuration
 var port = process.env.PORT || 8080;        // set our port
 
 var mongoose   = require('mongoose');
-//mongoose.connect('mongodb://localhost/gunswap'); // connect to our database
-mongoose.connect('mongodb://testuser:password@ds041526.mlab.com:41526/heroku_xrnd287q');
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/gunswap'); // connect to our database
 
 var Pattern     = require('./app/models/pattern');
-
-// test out writing to DB
-
-var pattern = new Pattern();
-
-pattern.name = "test";
-
-pattern.save(function(err) {
-    if (err)
-        res.send(err);
-
-    res.json({ message: 'Pattern created!' });
-});
 
 // ROUTES FOR OUR API
 // =============================================================================
