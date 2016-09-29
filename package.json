@@ -28,6 +28,7 @@
    "start": "node server.js"
  	},
   "engines": {
-    "node": "4.6.0"
+    "node": "4.6.0",
+    "npm": "2.15.19"
   }
 }
