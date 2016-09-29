@@ -87,10 +87,20 @@ router.get('/', function(req, res) {
 
 router.route('/patterns')
 
-    .post(function(req, res) {
-        
-        var pattern = new Pattern();   
-        pattern.name = req.body.name;  
+    .post(isLoggedIn, function(req, res) {
+
+        var pattern = new Pattern();
+
+        // this method wasn't working, was writing nested objects as "Object object"
+        var keys = Object.keys(req.body.inputs);
+        for (var i = 0; i < keys.length; i++) {
+            pattern.inputs[keys[i]] = req.body.inputs[keys[i]];
+            console.log(req.body.inputs[keys[i]]);
+        }
+
+        pattern.user_id = req.user.id;
+        pattern.public = true;
+        pattern.name = req.body.name;
 
         pattern.save(function(err) {
             if (err)
@@ -102,7 +112,19 @@ router.route('/patterns')
     })
 
     .get(function(req, res) {
-        Pattern.find(function(err, patterns) {
+        var query = [];
+
+        if (req.query.public == 1) {
+            query.push({ 'public': true });
+        } else if (req.query.public == 0) {
+            query.push({ 'public' : false });
+        }
+        
+        if (req.query.userOnly == 1) {
+            query.push({'user_id' : req.isAuthenticated() ? req.user.id : null });
+        }
+
+        Pattern.find(query.length > 0 ? { $and: query } : {}, '_id name public user_id', function(err, patterns) {
             if (err)
                 res.send(err);
 
@@ -114,12 +136,17 @@ router.route('/patterns/:pattern_id')
 
     .get(function(req, res) {
         Pattern.findById(req.params.pattern_id, function(err, pattern) {
-            if (err)
+            if (err) {
                 res.send(err);
-            res.json(pattern);
+            }
+            // only return this pattern if it's the user's pattern or it's public
+            if (req.user.id == pattern.user_id || pattern.public) {
+                res.json(pattern);
+            }            
         });
     })
 
+    // TODO - still need to do this part
     .put(function(req, res) {
 
         Pattern.findById(req.params.pattern_id, function(err, pattern) {
@@ -140,14 +167,25 @@ router.route('/patterns/:pattern_id')
     })
 
     .delete(function(req, res) {
-        Pattern.remove({
-            _id: req.params.pattern_id
-        }, function(err, pattern) {
+        
+        Pattern.findById(req.params.pattern_id, function(err, pattern) {
+
             if (err)
                 res.send(err);
 
-            res.json({ message: 'Successfully deleted' });
+            if (pattern.user_id == req.user.id) {
+                Pattern.remove({
+                    _id: pattern.id
+                }, function(err, pattern) {
+                    if (err)
+                        res.send(err);
+
+                    res.json({ message: 'Successfully deleted' });
+                });  
+            }            
+
         });
+        
     });
 
 // more routes for our API will happen here
