@@ -26,5 +26,8 @@
   "scripts": {
  	 "test": "grunt simplemocha",
    "start": "node server.js"
- 	}
+ 	},
+  "engines": {
+    "node": "4.6.0"
+  }
 }
