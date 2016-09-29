@@ -34,7 +34,8 @@ require('./config/passport')(passport); // pass passport for configuration
 var port = process.env.PORT || 8080;        // set our port
 
 var mongoose   = require('mongoose');
-mongoose.connect('mongodb://localhost/gunswap'); // connect to our database
+//mongoose.connect('mongodb://localhost/gunswap'); // connect to our database
+mongoose.connect('mongodb://testuser:password@ds041526.mlab.com:41526/heroku_xrnd287q');
 
 var Pattern     = require('./app/models/pattern');
 
