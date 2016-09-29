@@ -24,6 +24,7 @@
     "grunt-contrib-uglify": "0.8.1"
   },
   "scripts": {
- 	 "test": "grunt simplemocha"
+ 	 "test": "grunt simplemocha",
+   "start": "node server.js"
  	}
 }

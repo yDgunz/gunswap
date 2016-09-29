@@ -94,8 +94,7 @@ router.route('/patterns')
         // this method wasn't working, was writing nested objects as "Object object"
         var keys = Object.keys(req.body.inputs);
         for (var i = 0; i < keys.length; i++) {
-            pattern.inputs[keys[i]] = req.body.inputs[keys[i]];
-            console.log(req.body.inputs[keys[i]]);
+            pattern.inputs[keys[i]] = req.body.inputs[keys[i]];            
         }
 
         pattern.user_id = req.user.id;
