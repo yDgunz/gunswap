@@ -41,9 +41,6 @@ module.exports = function(passport) {
     },
     function(req, username, password, done) {
 
-        console.log(username);
-        console.log(password);
-
         // asynchronous
         // User.findOne wont fire unless data is sent back
         process.nextTick(function() {

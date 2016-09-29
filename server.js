@@ -39,6 +39,19 @@ mongoose.connect('mongodb://testuser:password@ds041526.mlab.com:41526/heroku_xrn
 
 var Pattern     = require('./app/models/pattern');
 
+// test out writing to DB
+
+var pattern = new Pattern();
+
+pattern.name = "test";
+
+pattern.save(function(err) {
+    if (err)
+        res.send(err);
+
+    res.json({ message: 'Pattern created!' });
+});
+
 // ROUTES FOR OUR API
 // =============================================================================
 var acctRouter = express.Router();
