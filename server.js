@@ -35,6 +35,7 @@ var port = process.env.PORT || 8080;        // set our port
 
 var mongoose   = require('mongoose');
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/gunswap'); // connect to our database
+console.log('Connecting to DB at ' + process.env.MONGODB_URI);
 
 var Pattern     = require('./app/models/pattern');
 
