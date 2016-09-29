@@ -27,13 +27,16 @@ window.onload = function () {
 			defaultInputs.dwellPath = urlInputs.dwellPath;
 		}
 
-		$('#inputsAdvanced').val(YAML.stringify(defaultInputs,1,1));	
+		$('#inputsAdvanced').val(YAML.stringify(defaultInputs,1,1));
 
 		go();
 	});	
 
-	$.getJSON("api/patterns").done(function(d) { console.log(d); });
-
+	/*
+	$.getJSON("api/patterns")
+		.done(function(d) { console.log('success'); console.log(d); })
+		.fail(function(d) { console.log('failure'); console.log(d); });
+	*/
 }
 
 //update advanced inputs from basics
@@ -202,7 +205,7 @@ function go() {
 			}
 		);
 		animator.animate();
-
+		
 	}
 
 }
@@ -386,7 +389,7 @@ function findSiteswaps() {
 		sync: $('#explorerSync')[0].checked,
 		callbacks: {
 			siteswapFound: function (siteswap, siteswapIx, excited) {
-				$('#siteswapsList').append('<li><a class="' + (excited ? 'excited' : 'ground') + '" href="#" onclick="runSiteswap(\''+siteswap+'\')">'+siteswap+'</a></li>');
+				$('#siteswapsList').append('<li><a class="' + (excited ? 'excited' : 'ground') + ' patternLink" href="#" onclick="runSiteswap(\''+siteswap+'\')">'+siteswap+'</a></li>');
 			}
 		}
 	};
@@ -438,39 +441,42 @@ function getInputsFromQueryString() {
 }
 
 function saveCurrentSiteswap() {
-	var savedSiteswaps = getSavedSiteswaps();
-	savedSiteswaps.push({name: $('#savedName').val(), version: 16, inputs: $('#inputsAdvanced').val()});
-	window.localStorage.setItem("savedSiteswaps",JSON.stringify(savedSiteswaps));
-	refreshSavedSiteswapsList();
-	$('#saveSuccess').show(1000);
-	setTimeout(function() { $('#saveSuccess').hide(1000); }, 2000);
-}
 
-function getSavedSiteswaps() {	
-	if (window.localStorage.getItem("savedSiteswaps") === null) {
-		window.localStorage.setItem("savedSiteswaps", "[]");
-	} 
-	return JSON.parse(window.localStorage.getItem("savedSiteswaps"));	
+	var pattern = {};
+	pattern.inputs = parseInputs();
+	pattern.name = $('#savedName').val();
+
+	$.post("api/patterns", pattern);//.done(function(d) { console.log("success"); console.log(d); });
+
+	refreshSavedSiteswapsList();	
 }
 
 function refreshSavedSiteswapsList() {
-	var savedSiteswaps = getSavedSiteswaps();
-	var savedList = $('#savedList');
-	savedList.empty();
-	for(var i = 0; i < savedSiteswaps.length; i++) {
-		savedList.append('<li><a href="#" class="deleteLink" onclick="deleteSavedSiteswap(' + i + ');"><span class="glyphicon glyphicon-remove"></span></a><a href="#" onclick="runSavedSiteswap(' + i + ');">'+ savedSiteswaps[i].name +'</a></li>');
-	}	
+	$.get("api/patterns?public=1").done(function(patterns) { 
+		var savedList = $('#savedList');
+		savedList.empty();
+		for(var i = 0; i < patterns.length; i++) {
+			savedList.append('<li><a href="#" class="patternLink" onclick="runSavedSiteswap(\'' + patterns[i]._id + '\');">' + patterns[i].name + '</a></li>');
+		}	
+	});
 }
 
-function runSavedSiteswap(savedSiteswapIndex) {
-	var savedSiteswaps = getSavedSiteswaps();
-	$('#inputsAdvanced').val(savedSiteswaps[savedSiteswapIndex].inputs);
-	go();
+function runSavedSiteswap(id) {
+	$.get("api/patterns/"+id).done(function(pattern) {
+		
+		$('#inputsAdvanced').val(YAML.stringify(pattern.inputs,1,1));
+		go();
+
+	});
 }
 
-function deleteSavedSiteswap(savedSiteswapIndex) {
-	var savedSiteswaps = getSavedSiteswaps();
-	savedSiteswaps.splice(savedSiteswapIndex);
-	window.localStorage.setItem("savedSiteswaps",JSON.stringify(savedSiteswaps));
-	refreshSavedSiteswapsList();
+function deleteSavedSiteswap(id) {
+	$.ajax({
+	    url: 'api/patterns/'+id,
+	    type: 'DELETE',
+	    success: function(result) {
+	        refreshSavedSiteswapsList();
+	    }
+	});
+
 }

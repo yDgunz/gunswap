@@ -35,6 +35,12 @@
 		width: 100px; 
 		float: left; 
 	}
+	textarea {
+	     width: 100%;
+	     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	     box-sizing: border-box;         /* Opera/IE 8+ */
+	}
 	#patternMenu div {
 		padding: 5px;
 	}
@@ -43,9 +49,6 @@
 	}
 	.control {
 		width: 200px;
-	}
-	#patternMenu textarea {
-		width: 350px;	
 	}
 	#animatorControlsMenu div {
 		padding: 5px;
@@ -65,22 +68,20 @@
 	#examplesMenu a:hover {
 		text-decoration: underline;
 	}
-	#generatedSiteswaps a {
+	.patternLink {
 		display: block;
 		text-align: center;
+		border-bottom: 1px solid #999;
+		text-decoration: none;		
+	}
+	.patternLink:hover {
+		background-color: #ddd;
+		text-decoration: none;	
 	}
 	.list {
 		list-style: none;
 		font-size: 20px;
 		padding-left: 0px;
-	}
-	.list a {
-		display: inline;
-		border-bottom: 1px solid #999;
-		text-decoration: none;
-	}
-	.list a:hover {
-		background-color: #ddd;
 	}
 	#nav ul {
 		display: table;
@@ -277,7 +278,8 @@
 	</div>
 	<div id="savedMenu" class="controlDiv">				
 		<div id="savedSiteswaps" style="width:100%;overflow-y:auto;">
-			<ul id="savedList" class="list"></ul>
+			<ul id="savedList" class="list">				
+			</ul>
 		</div>
 	</div>
 	<div id="aboutMenu" class="controlDiv">

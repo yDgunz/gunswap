@@ -2,53 +2,57 @@
 
 var mongoose     = require('mongoose');
 
+var Prop = new mongoose.Schema({
+    type: String,
+    color: String,
+    radius: Number,
+    C: Number
+});
+
+var Juggler = new mongoose.Schema({
+    position: {
+        x: Number,
+        z: Number
+    },
+    rotation: Number
+});
+
+var Surface = new mongoose.Schema({
+    position: {
+        x: Number,
+        y: Number,
+        z: Number
+    },
+    normal: {
+        x: Number,
+        y: Number,
+        z: Number
+    },
+    scale: Number
+});
+
 var PatternSchema   = new mongoose.Schema({
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     name: String,
+    public: Boolean,
     description: String,
     tags: [String],
-    siteswap: String,
-    beatDuration: Number,
-    dwellRatio: Number,
-    props: [
-    	{
-    		type: String,
-    		color: String,
-    		radius: Number,
-    		C: Number
-    	}
-    ],
-    dwellPath: String,
-    matchVelocity: Boolean,
-    dwellCatchScale: Number,
-    dwellTossScale: Number,
-    emptyCatchScale: Number,
-    emptyTossScale: Number,
-    armAngle: Number,
-    jugglers: [
-    	{
-    		position: {
-    			x: Number,
-    			z: Number
-    		},
-    		rotation: Number
-    	}
-    ],
-    surfaces: [
-    	{
-    		position: {
-    			x: Number,
-    			y: Number,
-    			z: Number
-    		},
-    		normal: {
-    			x: Number,
-    			y: Number,
-    			z: Number
-    		},
-    		scale: Number
-    	}
-    ],
-    drawHands: Boolean
+    inputs: {
+        siteswap: String,
+        beatDuration: Number,
+        dwellRatio: Number,
+        props: [Prop],
+        dwellPath: String,
+        matchVelocity: Boolean,
+        dwellCatchScale: Number,
+        dwellTossScale: Number,
+        emptyCatchScale: Number,
+        emptyTossScale: Number,
+        armAngle: Number,
+        jugglers: [Juggler],
+        surfaces: [Surface],
+        drawHands: Boolean
+    }    
 });
 
 module.exports = mongoose.model('Pattern', PatternSchema);
