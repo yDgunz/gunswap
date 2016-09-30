@@ -112,20 +112,8 @@ router.route('/patterns')
         
     })
 
-    .get(function(req, res) {
-        var query = [];
-
-        if (req.query.public == 1) {
-            query.push({ 'public': true });
-        } else if (req.query.public == 0) {
-            query.push({ 'public' : false });
-        }
-        
-        if (req.query.userOnly == 1) {
-            query.push({'user_id' : req.isAuthenticated() ? req.user.id : null });
-        }
-
-        Pattern.find(query.length > 0 ? { $and: query } : {}, '_id name public user_id', function(err, patterns) {
+    .get(isLoggedIn, function(req, res) {
+        Pattern.find({ 'user_id': req.user.id }, '_id name public user_id', function(err, patterns) {
             if (err)
                 res.send(err);
 
