@@ -49,7 +49,7 @@ acctRouter.get('/login', function(req,res) {
 });
 
 acctRouter.post('/login', passport.authenticate('local-login', {
-    successRedirect: '/profile',
+    successRedirect: '/',
     failureRedirect: '/login',
     failureFlash: true
 }));
@@ -59,7 +59,7 @@ acctRouter.get('/signup', function(req,res) {
 });
 
 acctRouter.post('/signup', passport.authenticate('local-signup', {
-    successRedirect: '/profile',
+    successRedirect: '/',
     failureRedirect: '/signup',
     failureFlash: true
 }));
@@ -73,6 +73,10 @@ acctRouter.get('/logout', function(req,res) {
     res.redirect('/');
 });
 
+acctRouter.get('/', function(req,res) {
+    res.render('animator.ejs', { isLoggedIn: req.isAuthenticated() });
+});
+
 function isLoggedIn(req, res, next) {
     if (req.isAuthenticated()) {
         return next();
@@ -81,11 +85,6 @@ function isLoggedIn(req, res, next) {
 }
 
 var router = express.Router();              // get an instance of the express Router
-
-// test route to make sure everything is working (accessed at GET http://localhost:8080/api)
-router.get('/', function(req, res) {
-    res.json({ message: 'hooray! welcome to our api!' });   
-});
 
 router.route('/patterns')
 

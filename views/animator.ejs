@@ -45,10 +45,13 @@
 		padding: 5px;
 	}
 	#patternMenu {
-		overflow-y:scroll;
+		overflow-y:auto;
 	}
 	.control {
 		width: 200px;
+	}
+	#animatorControlsMenu {
+		overflow-y: auto;
 	}
 	#animatorControlsMenu div {
 		padding: 5px;
@@ -143,7 +146,11 @@
 			<li><a id="pattern" onclick="displayMenu('pattern');"><span class="glyphicon glyphicon-cog"></span> Controls</a></li>
 			<li><a id="animatorControls" onclick="displayMenu('animatorControls');"><span class="glyphicon glyphicon-facetime-video"></span> Camera</a></li>
 			<li><a id="explorer" onclick="displayMenu('explorer');"><span class="glyphicon glyphicon-search"></span> Explorer</a></li>
-			<li><a id="saved" onclick="displayMenu('saved');"><span class="glyphicon glyphicon-save"></span> Saved</a></li>
+			<% if (isLoggedIn) { %>
+				<li><a id="saved" onclick="displayMenu('saved');"><span class="glyphicon glyphicon-save"></span> Saved</a></li>
+			<% } else { %>
+				<li><a id="login" href="/login"><span class="glyphicon glyphicon-user"></span> Login/Signup</a></li>
+			<% } %>
 			<li><a id="about" onclick="displayMenu('about');"><span class="glyphicon glyphicon-question-sign"></span> Help</a></li>
 		</ul>
 	</div>
@@ -192,14 +199,14 @@
 		<p>Advanced | <a href="/gunswap/syntax.html">Syntax Help</a></p>
 		<textarea id="inputsAdvanced" rows="8" cols="40" style="font-family:monospace;"></textarea><br/>
 		<br/>
-		<div>
-			<label for="savedName">Save As</label>
-			<input id="savedName" class="control" placeholder="Name"></input>
-			<button onclick="saveCurrentSiteswap();">Save</button>
-			<span id="saveSuccess" class="success" style="display:none;">Saved!</span>
-		</div>	
-		<p>URL for this pattern (note: URL only preserves siteswap, beat duration, props and dwell path.)</p>
-		<a id="saveURL"></a>
+		<% if(isLoggedIn) { %>
+			<div>
+				<label for="savedName">Save As</label>
+				<input id="savedName" class="control" placeholder="Name"></input>
+				<button onclick="saveCurrentSiteswap();">Save</button>
+				<span id="saveSuccess" class="success" style="display:none;">Saved!</span>
+			</div>	
+		<% } %>
 	</div>
 	<div id="animatorControlsMenu" class="controlDiv">								
 		
@@ -276,12 +283,14 @@
 			</ul>
 		</div>
 	</div>
-	<div id="savedMenu" class="controlDiv">				
-		<div id="savedSiteswaps" style="width:100%;overflow-y:auto;">
-			<ul id="savedList" class="list">				
-			</ul>
+	<% if(isLoggedIn) { %>
+		<div id="savedMenu" class="controlDiv">				
+			<div id="savedSiteswaps" style="width:100%;overflow-y:auto;">
+				<ul id="savedList" class="list">				
+				</ul>
+			</div>
 		</div>
-	</div>
+	<% } %>	
 	<div id="aboutMenu" class="controlDiv">
 		<p>Learn more about gunswap at the <a href="/gunswap/index.html">project page</a>.</p>
 		<p>Check out the <a href="/gunswap/SiteswapGraph.html">siteswap graph animator</a>.</p>

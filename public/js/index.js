@@ -15,18 +15,6 @@ window.onload = function () {
 	$.get("defaultPattern.yml", function(data) {
 		var defaultInputs = YAML.parse(data);
 
-		var urlInputs = getInputsFromQueryString();
-
-		if(urlInputs.siteswap != undefined) {
-			defaultInputs.siteswap = urlInputs.siteswap;
-		}
-		if(urlInputs.beatDuration != undefined) {
-			defaultInputs.beatDuration = urlInputs.beatDuration;
-		}
-		if(urlInputs.dwellPath != undefined) {
-			defaultInputs.dwellPath = urlInputs.dwellPath;
-		}
-
 		$('#inputsAdvanced').val(YAML.stringify(defaultInputs,1,1));
 
 		go();
@@ -158,16 +146,6 @@ function go() {
 	}
 
 	var inputs = parseInputs();
-
-	var saveURL = window.location.href.replace("#","");
-	if (saveURL.indexOf("?") > -1) {
-		saveURL = saveURL.substring(0,saveURL.indexOf("?"));
-	}
-
-	var saveQueryString = "?v=16&siteswap=" + encodeURIComponent(inputs.siteswap) + "&beatDuration=" + inputs.beatDuration + "&dwellPath=" + inputs.dwellPath; 
-
-	$('#saveURL').text(saveURL + saveQueryString);
-	$('#saveURL').attr("href",saveURL + saveQueryString);	
 
 	window.siteswap = SiteswapJS.CreateSiteswap(inputs.siteswap, 
 		{
@@ -417,28 +395,6 @@ function showHideCameraCustomPosition() {
 	}
 }
 
-function getInputsFromQueryString() {
-	var inputs = {};
-	var siteswap = getURLQueryStringParameterByName("siteswap");
-	var props = JSON.parse(getURLQueryStringParameterByName("props"));
-	var beatDuration = getURLQueryStringParameterByName("beatDuration");
-	var dwellPath = getURLQueryStringParameterByName("dwellPath");
-	
-	if(siteswap !== null) {
-		inputs.siteswap = siteswap;
-	}
-	if (props !== null) {
-		inputs.props = props;
-	}
-	if (beatDuration !== null) {
-		inputs.beatDuration = beatDuration;
-	}
-	if (dwellPath !== null) {
-		inputs.dwellPath = dwellPath;
-	}
-
-	return inputs;
-}
 
 function saveCurrentSiteswap() {
 
