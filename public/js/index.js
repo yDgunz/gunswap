@@ -83,7 +83,6 @@ window.onresize = function () {
 		$('#nav #animator').hide();
 		$('#animatorCanvasContainer').appendTo($('body'));
 		$('#animatorMenu').removeClass('controlDiv');
-
 		$('.navText').show();
 
 		twoWindow = true;
@@ -98,9 +97,7 @@ window.onresize = function () {
 		controlsWidth = windowWidth;
 		twoWindow = false;
 		animatorHeight = windowHeight - $('#animatorCanvasContainer').offset().top;
-
 		$('.navText').hide();
-
 	}
 
 	$('#controlsContainer').height(windowHeight);
