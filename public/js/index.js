@@ -404,7 +404,14 @@ function refreshSavedSiteswapsList() {
 		var savedList = $('#savedList');
 		savedList.empty();
 		for(var i = 0; i < patterns.length; i++) {
-			savedList.append('<li><a href="#" class="patternLink" onclick="runSavedSiteswap(\'' + patterns[i]._id + '\');">' + patterns[i].name + '</a></li>');
+			savedList.append('\
+				<li>\
+					<div class="patternLink">\
+						<a href="#" onclick="runSavedSiteswap(\'' + patterns[i]._id + '\');">' + patterns[i].name + '</a>\
+						<a href="#" style="float:right;" onclick="deleteSavedSiteswap(\'' + patterns[i]._id + '\');">X</a>\
+					</div>\
+				</li>'
+			);
 		}	
 	});
 }
