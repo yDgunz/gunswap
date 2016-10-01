@@ -11,6 +11,7 @@
 -
  name: 'Multiplex siteswap - Gattoplex'
  siteswap: '[54]24'
+ drawHands: false
 -
  name: 'Passing siteswap - 4 count passing'
  siteswap: '<3|3><3|3><3|3><3P|3P>'
@@ -19,16 +20,20 @@
  jugglers:
   - {position: {x: 0, z: 0}, rotation: 0}
   - {position: {x: 0, z: -2}, rotation: 3.14}
+ surfaces: []  
+ drawHands: false
 -
  name: 'Clubs - 5 club cascade'
  siteswap: '5'
  props:
   - {type: club, color: red, radius: '.05', C: '.97'}
+ drawHands: false
 -
  name: 'Rings - 6 ring fountain'
  siteswap: '6'
  props:
   - {type: ring, color: red, radius: '.05', C: '.97'}
+ drawHands: false
 -
  name: 'Dwell path - windmill'
  siteswap: '3'
@@ -38,6 +43,11 @@
  name: 'Dwell path - Mills Mess'
  siteswap: '3'
  dwellRatio: '.8'
+ dwellPath: '(2.5,5)(-30,5).(-2.5,-10)(30,-10).(0,-10)(-30,-10)'
+-
+ name: 'Dwell path - Backcrosses'
+ siteswap: '3'
+ dwellRatio: '1.4'
  dwellPath: '(2.5,5)(-30,5).(-2.5,-10)(30,-10).(0,-10)(-30,-10)'
 -
  name: 'Toss/catch modifier - claw'
@@ -91,6 +101,7 @@
  siteswap: '3S{0}3S{2}'
  props:
   - {type: club, color: red, radius: '.05', C: '.97'}
+ drawHands: false
 -
  name: 'Dwell modifier - 4 ball sync shower'
  siteswap: '(4xD{.9},4xD{.4})'

@@ -113,17 +113,6 @@ function SiteswapAnimator(containerId, options) {
 
 		} else {
 
-			/* show warnings for doing passing/bouncing with rings/clubs */
-			if (siteswap.pass) {
-				for (var i = 0; i < siteswap.props.length; i++) {
-					if (siteswap.props[i].type == 'club' || siteswap.props[i].type == 'club') {
-						$('#errorMessage').html("WARNING: Passing patterns with clubs/rings may look weird. Still working out kinks with prop orientation.");
-						$('#errorMessage').show();
-						break;
-					}
-				}
-			}
-
 			/* find highest point in the pattern */
 			highestPoint = 0;
 			for (var i = 0; i < siteswap.propPositions.length; i++) {
@@ -134,6 +123,23 @@ function SiteswapAnimator(containerId, options) {
 				}
 			}
 			camRadius = highestPoint+.5;
+
+			if (siteswap.pass) {
+
+				/* show warnings for doing passing/bouncing with rings/clubs */
+				for (var i = 0; i < siteswap.props.length; i++) {
+					if (siteswap.props[i].type == 'club' || siteswap.props[i].type == 'club') {
+						$('#errorMessage').html("WARNING: Passing patterns with clubs/rings may look weird. Still working out kinks with prop orientation.");
+						$('#errorMessage').show();
+						break;
+					}
+				}
+
+				// for passing siteswaps we want to rotate the default camera a bit
+				camTheta += Math.PI/3;
+				camRadius += 1;
+
+			}
 
 			/* clear out all meshes from scene */
 			for( var i = scene.children.length - 1; i >= 0; i--) { scene.remove(scene.children[i]); }

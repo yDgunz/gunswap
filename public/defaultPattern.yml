@@ -1,14 +1,20 @@
-siteswap: 3
-beatDuration: 0.28
-dwellRatio: 0.8
-props: [{type: ball, color: red, radius: 0.05, C: 0.9}]
-dwellPath: (30)(10)
-matchVelocity: false
-dwellCatchScale: 0.06
-dwellTossScale: 0.06
-emptyCatchScale: 0.025
-emptyTossScale: 0.025
-armAngle: 0.1
-jugglers: [{position: {x: 0, z: 0}, rotation: 0}]
-surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1}]
-drawHands: true
+pattern:
+ siteswap: 3
+ beatDuration: 0.28
+ dwellRatio: 0.8
+ props: [{type: ball, color: red, radius: 0.05, C: 0.9}]
+ dwellPath: (30)(10)
+ matchVelocity: false
+ dwellCatchScale: 0.06
+ dwellTossScale: 0.06
+ emptyCatchScale: 0.025
+ emptyTossScale: 0.025
+ armAngle: 0.1
+ jugglers: [{position: {x: 0, z: 0}, rotation: 0}]
+ surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1}]
+ drawHands: true
+inputs:
+ siteswap: 3
+ props: [{type: ball, color: red, radius: 0.05, C: 0.9}]
+ dwellPath: (30)(10)
+ beatDuration: 0.28

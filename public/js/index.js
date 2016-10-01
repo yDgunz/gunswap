@@ -1,4 +1,5 @@
 var twoWindow = false;
+var DEFAULT_INPUTS;
 
 window.onload = function () {
 
@@ -12,10 +13,11 @@ window.onload = function () {
 	refreshSavedSiteswapsList();
 
 	// load default pattern
+	// only want to retrieve default inputs once, hence the global var
 	$.get("defaultPattern.yml", function(data) {
-		var defaultInputs = YAML.parse(data);
+		DEFAULT_INPUTS = YAML.parse(data);		
 
-		$('#inputsAdvanced').val(YAML.stringify(defaultInputs,1,1));
+		$('#inputsAdvanced').val(YAML.stringify(DEFAULT_INPUTS.inputs,1,1));
 
 		go();
 	});	
@@ -116,22 +118,20 @@ function parseInputs() {
 	
 	var inputs = YAML.parse($('#inputsAdvanced').val());
 
-	return {
-		siteswap: inputs.siteswap.toString(),
-		beatDuration: inputs.beatDuration,
-		dwellRatio: inputs.dwellRatio,
-		props: inputs.props,
-		dwellPath: inputs.dwellPath,
-		matchVelocity: inputs.matchVelocity,
-		dwellCatchScale: inputs.dwellCatchScale,
-		dwellTossScale: inputs.dwellTossScale,
-		emptyTossScale: inputs.emptyTossScale,
-		emptyCatchScale: inputs.emptyCatchScale,
-		armAngle: inputs.armAngle,
-		surfaces: inputs.surfaces,
-		jugglers: inputs.jugglers,
-		drawHands: inputs.drawHands
-	};
+	// use the defaults where values weren't defined
+	var defaults = cloneObject(DEFAULT_INPUTS.pattern);
+
+	// iterate over all properties set in the example and apply them to the inputs
+	var keys = Object.keys(inputs)
+	for (var keyIx = 0; keyIx < keys.length; keyIx++) {
+		if (keys[keyIx] == "siteswap") {
+			defaults[keys[keyIx]] = inputs[keys[keyIx]].toString();
+		} else {
+			defaults[keys[keyIx]] = inputs[keys[keyIx]];
+		}
+	}	
+
+	return defaults;
 }
 
 function go() {
@@ -214,26 +214,17 @@ function updateDisplayPropPaths() {
 }
 
 function runExample(exampleIndex) {
-	// first apply defaults
-	$.get("defaultPattern.yml", function(data) {
-		$('#inputsAdvanced').val(data);
-	});	
 	// get example and apply on top of defaults
 	$.get("examples.yml", function(data) {
 		var examples = YAML.parse(data);
 		for (var i = 0; i < examples.length; i++) {
 			if (i == exampleIndex) {
-				var inputs = YAML.parse($('#inputsAdvanced').val());
-				// iterate over all properties set in the example and apply them to the inputs
-				var keys = Object.keys(examples[i])
-				for (var keyIx = 0; keyIx < keys.length; keyIx++) {
-					if (keys[keyIx] != "name") {
-						inputs[keys[keyIx]] = examples[i][keys[keyIx]];
-					}
-				}			
+				delete examples[i]["name"];
+				$('#inputsAdvanced').val(YAML.stringify(examples[i],1,1));
+				break;			
 			}
 		}
-		$('#inputsAdvanced').val(YAML.stringify(inputs,1,1));
+		
 		go();
 	});
 }
