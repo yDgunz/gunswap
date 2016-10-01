@@ -385,12 +385,18 @@ function showHideCameraCustomPosition() {
 function saveCurrentSiteswap() {
 
 	var pattern = {};
-	pattern.inputs = parseInputs();
+	pattern.inputs = YAML.parse($('#inputsAdvanced').val());
 	pattern.name = $('#savedName').val();
 
-	$.post("api/patterns", pattern);//.done(function(d) { console.log("success"); console.log(d); });
+	$.post("api/patterns", pattern)
+	.done(function(d) { 
+		$("#saveSuccess").show().delay(5000).fadeOut();
+		refreshSavedSiteswapsList(); 
+	})
+	.fail(function() {
+		$("#saveFailure").show().delay(5000).fadeOut();
+	});
 
-	refreshSavedSiteswapsList();	
 }
 
 function refreshSavedSiteswapsList() {
@@ -406,6 +412,16 @@ function refreshSavedSiteswapsList() {
 function runSavedSiteswap(id) {
 	$.get("api/patterns/"+id).done(function(pattern) {
 		
+		if (pattern.inputs.surfaces.length == 0) {
+			delete pattern.inputs.surfaces;
+		}
+		if (pattern.inputs.jugglers.length == 0) {
+			delete pattern.inputs.jugglers;
+		}
+		if (pattern.inputs.props.length == 0) {
+			delete pattern.inputs.props;
+		}
+
 		$('#inputsAdvanced').val(YAML.stringify(pattern.inputs,1,1));
 		go();
 
