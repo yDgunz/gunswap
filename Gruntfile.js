@@ -29,8 +29,8 @@ module.exports = function(grunt)
             },
             dist: {
                 files: {
-                    'build/Siteswap.js': ['public/js/util.js','public/js/BounceGA.js','public/js/Bezier.js','public/js/Siteswap.js'],
-                    'build/gunswap.js': ['public/js/lib/*.js','build/Siteswap.js','public/js/SiteswapAnimator.js','public/js/SiteswapGraph.js','public/js/index.js']
+                    'public/js/build/Siteswap.js': ['public/js/util.js','public/js/BounceGA.js','public/js/Bezier.js','public/js/Siteswap.js'],
+                    'public/js/build/gunswap.js': ['public/js/lib/*.js','public/js/build/Siteswap.js','public/js/SiteswapAnimator.js','public/js/SiteswapGraph.js','public/js/index.js']
                 }
             }
         },
@@ -39,8 +39,8 @@ module.exports = function(grunt)
         {
             dist: {
                 files: {
-                    'build/gunswap.min.js': ['build/gunswap.js'],
-                    'build/Siteswap.min.js': ['build/Siteswap.js']
+                    'public/js/build/gunswap.min.js': ['public/js/build/gunswap.js'],
+                    'public/js/build/Siteswap.min.js': ['public/js/build/Siteswap.js']
                 }
             }
         },
@@ -52,7 +52,7 @@ module.exports = function(grunt)
             default:
             {
                 files: ['**'],
-                tasks: ['simplemocha'],
+                tasks: ['build','simplemocha'],
             }
 
         }

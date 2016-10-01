@@ -3,6 +3,11 @@
 // BASE SETUP
 // =============================================================================
 
+// read environment variables and set defaults
+var PORT = process.env.PORT || 8080;        // set our port
+var MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost/gunswap';
+var ENVIRONMENT = process.env.ENVIRONMENT || 'DEV';
+
 // call the packages we need
 var express    = require('express');        // call express
 var app        = express();                 // define our app using express
@@ -31,12 +36,9 @@ app.use(flash()); // use connect-flash for flash messages stored in session
 
 require('./config/passport')(passport); // pass passport for configuration
 
-var port = process.env.PORT || 8080;        // set our port
-
 var mongoose   = require('mongoose');
-var mongo_uri = process.env.MONGODB_URI || 'mongodb://localhost/gunswap';
-mongoose.connect(mongo_uri); // connect to our database
-console.log('Connecting to DB at ' + mongo_uri);
+mongoose.connect(MONGO_URI); // connect to our database
+console.log('Connecting to DB at ' + MONGO_URI);
 
 var Pattern     = require('./app/models/pattern');
 
@@ -74,7 +76,7 @@ acctRouter.get('/logout', function(req,res) {
 });
 
 acctRouter.get('/', function(req,res) {
-    res.render('animator.ejs', { isLoggedIn: req.isAuthenticated() });
+    res.render('animator.ejs', { isLoggedIn: req.isAuthenticated(), environment: ENVIRONMENT });
 });
 
 function isLoggedIn(req, res, next) {
@@ -185,5 +187,5 @@ app.use('/', acctRouter);
 
 // START THE SERVER
 // =============================================================================
-app.listen(port);
-console.log('Magic happens on port ' + port);
+app.listen(PORT);
+console.log('Magic happens on port ' + PORT);

@@ -20,11 +20,6 @@ window.onload = function () {
 		go();
 	});	
 
-	/*
-	$.getJSON("api/patterns")
-		.done(function(d) { console.log('success'); console.log(d); })
-		.fail(function(d) { console.log('failure'); console.log(d); });
-	*/
 }
 
 //update advanced inputs from basics

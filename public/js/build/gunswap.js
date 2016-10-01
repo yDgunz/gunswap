@@ -1486,6 +1486,8 @@ t.material instanceof THREE.MeshFaceMaterial?t.material.materials[0]:t.material)
 fragmentShader:"uniform lowp int renderType;\nuniform sampler2D map;\nuniform float opacity;\nuniform vec3 color;\nvarying vec2 vUV;\nvarying float vVisibility;\nvoid main() {\nif( renderType == 0 ) {\ngl_FragColor = vec4( 1.0, 0.0, 1.0, 0.0 );\n} else if( renderType == 1 ) {\ngl_FragColor = texture2D( map, vUV );\n} else {\nvec4 texture = texture2D( map, vUV );\ntexture.a *= opacity * vVisibility;\ngl_FragColor = texture;\ngl_FragColor.rgb *= color;\n}\n}"},lensFlare:{vertexShader:"uniform lowp int renderType;\nuniform vec3 screenPosition;\nuniform vec2 scale;\nuniform float rotation;\nattribute vec2 position;\nattribute vec2 uv;\nvarying vec2 vUV;\nvoid main() {\nvUV = uv;\nvec2 pos = position;\nif( renderType == 2 ) {\npos.x = cos( rotation ) * position.x - sin( rotation ) * position.y;\npos.y = sin( rotation ) * position.x + cos( rotation ) * position.y;\n}\ngl_Position = vec4( ( pos * scale + screenPosition.xy ).xy, screenPosition.z, 1.0 );\n}",
 fragmentShader:"precision mediump float;\nuniform lowp int renderType;\nuniform sampler2D map;\nuniform sampler2D occlusionMap;\nuniform float opacity;\nuniform vec3 color;\nvarying vec2 vUV;\nvoid main() {\nif( renderType == 0 ) {\ngl_FragColor = vec4( texture2D( map, vUV ).rgb, 0.0 );\n} else if( renderType == 1 ) {\ngl_FragColor = texture2D( map, vUV );\n} else {\nfloat visibility = texture2D( occlusionMap, vec2( 0.5, 0.1 ) ).a;\nvisibility += texture2D( occlusionMap, vec2( 0.9, 0.5 ) ).a;\nvisibility += texture2D( occlusionMap, vec2( 0.5, 0.9 ) ).a;\nvisibility += texture2D( occlusionMap, vec2( 0.1, 0.5 ) ).a;\nvisibility = ( 1.0 - visibility / 4.0 );\nvec4 texture = texture2D( map, vUV );\ntexture.a *= opacity * visibility;\ngl_FragColor = texture;\ngl_FragColor.rgb *= color;\n}\n}"}};
 
+;(function e(e,t,n){function i(r,o){if(!t[r]){if(!e[r]){var u=typeof require=="function"&&require;if(!o&&u)return u(r,!0);if(s)return s(r,!0);var a=new Error("Cannot find module '"+r+"'");throw a.code="MODULE_NOT_FOUND",a}var l=t[r]={exports:{}};e[r][0].call(l.exports,function(t){var n=e[r][1][t];return i(n?n:t)},l,l.exports,e,e,t,n)}return t[r].exports}var s=typeof require=="function"&&require;for(var r=0;r<n.length;r++)i(n[r]);return i})({1:[function(n,r,s){var i,t,e;e=n("./Utils");t=n("./Inline");i=function(){function n(){}n.indentation=4;n.prototype.dump=function(n,s,a,l,u){var f,h,p,o,c,r,i;if(s==null){s=0}if(a==null){a=0}if(l==null){l=false}if(u==null){u=null}o="";c=a?e.strRepeat(" ",a):"";if(s<=0||typeof n!=="object"||n instanceof Date||e.isEmpty(n)){o+=c+t.dump(n,l,u)}else{if(n instanceof Array){for(f=0,p=n.length;f<p;f++){r=n[f];i=s-1<=0||typeof r!=="object"||e.isEmpty(r);o+=c+"-"+(i?" ":"\n")+this.dump(r,s-1,i?0:a+this.indentation,l,u)+(i?"\n":"")}}else{for(h in n){r=n[h];i=s-1<=0||typeof r!=="object"||e.isEmpty(r);o+=c+t.dump(h,l,u)+":"+(i?" ":"\n")+this.dump(r,s-1,i?0:a+this.indentation,l,u)+(i?"\n":"")}}}return o};return n}();r.exports=i},{"./Inline":5,"./Utils":9}],2:[function(n,i,r){var t,e;e=n("./Pattern");t=function(){var n;function t(){}t.LIST_ESCAPEES=["\\","\\\\",'\\"','"',"\x00","","","","","","","","\b","	","\n","\x0B","\f","\r","","","","","","","","","","","","","","","","","","",(n=String.fromCharCode)(133),n(160),n(8232),n(8233)];t.LIST_ESCAPED=["\\\\",'\\"','\\"','\\"',"\\0","\\x01","\\x02","\\x03","\\x04","\\x05","\\x06","\\a","\\b","\\t","\\n","\\v","\\f","\\r","\\x0e","\\x0f","\\x10","\\x11","\\x12","\\x13","\\x14","\\x15","\\x16","\\x17","\\x18","\\x19","\\x1a","\\e","\\x1c","\\x1d","\\x1e","\\x1f","\\N","\\_","\\L","\\P"];t.MAPPING_ESCAPEES_TO_ESCAPED=function(){var i,e,r,n;r={};for(i=e=0,n=t.LIST_ESCAPEES.length;0<=n?e<n:e>n;i=0<=n?++e:--e){r[t.LIST_ESCAPEES[i]]=t.LIST_ESCAPED[i]}return r}();t.PATTERN_CHARACTERS_TO_ESCAPE=new e("[\\x00-\\x1f]|Â|Â |â¨|â©");t.PATTERN_MAPPING_ESCAPEES=new e(t.LIST_ESCAPEES.join("|").split("\\").join("\\\\"));t.PATTERN_SINGLE_QUOTING=new e("[\\s'\":{}[\\],&*#?]|^[-?|<>=!%@`]");t.requiresDoubleQuoting=function(e){return this.PATTERN_CHARACTERS_TO_ESCAPE.test(e)};t.escapeWithDoubleQuotes=function(t){var e;e=this.PATTERN_MAPPING_ESCAPEES.replace(t,function(e){return function(t){return e.MAPPING_ESCAPEES_TO_ESCAPED[t]}}(this));return'"'+e+'"'};t.requiresSingleQuoting=function(e){return this.PATTERN_SINGLE_QUOTING.test(e)};t.escapeWithSingleQuotes=function(e){return"'"+e.replace(/'/g,"''")+"'"};return t}();i.exports=t},{"./Pattern":7}],3:[function(r,t,s){var e,n=function(e,t){for(var n in t){if(i.call(t,n))e[n]=t[n]}function r(){this.constructor=e}r.prototype=t.prototype;e.prototype=new r;e.__super__=t.prototype;return e},i={}.hasOwnProperty;e=function(t){n(e,t);function e(e,t,n){this.message=e;this.parsedLine=t;this.snippet=n}e.prototype.toString=function(){if(this.parsedLine!=null&&this.snippet!=null){return"<DumpException> "+this.message+" (line "+this.parsedLine+": '"+this.snippet+"')"}else{return"<DumpException> "+this.message}};return e}(Error);t.exports=e},{}],4:[function(r,t,s){var e,n=function(e,t){for(var n in t){if(i.call(t,n))e[n]=t[n]}function r(){this.constructor=e}r.prototype=t.prototype;e.prototype=new r;e.__super__=t.prototype;return e},i={}.hasOwnProperty;e=function(t){n(e,t);function e(e,t,n){this.message=e;this.parsedLine=t;this.snippet=n}e.prototype.toString=function(){if(this.parsedLine!=null&&this.snippet!=null){return"<ParseException> "+this.message+" (line "+this.parsedLine+": '"+this.snippet+"')"}else{return"<ParseException> "+this.message}};return e}(Error);t.exports=e},{}],5:[function(n,a,f){var o,i,u,t,r,s,e,l=[].indexOf||function(t){for(var e=0,n=this.length;e<n;e++){if(e in this&&this[e]===t)return e}return-1};r=n("./Pattern");s=n("./Unescaper");i=n("./Escaper");e=n("./Utils");t=n("./Exception/ParseException");o=n("./Exception/DumpException");u=function(){function n(){}n.REGEX_QUOTED_STRING="(?:\"(?:[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*)\"|'(?:[^']*(?:''[^']*)*)')";n.PATTERN_TRAILING_COMMENTS=new r("^\\s*#.*$");n.PATTERN_QUOTED_SCALAR=new r("^"+n.REGEX_QUOTED_STRING);n.PATTERN_THOUSAND_NUMERIC_SCALAR=new r("^(-|\\+)?[0-9,]+(\\.[0-9]+)?$");n.PATTERN_SCALAR_BY_DELIMITERS={};n.settings={};n.configure=function(e,t){if(e==null){e=null}if(t==null){t=null}this.settings.exceptionOnInvalidType=e;this.settings.objectDecoder=t};n.parse=function(n,r,s){var i,l;if(r==null){r=false}if(s==null){s=null}this.settings.exceptionOnInvalidType=r;this.settings.objectDecoder=s;if(n==null){return""}n=e.trim(n);if(0===n.length){return""}i={exceptionOnInvalidType:r,objectDecoder:s,i:0};switch(n.charAt(0)){case"[":l=this.parseSequence(n,i);++i.i;break;case"{":l=this.parseMapping(n,i);++i.i;break;default:l=this.parseScalar(n,null,['"',"'"],i)}if(this.PATTERN_TRAILING_COMMENTS.replace(n.slice(i.i),"")!==""){throw new t('Unexpected characters near "'+n.slice(i.i)+'".')}return l};n.dump=function(t,u,r){var s,l,n;if(u==null){u=false}if(r==null){r=null}if(t==null){return"null"}n=typeof t;if(n==="object"){if(t instanceof Date){return t.toISOString()}else if(r!=null){l=r(t);if(typeof l==="string"||l!=null){return l}}return this.dumpObject(t)}if(n==="boolean"){return t?"true":"false"}if(e.isDigits(t)){return n==="string"?"'"+t+"'":String(parseInt(t))}if(e.isNumeric(t)){return n==="string"?"'"+t+"'":String(parseFloat(t))}if(n==="number"){return t===Infinity?".Inf":t===-Infinity?"-.Inf":isNaN(t)?".NaN":t}if(i.requiresDoubleQuoting(t)){return i.escapeWithDoubleQuotes(t)}if(i.requiresSingleQuoting(t)){return i.escapeWithSingleQuotes(t)}if(""===t){return'""'}if(e.PATTERN_DATE.test(t)){return"'"+t+"'"}if((s=t.toLowerCase())==="null"||s==="~"||s==="true"||s==="false"){return"'"+t+"'"}return t};n.dumpObject=function(t,u,s){var n,r,l,e,i;if(s==null){s=null}if(t instanceof Array){e=[];for(n=0,l=t.length;n<l;n++){i=t[n];e.push(this.dump(i))}return"["+e.join(", ")+"]"}else{e=[];for(r in t){i=t[r];e.push(this.dump(r)+": "+this.dump(i))}return"{"+e.join(", ")+"}"}};n.parseScalar=function(u,a,c,s,h){var i,f,_,n,o,E,T,p,A;if(a==null){a=null}if(c==null){c=['"',"'"]}if(s==null){s=null}if(h==null){h=true}if(s==null){s={exceptionOnInvalidType:this.settings.exceptionOnInvalidType,objectDecoder:this.settings.objectDecoder,i:0}}i=s.i;if(E=u.charAt(i),l.call(c,E)>=0){n=this.parseQuotedScalar(u,s);i=s.i;if(a!=null){A=e.ltrim(u.slice(i)," ");if(!(T=A.charAt(0),l.call(a,T)>=0)){throw new t("Unexpected characters ("+u.slice(i)+").")}}}else{if(!a){n=u.slice(i);i+=n.length;p=n.indexOf(" #");if(p!==-1){n=e.rtrim(n.slice(0,p))}}else{f=a.join("|");o=this.PATTERN_SCALAR_BY_DELIMITERS[f];if(o==null){o=new r("^(.+?)("+f+")");this.PATTERN_SCALAR_BY_DELIMITERS[f]=o}if(_=o.exec(u.slice(i))){n=_[1];i+=n.length}else{throw new t("Malformed inline YAML string ("+u+").")}}if(h){n=this.evaluateScalar(n,s)}}s.i=i;return n};n.parseQuotedScalar=function(r,l){var e,i,n;e=l.i;if(!(i=this.PATTERN_QUOTED_SCALAR.exec(r.slice(e)))){throw new t("Malformed inline YAML string ("+r.slice(e)+").")}n=i[0].substr(1,i[0].length-2);if('"'===r.charAt(e)){n=s.unescapeDoubleQuotedString(n)}else{n=s.unescapeSingleQuotedString(n)}e+=i[0].length;l.i=e;return n};n.parseSequence=function(i,n){var o,f,e,l,u,s,a,r;s=[];u=i.length;e=n.i;e+=1;while(e<u){n.i=e;switch(i.charAt(e)){case"[":s.push(this.parseSequence(i,n));e=n.i;break;case"{":s.push(this.parseMapping(i,n));e=n.i;break;case"]":return s;case",":case" ":case"\n":break;default:l=(a=i.charAt(e))==='"'||a==="'";r=this.parseScalar(i,[",","]"],['"',"'"],n);e=n.i;if(!l&&typeof r==="string"&&(r.indexOf(": ")!==-1||r.indexOf(":\n")!==-1)){try{r=this.parseMapping("{"+r+"}")}catch(f){o=f}}s.push(r);--e}++e}throw new t("Malformed inline YAML string "+i)};n.parseMapping=function(i,n){var u,e,s,o,r,a,l;r={};o=i.length;e=n.i;e+=1;a=false;while(e<o){n.i=e;switch(i.charAt(e)){case" ":case",":case"\n":++e;n.i=e;a=true;break;case"}":return r}if(a){a=false;continue}s=this.parseScalar(i,[":"," ","\n"],['"',"'"],n,false);e=n.i;u=false;while(e<o){n.i=e;switch(i.charAt(e)){case"[":l=this.parseSequence(i,n);e=n.i;if(r[s]===void 0){r[s]=l}u=true;break;case"{":l=this.parseMapping(i,n);e=n.i;if(r[s]===void 0){r[s]=l}u=true;break;case":":case" ":case"\n":break;default:l=this.parseScalar(i,[",","}"],['"',"'"],n);e=n.i;if(r[s]===void 0){r[s]=l}u=true;--e}++e;if(u){break}}}throw new t("Malformed inline YAML string "+i)};n.evaluateScalar=function(n,a){var s,h,p,E,i,c,o,r,l,f,u;n=e.trim(n);l=n.toLowerCase();switch(l){case"null":case"":case"~":return null;case"true":return true;case"false":return false;case".inf":return Infinity;case".nan":return NaN;case"-.inf":return Infinity;default:E=l.charAt(0);switch(E){case"!":i=n.indexOf(" ");if(i===-1){c=l}else{c=l.slice(0,i)}switch(c){case"!":if(i!==-1){return parseInt(this.parseScalar(n.slice(2)))}return null;case"!str":return e.ltrim(n.slice(4));case"!!str":return e.ltrim(n.slice(5));case"!!int":return parseInt(this.parseScalar(n.slice(5)));case"!!bool":return e.parseBoolean(this.parseScalar(n.slice(6)),false);case"!!float":return parseFloat(this.parseScalar(n.slice(7)));case"!!timestamp":return e.stringToDate(e.ltrim(n.slice(11)));default:if(a==null){a={exceptionOnInvalidType:this.settings.exceptionOnInvalidType,objectDecoder:this.settings.objectDecoder,i:0}}o=a.objectDecoder,p=a.exceptionOnInvalidType;if(o){u=e.rtrim(n);i=u.indexOf(" ");if(i===-1){return o(u,null)}else{f=e.ltrim(u.slice(i+1));if(!(f.length>0)){f=null}return o(u.slice(0,i),f)}}if(p){throw new t("Custom object support when parsing a YAML file has been disabled.")}return null}break;case"0":if("0x"===n.slice(0,2)){return e.hexDec(n)}else if(e.isDigits(n)){return e.octDec(n)}else if(e.isNumeric(n)){return parseFloat(n)}else{return n}break;case"+":if(e.isDigits(n)){r=n;s=parseInt(r);if(r===String(s)){return s}else{return r}}else if(e.isNumeric(n)){return parseFloat(n)}else if(this.PATTERN_THOUSAND_NUMERIC_SCALAR.test(n)){return parseFloat(n.replace(",",""))}return n;case"-":if(e.isDigits(n.slice(1))){if("0"===n.charAt(1)){return-e.octDec(n.slice(1))}else{r=n.slice(1);s=parseInt(r);if(r===String(s)){return-s}else{return-r}}}else if(e.isNumeric(n)){return parseFloat(n)}else if(this.PATTERN_THOUSAND_NUMERIC_SCALAR.test(n)){return parseFloat(n.replace(",",""))}return n;default:if(h=e.stringToDate(n)){return h}else if(e.isNumeric(n)){return parseFloat(n)}else if(this.PATTERN_THOUSAND_NUMERIC_SCALAR.test(n)){return parseFloat(n.replace(",",""))}return n}}};return n}();a.exports=u},{"./Escaper":2,"./Exception/DumpException":3,"./Exception/ParseException":4,"./Pattern":7,"./Unescaper":8,"./Utils":9}],6:[function(r,l,u){var i,n,s,t,e;i=r("./Inline");t=r("./Pattern");e=r("./Utils");n=r("./Exception/ParseException");s=function(){r.prototype.PATTERN_FOLDED_SCALAR_ALL=new t("^(?:(?<type>![^\\|>]*)\\s+)?(?<separator>\\||>)(?<modifiers>\\+|\\-|\\d+|\\+\\d+|\\-\\d+|\\d+\\+|\\d+\\-)?(?<comments> +#.*)?$");r.prototype.PATTERN_FOLDED_SCALAR_END=new t("(?<separator>\\||>)(?<modifiers>\\+|\\-|\\d+|\\+\\d+|\\-\\d+|\\d+\\+|\\d+\\-)?(?<comments> +#.*)?$");r.prototype.PATTERN_SEQUENCE_ITEM=new t("^\\-((?<leadspaces>\\s+)(?<value>.+?))?\\s*$");r.prototype.PATTERN_ANCHOR_VALUE=new t("^&(?<ref>[^ ]+) *(?<value>.*)");r.prototype.PATTERN_COMPACT_NOTATION=new t("^(?<key>"+i.REGEX_QUOTED_STRING+"|[^ '\"\\{\\[].*?) *\\:(\\s+(?<value>.+?))?\\s*$");r.prototype.PATTERN_MAPPING_ITEM=new t("^(?<key>"+i.REGEX_QUOTED_STRING+"|[^ '\"\\[\\{].*?) *\\:(\\s+(?<value>.+?))?\\s*$");r.prototype.PATTERN_DECIMAL=new t("\\d+");r.prototype.PATTERN_INDENT_SPACES=new t("^ +");r.prototype.PATTERN_TRAILING_LINES=new t("(\n*)$");r.prototype.PATTERN_YAML_HEADER=new t("^\\%YAML[: ][\\d\\.]+.*\n");r.prototype.PATTERN_LEADING_COMMENTS=new t("^(\\#.*?\n)+");r.prototype.PATTERN_DOCUMENT_MARKER_START=new t("^\\-\\-\\-.*?\n");r.prototype.PATTERN_DOCUMENT_MARKER_END=new t("^\\.\\.\\.\\s*$");r.prototype.PATTERN_FOLDED_SCALAR_BY_INDENTATION={};r.prototype.CONTEXT_NONE=0;r.prototype.CONTEXT_SEQUENCE=1;r.prototype.CONTEXT_MAPPING=2;function r(e){this.offset=e!=null?e:0;this.lines=[];this.currentLineNb=-1;this.currentLine="";this.refs={}}r.prototype.parse=function(l,f,c){var U,N,v,p,d,t,o,Q,B,Y,g,E,G,L,S,b,u,R,y,j,X,D,O,P,m,_,w,x,M,A,h,a,F,k,H,I,T,C,s;if(f==null){f=false}if(c==null){c=null}this.currentLineNb=-1;this.currentLine="";this.lines=this.cleanup(l).split("\n");t=null;d=this.CONTEXT_NONE;N=false;while(this.moveToNextLine()){if(this.isCurrentLineEmpty()){continue}if("	"===this.currentLine[0]){throw new n("A YAML file cannot contain tabs as indentation.",this.getRealCurrentLineNb()+1,this.currentLine)}L=w=false;if(s=this.PATTERN_SEQUENCE_ITEM.exec(this.currentLine)){if(this.CONTEXT_MAPPING===d){throw new n("You cannot define a sequence item when in a mapping")}d=this.CONTEXT_SEQUENCE;if(t==null){t=[]}if(s.value!=null&&(_=this.PATTERN_ANCHOR_VALUE.exec(s.value))){L=_.ref;s.value=_.value}if(!(s.value!=null)||""===e.trim(s.value," ")||e.ltrim(s.value," ").indexOf("#")===0){if(this.currentLineNb<this.lines.length-1&&!this.isNextLineUnIndentedCollection()){p=this.getRealCurrentLineNb()+1;a=new r(p);a.refs=this.refs;t.push(a.parse(this.getNextEmbedBlock(null,true),f,c))}else{t.push(null)}}else{if(((F=s.leadspaces)!=null?F.length:void 0)&&(_=this.PATTERN_COMPACT_NOTATION.exec(s.value))){p=this.getRealCurrentLineNb();a=new r(p);a.refs=this.refs;v=s.value;G=this.getCurrentLineIndentation();if(this.isNextLineIndented(false)){v+="\n"+this.getNextEmbedBlock(G+s.leadspaces.length+1,true)}t.push(a.parse(v,f,c))}else{t.push(this.parseValue(s.value,f,c))}}}else if((s=this.PATTERN_MAPPING_ITEM.exec(this.currentLine))&&s.key.indexOf(" #")===-1){if(this.CONTEXT_SEQUENCE===d){throw new n("You cannot define a mapping item when in a sequence")}d=this.CONTEXT_MAPPING;if(t==null){t={}}i.configure(f,c);try{u=i.parseScalar(s.key)}catch(Q){o=Q;o.parsedLine=this.getRealCurrentLineNb()+1;o.snippet=this.currentLine;throw o}if("<<"===u){w=true;N=true;if(((k=s.value)!=null?k.indexOf("*"):void 0)===0){I=s.value.slice(1);if(this.refs[I]==null){throw new n('Reference "'+I+'" does not exist.',this.getRealCurrentLineNb()+1,this.currentLine)}T=this.refs[I];if(typeof T!=="object"){throw new n("YAML merge keys used with a scalar value instead of an object.",this.getRealCurrentLineNb()+1,this.currentLine)}if(T instanceof Array){for(E=S=0,j=T.length;S<j;E=++S){l=T[E];if(t[M=String(E)]==null){t[M]=l}}}else{for(u in T){l=T[u];if(t[u]==null){t[u]=l}}}}else{if(s.value!=null&&s.value!==""){l=s.value}else{l=this.getNextEmbedBlock()}p=this.getRealCurrentLineNb()+1;a=new r(p);a.refs=this.refs;A=a.parse(l,f);if(typeof A!=="object"){throw new n("YAML merge keys used with a scalar value instead of an object.",this.getRealCurrentLineNb()+1,this.currentLine)}if(A instanceof Array){for(R=0,X=A.length;R<X;R++){h=A[R];if(typeof h!=="object"){throw new n("Merge items must be objects.",this.getRealCurrentLineNb()+1,h)}if(h instanceof Array){for(E=m=0,D=h.length;m<D;E=++m){l=h[E];b=String(E);if(!t.hasOwnProperty(b)){t[b]=l}}}else{for(u in h){l=h[u];if(!t.hasOwnProperty(u)){t[u]=l}}}}}else{for(u in A){l=A[u];if(!t.hasOwnProperty(u)){t[u]=l}}}}}else if(s.value!=null&&(_=this.PATTERN_ANCHOR_VALUE.exec(s.value))){L=_.ref;s.value=_.value}if(w){}else if(!(s.value!=null)||""===e.trim(s.value," ")||e.ltrim(s.value," ").indexOf("#")===0){if(!this.isNextLineIndented()&&!this.isNextLineUnIndentedCollection()){if(N||t[u]===void 0){t[u]=null}}else{p=this.getRealCurrentLineNb()+1;a=new r(p);a.refs=this.refs;C=a.parse(this.getNextEmbedBlock(),f,c);if(N||t[u]===void 0){t[u]=C}}}else{C=this.parseValue(s.value,f,c);if(N||t[u]===void 0){t[u]=C}}}else{P=this.lines.length;if(1===P||2===P&&e.isEmpty(this.lines[1])){try{l=i.parse(this.lines[0],f,c)}catch(B){o=B;o.parsedLine=this.getRealCurrentLineNb()+1;o.snippet=this.currentLine;throw o}if(typeof l==="object"){if(l instanceof Array){g=l[0]}else{for(u in l){g=l[u];break}}if(typeof g==="string"&&g.indexOf("*")===0){t=[];for(x=0,O=l.length;x<O;x++){U=l[x];t.push(this.refs[U.slice(1)])}l=t}}return l}else if((H=e.ltrim(l).charAt(0))==="["||H==="{"){try{return i.parse(l,f,c)}catch(Y){o=Y;o.parsedLine=this.getRealCurrentLineNb()+1;o.snippet=this.currentLine;throw o}}throw new n("Unable to parse.",this.getRealCurrentLineNb()+1,this.currentLine)}if(L){if(t instanceof Array){this.refs[L]=t[t.length-1]}else{y=null;for(u in t){y=u}this.refs[L]=t[y]}}}if(e.isEmpty(t)){return null}else{return t}};r.prototype.getRealCurrentLineNb=function(){return this.currentLineNb+this.offset};r.prototype.getCurrentLineIndentation=function(){return this.currentLine.length-e.ltrim(this.currentLine," ").length};r.prototype.getNextEmbedBlock=function(r,l){var s,i,o,t,u,a,f;if(r==null){r=null}if(l==null){l=false}this.moveToNextLine();if(r==null){t=this.getCurrentLineIndentation();f=this.isStringUnIndentedCollectionItem(this.currentLine);if(!this.isCurrentLineEmpty()&&0===t&&!f){throw new n("Indentation problem.",this.getRealCurrentLineNb()+1,this.currentLine)}}else{t=r}s=[this.currentLine.slice(t)];if(!l){o=this.isStringUnIndentedCollectionItem(this.currentLine)}a=this.PATTERN_FOLDED_SCALAR_END;u=!a.test(this.currentLine);while(this.moveToNextLine()){i=this.getCurrentLineIndentation();if(i===t){u=!a.test(this.currentLine)}if(o&&!this.isStringUnIndentedCollectionItem(this.currentLine)&&i===t){this.moveToPreviousLine();break}if(this.isCurrentLineBlank()){s.push(this.currentLine.slice(t));continue}if(u&&this.isCurrentLineComment()){if(i===t){continue}}if(i>=t){s.push(this.currentLine.slice(t))}else if(e.ltrim(this.currentLine).charAt(0)==="#"){}else if(0===i){this.moveToPreviousLine();break}else{throw new n("Indentation problem.",this.getRealCurrentLineNb()+1,this.currentLine)}}return s.join("\n")};r.prototype.moveToNextLine=function(){if(this.currentLineNb>=this.lines.length-1){return false}this.currentLine=this.lines[++this.currentLineNb];return true};r.prototype.moveToPreviousLine=function(){this.currentLine=this.lines[--this.currentLineNb]};r.prototype.parseValue=function(e,l,u){var t,p,E,s,r,a,o,c,h,f;if(0===e.indexOf("*")){o=e.indexOf("#");if(o!==-1){e=e.substr(1,o-2)}else{e=e.slice(1)}if(this.refs[e]===void 0){throw new n('Reference "'+e+'" does not exist.',this.currentLine)}return this.refs[e]}if(r=this.PATTERN_FOLDED_SCALAR_ALL.exec(e)){a=(c=r.modifiers)!=null?c:"";s=Math.abs(parseInt(a));if(isNaN(s)){s=0}f=this.parseFoldedScalar(r.separator,this.PATTERN_DECIMAL.replace(a,""),s);if(r.type!=null){i.configure(l,u);return i.parseScalar(r.type+" "+f)}else{return f}}try{return i.parse(e,l,u)}catch(p){t=p;if(((h=e.charAt(0))==="["||h==="{")&&t instanceof n&&this.isNextLineIndented()){e+="\n"+this.getNextEmbedBlock();try{return i.parse(e,l,u)}catch(E){t=E;t.parsedLine=this.getRealCurrentLineNb()+1;t.snippet=this.currentLine;throw t}}else{t.parsedLine=this.getRealCurrentLineNb()+1;t.snippet=this.currentLine;throw t}}};r.prototype.parseFoldedScalar=function(T,o,i){var l,h,E,a,c,f,s,u,p,n;if(o==null){o=""}if(i==null){i=0}s=this.moveToNextLine();if(!s){return""}l=this.isCurrentLineBlank();n="";while(s&&l){if(s=this.moveToNextLine()){n+="\n";l=this.isCurrentLineBlank()}}if(0===i){if(c=this.PATTERN_INDENT_SPACES.exec(this.currentLine)){i=c[0].length}}if(i>0){u=this.PATTERN_FOLDED_SCALAR_BY_INDENTATION[i];if(u==null){u=new t("^ {"+i+"}(.*)$");r.prototype.PATTERN_FOLDED_SCALAR_BY_INDENTATION[i]=u}while(s&&(l||(c=u.exec(this.currentLine)))){if(l){n+=this.currentLine.slice(i)}else{n+=c[1]}if(s=this.moveToNextLine()){n+="\n";l=this.isCurrentLineBlank()}}}else if(s){n+="\n"}if(s){this.moveToPreviousLine()}if(">"===T){f="";p=n.split("\n");for(h=0,E=p.length;h<E;h++){a=p[h];if(a.length===0||a.charAt(0)===" "){f=e.rtrim(f," ")+a+"\n"}else{f+=a+" "}}n=f}if("+"!==o){n=e.rtrim(n)}if(""===o){n=this.PATTERN_TRAILING_LINES.replace(n,"\n")}else if("-"===o){n=this.PATTERN_TRAILING_LINES.replace(n,"")}return n};r.prototype.isNextLineIndented=function(t){var e,i,n;if(t==null){t=true}i=this.getCurrentLineIndentation();e=!this.moveToNextLine();if(t){while(!e&&this.isCurrentLineEmpty()){e=!this.moveToNextLine()}}else{while(!e&&this.isCurrentLineBlank()){e=!this.moveToNextLine()}}if(e){return false}n=false;if(this.getCurrentLineIndentation()>i){n=true}this.moveToPreviousLine();return n};r.prototype.isCurrentLineEmpty=function(){var t;t=e.trim(this.currentLine," ");return t.length===0||t.charAt(0)==="#"};r.prototype.isCurrentLineBlank=function(){return""===e.trim(this.currentLine," ")};r.prototype.isCurrentLineComment=function(){var t;t=e.ltrim(this.currentLine," ");return t.charAt(0)==="#"};r.prototype.cleanup=function(t){var i,a,f,u,o,E,T,s,n,c,h,p,l,r;if(t.indexOf("\r")!==-1){t=t.split("\r\n").join("\n").split("\r").join("\n")}i=0;c=this.PATTERN_YAML_HEADER.replaceAll(t,""),t=c[0],i=c[1];this.offset+=i;h=this.PATTERN_LEADING_COMMENTS.replaceAll(t,"",1),r=h[0],i=h[1];if(i===1){this.offset+=e.subStrCount(t,"\n")-e.subStrCount(r,"\n");t=r}p=this.PATTERN_DOCUMENT_MARKER_START.replaceAll(t,"",1),r=p[0],i=p[1];if(i===1){this.offset+=e.subStrCount(t,"\n")-e.subStrCount(r,"\n");t=r;t=this.PATTERN_DOCUMENT_MARKER_END.replace(t,"")}n=t.split("\n");l=-1;for(u=0,E=n.length;u<E;u++){s=n[u];if(e.trim(s," ").length===0){continue}f=s.length-e.ltrim(s).length;if(l===-1||f<l){l=f}}if(l>0){for(a=o=0,T=n.length;o<T;a=++o){s=n[a];n[a]=s.slice(l)}t=n.join("\n")}return t};r.prototype.isNextLineUnIndentedCollection=function(e){var t,n;if(e==null){e=null}if(e==null){e=this.getCurrentLineIndentation()}t=this.moveToNextLine();while(t&&this.isCurrentLineEmpty()){t=this.moveToNextLine()}if(false===t){return false}n=false;if(this.getCurrentLineIndentation()===e&&this.isStringUnIndentedCollectionItem(this.currentLine)){n=true}this.moveToPreviousLine();return n};r.prototype.isStringUnIndentedCollectionItem=function(){return this.currentLine==="-"||this.currentLine.slice(0,2)==="- "};return r}();l.exports=s},{"./Exception/ParseException":4,"./Inline":5,"./Pattern":7,"./Utils":9}],7:[function(n,t,i){var e;e=function(){e.prototype.regex=null;e.prototype.rawRegex=null;e.prototype.cleanedRegex=null;e.prototype.mapping=null;function e(i,o){var n,s,t,e,l,r,u,a,f;if(o==null){o=""}t="";l=i.length;r=null;s=0;e=0;while(e<l){n=i.charAt(e);if(n==="\\"){t+=i.slice(e,+(e+1)+1||9e9);e++}else if(n==="("){if(e<l-2){a=i.slice(e,+(e+2)+1||9e9);if(a==="(?:"){e+=2;t+=a}else if(a==="(?<"){s++;e+=2;u="";while(e+1<l){f=i.charAt(e+1);if(f===">"){t+="(";e++;if(u.length>0){if(r==null){r={}}r[u]=s}break}else{u+=f}e++}}else{t+=n;s++}}else{t+=n}}else{t+=n}e++}this.rawRegex=i;this.cleanedRegex=t;this.regex=new RegExp(this.cleanedRegex,"g"+o.replace("g",""));this.mapping=r}e.prototype.exec=function(r){var i,e,t,n;this.regex.lastIndex=0;e=this.regex.exec(r);if(e==null){return null}if(this.mapping!=null){n=this.mapping;for(t in n){i=n[t];e[t]=e[i]}}return e};e.prototype.test=function(e){this.regex.lastIndex=0;return this.regex.test(e)};e.prototype.replace=function(e,t){this.regex.lastIndex=0;return e.replace(this.regex,t)};e.prototype.replaceAll=function(e,i,t){var n;if(t==null){t=0}this.regex.lastIndex=0;n=0;while(this.regex.test(e)&&(t===0||n<t)){this.regex.lastIndex=0;e=e.replace(this.regex,"");n++}return[e,n]};return e}();t.exports=e},{}],8:[function(t,r,s){var n,i,e;e=t("./Utils");n=t("./Pattern");i=function(){function t(){}t.PATTERN_ESCAPED_CHARACTER=new n('\\\\([0abt	nvfre "\\/\\\\N_LP]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})');t.unescapeSingleQuotedString=function(e){return e.replace(/\'\'/g,"'")};t.unescapeDoubleQuotedString=function(e){if(this._unescapeCallback==null){this._unescapeCallback=function(e){return function(t){return e.unescapeCharacter(t)}}(this)}return this.PATTERN_ESCAPED_CHARACTER.replace(e,this._unescapeCallback)};t.unescapeCharacter=function(n){var t;t=String.fromCharCode;switch(n.charAt(1)){case"0":return t(0);case"a":return t(7);case"b":return t(8);case"t":return"	";case"	":return"	";case"n":return"\n";case"v":return t(11);case"f":return t(12);case"r":return t(13);case"e":return t(27);case" ":return" ";case'"':return'"';case"/":return"/";case"\\":return"\\";case"N":return t(133);case"_":return t(160);case"L":return t(8232);case"P":return t(8233);case"x":return e.utf8chr(e.hexDec(n.substr(2,2)));case"u":return e.utf8chr(e.hexDec(n.substr(2,4)));case"U":return e.utf8chr(e.hexDec(n.substr(2,8)));default:return""}};return t}();r.exports=i},{"./Pattern":7,"./Utils":9}],9:[function(e,i,r){var t,n;t=e("./Pattern");n=function(){function n(){}n.REGEX_LEFT_TRIM_BY_CHAR={};n.REGEX_RIGHT_TRIM_BY_CHAR={};n.REGEX_SPACES=/\s+/g;n.REGEX_DIGITS=/^\d+$/;n.REGEX_OCTAL=/[^0-7]/gi;n.REGEX_HEXADECIMAL=/[^a-f0-9]/gi;n.PATTERN_DATE=new t("^"+"(?<year>[0-9][0-9][0-9][0-9])"+"-(?<month>[0-9][0-9]?)"+"-(?<day>[0-9][0-9]?)"+"(?:(?:[Tt]|[ 	]+)"+"(?<hour>[0-9][0-9]?)"+":(?<minute>[0-9][0-9])"+":(?<second>[0-9][0-9])"+"(?:.(?<fraction>[0-9]*))?"+"(?:[ 	]*(?<tz>Z|(?<tz_sign>[-+])(?<tz_hour>[0-9][0-9]?)"+"(?::(?<tz_minute>[0-9][0-9]))?))?)?"+"$","i");n.LOCAL_TIMEZONE_OFFSET=(new Date).getTimezoneOffset()*60*1e3;n.trim=function(i,e){var t,n;if(e==null){e="\\s"}return i.trim();t=this.REGEX_LEFT_TRIM_BY_CHAR[e];if(t==null){this.REGEX_LEFT_TRIM_BY_CHAR[e]=t=new RegExp("^"+e+""+e+"*")}t.lastIndex=0;n=this.REGEX_RIGHT_TRIM_BY_CHAR[e];if(n==null){this.REGEX_RIGHT_TRIM_BY_CHAR[e]=n=new RegExp(e+""+e+"*$")}n.lastIndex=0;return i.replace(t,"").replace(n,"")};n.ltrim=function(n,e){var t;if(e==null){e="\\s"}t=this.REGEX_LEFT_TRIM_BY_CHAR[e];if(t==null){this.REGEX_LEFT_TRIM_BY_CHAR[e]=t=new RegExp("^"+e+""+e+"*")}t.lastIndex=0;return n.replace(t,"")};n.rtrim=function(n,e){var t;if(e==null){e="\\s"}t=this.REGEX_RIGHT_TRIM_BY_CHAR[e];if(t==null){this.REGEX_RIGHT_TRIM_BY_CHAR[e]=t=new RegExp(e+""+e+"*$")}t.lastIndex=0;return n.replace(t,"")};n.isEmpty=function(e){return!e||e===""||e==="0"||e instanceof Array&&e.length===0};n.subStrCount=function(e,i,u,a){var s,r,t,o,n,l;s=0;e=""+e;i=""+i;if(u!=null){e=e.slice(u)}if(a!=null){e=e.slice(0,a)}o=e.length;l=i.length;for(r=t=0,n=o;0<=n?t<n:t>n;r=0<=n?++t:--t){if(i===e.slice(r,l)){s++;r+=l-1}}return s};n.isDigits=function(e){this.REGEX_DIGITS.lastIndex=0;return this.REGEX_DIGITS.test(e)};n.octDec=function(e){this.REGEX_OCTAL.lastIndex=0;return parseInt((e+"").replace(this.REGEX_OCTAL,""),8)};n.hexDec=function(e){this.REGEX_HEXADECIMAL.lastIndex=0;e=this.trim(e);if((e+"").slice(0,2)==="0x"){e=(e+"").slice(2)}return parseInt((e+"").replace(this.REGEX_HEXADECIMAL,""),16)};n.utf8chr=function(e){var t;t=String.fromCharCode;if(128>(e%=2097152)){return t(e)}if(2048>e){return t(192|e>>6)+t(128|e&63)}if(65536>e){return t(224|e>>12)+t(128|e>>6&63)+t(128|e&63)}return t(240|e>>18)+t(128|e>>12&63)+t(128|e>>6&63)+t(128|e&63)};n.parseBoolean=function(t,n){var e;if(n==null){n=true}if(typeof t==="string"){e=t.toLowerCase();if(!n){if(e==="no"){return false}}if(e==="0"){return false}if(e==="false"){return false}if(e===""){return false}return true}return!!t};n.isNumeric=function(e){this.REGEX_SPACES.lastIndex=0;return typeof e==="number"||typeof e==="string"&&!isNaN(e)&&e.replace(this.REGEX_SPACES,"")!==""};n.stringToDate=function(r){var n,l,t,c,e,h,u,f,o,a,i,s;if(!(r!=null?r.length:void 0)){return null}e=this.PATTERN_DATE.exec(r);if(!e){return null}s=parseInt(e.year,10);u=parseInt(e.month,10)-1;l=parseInt(e.day,10);if(e.hour==null){n=new Date(Date.UTC(s,u,l));return n}c=parseInt(e.hour,10);h=parseInt(e.minute,10);f=parseInt(e.second,10);if(e.fraction!=null){t=e.fraction.slice(0,3);while(t.length<3){t+="0"}t=parseInt(t,10)}else{t=0}if(e.tz!=null){o=parseInt(e.tz_hour,10);if(e.tz_minute!=null){a=parseInt(e.tz_minute,10)}else{a=0}i=(o*60+a)*6e4;if("-"===e.tz_sign){i*=-1}}n=new Date(Date.UTC(s,u,l,c,h,f,t));if(i){n.setTime(n.getTime()+i)}return n};n.strRepeat=function(n,i){var e,t;t="";e=0;while(e<i){t+=n;e++}return t};n.getStringFromFile=function(i,n){var s,l,r,a,f,u,o,t;if(n==null){n=null}t=null;if(typeof window!=="undefined"&&window!==null){if(window.XMLHttpRequest){t=new XMLHttpRequest}else if(window.ActiveXObject){u=["Msxml2.XMLHTTP.6.0","Msxml2.XMLHTTP.3.0","Msxml2.XMLHTTP","Microsoft.XMLHTTP"];for(r=0,a=u.length;r<a;r++){f=u[r];try{t=new ActiveXObject(f)}catch(c){}}}}if(t!=null){if(n!=null){t.onreadystatechange=function(){if(t.readyState===4){if(t.status===200||t.status===0){return n(t.responseText)}else{return n(null)}}};t.open("GET",i,true);return t.send(null)}else{t.open("GET",i,false);t.send(null);if(t.status===200||t.status===0){return t.responseText}return null}}else{o=e;l=o("fs");if(n!=null){return l.readFile(i,function(e,t){if(e){return n(null)}else{return n(String(t))}})}else{s=l.readFileSync(i);if(s!=null){return String(s)}return null}}};return n}();i.exports=n},{"./Pattern":7}],10:[function(e,s,l){var i,r,n,t;r=e("./Parser");i=e("./Dumper");n=e("./Utils");t=function(){function t(){}t.parse=function(n,e,t){if(e==null){e=false}if(t==null){t=null}return(new r).parse(n,e,t)};t.parseFile=function(s,e,t,i){var r;if(e==null){e=null}if(t==null){t=false}if(i==null){i=null}if(e!=null){return n.getStringFromFile(s,function(n){return function(s){var r;r=null;if(s!=null){r=n.parse(s,t,i)}e(r)}}(this))}else{r=n.getStringFromFile(s);if(r!=null){return this.parse(r,t,i)}return null}};t.dump=function(l,e,t,n,r){var s;if(e==null){e=2}if(t==null){t=4}if(n==null){n=false}if(r==null){r=null}s=new i;s.indentation=t;return s.dump(l,e,0,n,r)};t.register=function(){var t;t=function(e,t){return e.exports=YAML.parseFile(t)};if((typeof e!=="undefined"&&e!==null?e.extensions:void 0)!=null){e.extensions[".yml"]=t;return e.extensions[".yaml"]=t}};t.stringify=function(e,t,n,i,r){return this.dump(e,t,n,i,r)};t.load=function(e,t,n,i){return this.parseFile(e,t,n,i)};return t}();if(typeof window!=="undefined"&&window!==null){window.YAML=t}if(typeof window==="undefined"||window===null){this.YAML=t}s.exports=t},{"./Dumper":1,"./Parser":6,"./Utils":9}]},{},[10]);
+
 ;function getURLQueryStringParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -2310,7 +2312,7 @@ exports.interpolateBezierSpline = function(P,t,v_0,v_T,v_0scale,v_Tscale,matchVe
 		}
 
 		var dwellPositionIx;
-		if (siteswap.matchVelocity) {
+		if (matchVelocity) {
 			var v_0mag = Math.sqrt(Math.pow(v_0.dx,2)+Math.pow(v_0.dy,2)+Math.pow(v_0.dz,2));
 			var v_Tmag = Math.sqrt(Math.pow(v_T.dx,2)+Math.pow(v_T.dy,2)+Math.pow(v_T.dz,2));
 			var L = path.last().dist;
@@ -2465,9 +2467,73 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		}
 
 		if (options.dwellPath === undefined) {
-			siteswap.dwellPath = [[{x:0.3,y:0,z:0,rotation:{x:4,y:0,z:-1,th:Math.PI/2}},{x:0.1,y:0,z:0,rotation:{x:4,y:0,z:1,th:Math.PI/2}}]];
+			
+			siteswap.dwellPath = [
+				[
+					{x:0.3,y:0,z:0,rotation:{x:4,y:0,z:-1,th:Math.PI/2},empty:false},
+					{x:0.1,y:0,z:0,rotation:{x:4,y:0,z:1,th:Math.PI/2},empty:false}
+				]
+			];
+
 		} else {
-			siteswap.dwellPath = options.dwellPath;
+
+			var customDwellPathBeats = options.dwellPath.split(').').map(function(a,ix,arr) { if (ix < arr.length-1) { return a+')'; } else { return a; } });
+			siteswap.dwellPath = [];
+			for (var i = 0; i < customDwellPathBeats.length; i++) {
+				if (customDwellPathBeats[i].indexOf("e") == -1) {
+					customDwellPathBeats[i] += "e";
+				}
+				var heldDwellPathArr = customDwellPathBeats[i].split("e")[0].match(/\(-?\d+(\.\d+)?(,-?\d+(\.\d+)?)?(,-?\d+(\.\d+)?)?(,\{-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?\})?\)/g);		
+				var emptyDwellPathArr = customDwellPathBeats[i].split("e")[1].match(/\(-?\d+(\.\d+)?(,-?\d+(\.\d+)?)?(,-?\d+(\.\d+)?)?(,\{-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?\})?\)/g);
+				var emptyDwellPathStrLen;
+				if (emptyDwellPathArr == null) {
+					emptyDwellPathArr = [];
+					emptyDwellPathStrLen = 0;
+				} else {
+					emptyDwellPathStrLen = emptyDwellPathArr.reduce(function(a,b) { return a+b }).length;
+				}
+				// this is just a check that it's a valid dwell path
+				if ( 
+					heldDwellPathArr.reduce(function(a,b) { return a+b }).length == customDwellPathBeats[i].split("e")[0].length &&
+					emptyDwellPathStrLen == customDwellPathBeats[i].split("e")[1].length
+				) {
+					
+					function parseDwellPathBeat(a,ix,empty) {
+						var xyz = a.match(/\(-?\d+(\.\d+)?(,-?\d+(\.\d+)?)?(,-?\d+(\.\d+)?)?/g)[0].match(/-?\d+(\.\d+)?/g);
+						var rot = a.match(/\{-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?\}/g); 
+						var xyzth;
+						if (rot) {
+							xyzth = rot[0].match(/-?\d+(\.\d+)?/g);
+						}
+						var rotation;
+						if (xyzth) {
+							rotation = {x:parseFloat(xyzth[0]),y:parseFloat(xyzth[1]),z:parseFloat(xyzth[2]),th:parseFloat(xyzth[3])};
+						} else if (siteswap.props[0].type == 'club') {
+							rotation = {x:4,y:0,z:(ix == 0 ? -1 : 1),th:Math.PI/2+(ix == 0 ? .5 : -.7)};
+						} else if (siteswap.props[0].type == 'ring') {
+							rotation = {x:0,y:1,z:0,th:Math.PI/2};
+						} else {
+							rotation = {x:1,y:0,z:0,th:0};
+						}
+						return {
+							x: parseFloat(xyz[0])/100,
+							y: xyz[1] ? parseFloat(xyz[1])/100 : 0,
+							z: xyz[2] ? parseFloat(xyz[2])/100 : 0,
+							rotation: rotation,
+							empty: empty
+						}
+					}
+
+					
+					siteswap.dwellPath.push(
+						heldDwellPathArr.map(function(a,ix) { return parseDwellPathBeat(a,ix,false); }).concat(emptyDwellPathArr.map(function(a,ix) { return parseDwellPathBeat(a,ix,true); }))
+					);
+
+				} else {
+					siteswap.errorMessage = 'Invalid custom dwell path';
+				}
+			}
+
 		}
 
 		if (options.surfaces === undefined) {
@@ -3080,8 +3146,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 						// velocity of last catch
 						var v_0 = interpolateFlightPath(
-							getDwellPosition(siteswap.dwellPath[prevToss.dwellPathIx],prevToss.juggler,prevToss.hand,1),
-							getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,0),
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[prevToss.dwellPathIx]),prevToss.juggler,prevToss.hand,1),
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,0),
 							prevToss.numBeats*siteswap.beatDuration-prevToss.dwellDuration,
 							0
 						);
@@ -3089,14 +3155,14 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						// velocity of toss if it wasn't held
 						var T = curToss.numBeats*siteswap.beatDuration-curToss.dwellDuration;
 						var v_T = interpolateFlightPath(
-							getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,1),
-							getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0),
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,1),
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[nextToss.dwellPathIx]),nextToss.juggler,nextToss.hand,0),
 							T,
 							T
 						);
 						
 						pos = getDwellPosition(
-							dwellPath
+							removeEmptyPositions(dwellPath)
 							, curToss.juggler
 							, curToss.hand
 							, (currentTime-(tossTime-curToss.dwellDuration))/(catchTime-(tossTime-curToss.dwellDuration)) // can't use lastCatchTime since it may be > catchTime
@@ -3173,8 +3239,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 											}
 
 											launches.push(interpolateFlightPath(
-												getDwellPosition(siteswap.dwellPath[multiplexCurToss.dwellPathIx],multiplexCurToss.juggler,multiplexCurToss.hand,1), /* p0 */
-												getDwellPosition(siteswap.dwellPath[multiplexNextToss.dwellPathIx],multiplexNextToss.juggler,multiplexNextToss.hand,0), /* p1 */
+												getDwellPosition(removeEmptyPositions(siteswap.dwellPath[multiplexCurToss.dwellPathIx]),multiplexCurToss.juggler,multiplexCurToss.hand,1), /* p0 */
+												getDwellPosition(removeEmptyPositions(siteswap.dwellPath[multiplexNextToss.dwellPathIx]),multiplexNextToss.juggler,multiplexNextToss.hand,0), /* p1 */
 												(multiplexCatchTime - multiplexTossTime),
 												0,								
 												{
@@ -3187,8 +3253,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 											));
 
 											landings.push(interpolateFlightPath(
-												getDwellPosition(siteswap.dwellPath[multiplexPrevToss.dwellPathIx],multiplexPrevToss.juggler,multiplexPrevToss.hand,1), /* p0 */
-												getDwellPosition(siteswap.dwellPath[multiplexCurToss.dwellPathIx],multiplexCurToss.juggler,multiplexCurToss.hand,0), /* p1 */
+												getDwellPosition(removeEmptyPositions(siteswap.dwellPath[multiplexPrevToss.dwellPathIx]),multiplexPrevToss.juggler,multiplexPrevToss.hand,1), /* p0 */
+												getDwellPosition(removeEmptyPositions(siteswap.dwellPath[multiplexCurToss.dwellPathIx]),multiplexCurToss.juggler,multiplexCurToss.hand,0), /* p1 */
 												(multiplexLastCatchTime - multiplexLastTossTime),
 												(multiplexLastCatchTime - multiplexLastTossTime),
 												{
@@ -3206,8 +3272,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						}						
 
 						launches.push(interpolateFlightPath(
-								getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,1), /* p0 */
-								getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0), /* p1 */
+								getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,1), /* p0 */
+								getDwellPosition(removeEmptyPositions(siteswap.dwellPath[nextToss.dwellPathIx]),nextToss.juggler,nextToss.hand,0), /* p1 */
 								(catchTime - tossTime),
 								0,								
 								{
@@ -3220,8 +3286,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 							));
 
 						landings.push(interpolateFlightPath(
-								getDwellPosition(siteswap.dwellPath[prevToss.dwellPathIx],prevToss.juggler,prevToss.hand,1), /* p0 */
-								getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,0), /* p1 */
+								getDwellPosition(removeEmptyPositions(siteswap.dwellPath[prevToss.dwellPathIx]),prevToss.juggler,prevToss.hand,1), /* p0 */
+								getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,0), /* p1 */
 								(lastCatchTime - lastTossTime),
 								(lastCatchTime - lastTossTime),
 								{
@@ -3256,7 +3322,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 						var t = 1-(tossTime - currentTime)/curToss.dwellDuration;
 						var pos = getDwellPosition(
-							siteswap.dwellPath[curToss.dwellPathIx]
+							removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx])
 							, curToss.juggler
 							, curToss.hand
 							, t
@@ -3268,7 +3334,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 						// the landing return by flight path interpolation may be slightly off (if solved by BounceGA)
 						// in this case we should find the correct landing and interpolate between the two 
-						var correctLand = getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,0);
+						var correctLand = getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,0);
 
 						var landingDiff = {x: land.x - correctLand.x, y: land.y - correctLand.y, z: land.z - correctLand.z};
 						pos.x += (1-t)*landingDiff.x;
@@ -3316,8 +3382,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						// if not holding prop then interpolate flight path
 
 						pos = interpolateFlightPath(
-							getDwellPosition(siteswap.dwellPath[curToss.dwellPathIx],curToss.juggler,curToss.hand,1), /* p0 */
-							getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0), /* p1 */
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,1), /* p0 */
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[nextToss.dwellPathIx]),nextToss.juggler,nextToss.hand,0), /* p1 */
 							T,
 							t,
 							{
@@ -3343,7 +3409,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 				}
 
-				/* set hand positions that weren't set */
+				/* set hand positions that weren't set - ie. empty hands */
 				for (var juggler = 0; juggler < siteswap.numJugglers; juggler++) {
 					for (var hand = 0; hand <= 1; hand++) {
 						if(tmpJugglerHandPositions[juggler][hand] == undefined) {
@@ -3443,8 +3509,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 								}
 
 								var v_0 = interpolateFlightPath(
-									getDwellPosition(siteswap.dwellPath[lastToss.dwellPathIx],lastToss.juggler,lastToss.hand,1), /* p0 */
-									getDwellPosition(siteswap.dwellPath[propNextToss.dwellPathIx],propNextToss.juggler,propNextToss.hand,0), /* p1 */
+									getDwellPosition(removeEmptyPositions(siteswap.dwellPath[lastToss.dwellPathIx]),lastToss.juggler,lastToss.hand,1), /* p0 */
+									getDwellPosition(removeEmptyPositions(siteswap.dwellPath[propNextToss.dwellPathIx]),propNextToss.juggler,propNextToss.hand,0), /* p1 */
 									lastToss.numBeats*siteswap.beatDuration-lastToss.dwellDuration,
 									0,
 									{
@@ -3456,8 +3522,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 									}
 								);
 								var v_T = interpolateFlightPath(
-									getDwellPosition(siteswap.dwellPath[propLastToss.dwellPathIx],propLastToss.juggler,propLastToss.hand,1), /* p0 */
-									getDwellPosition(siteswap.dwellPath[nextToss.dwellPathIx],nextToss.juggler,nextToss.hand,0), /* p1 */
+									getDwellPosition(removeEmptyPositions(siteswap.dwellPath[propLastToss.dwellPathIx]),propLastToss.juggler,propLastToss.hand,1), /* p0 */
+									getDwellPosition(removeEmptyPositions(siteswap.dwellPath[nextToss.dwellPathIx]),nextToss.juggler,nextToss.hand,0), /* p1 */
 									propLastToss.numBeats*siteswap.beatDuration-propLastToss.dwellDuration,
 									propLastToss.numBeats*siteswap.beatDuration-propLastToss.dwellDuration,
 									{
@@ -3470,8 +3536,28 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 								);
 
 								var t = (currentTime - lastThrowTime)/(nextCatchTime - lastThrowTime);
+								
+								var emptyPath = [];
+								// get toss position + empty positions (if any) from last toss
+								var lastTossPath = siteswap.dwellPath[lastToss.dwellPathIx];
+								for (var i = 0; i < lastTossPath.length; i++) {
+									if (lastTossPath[i].empty) {
+										// if this is the first empty then the last position was the toss position
+										if (emptyPath.length == 0) {
+											emptyPath.push(lastTossPath[i-1]);
+										}																				
+										emptyPath.push(lastTossPath[i]);
+									}
+								}
+								// if empty never found then just take the last position
+								if (emptyPath.length == 0) {
+									emptyPath.push(lastTossPath.last());
+								}
+								// add catch position for next toss
+								emptyPath.push(siteswap.dwellPath[nextToss.dwellPathIx][0]);
+
 								var pos = getDwellPosition(
-									[siteswap.dwellPath[lastToss.dwellPathIx].last(),siteswap.dwellPath[nextToss.dwellPathIx][0]]
+									emptyPath
 									, lastToss.juggler
 									, lastToss.hand
 									, t
@@ -3482,7 +3568,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 								);
 
 								var correctCatch = getDwellPosition(
-									[siteswap.dwellPath[lastToss.dwellPathIx].last(),siteswap.dwellPath[nextToss.dwellPathIx][0]]
+									emptyPath
 									, lastToss.juggler
 									, lastToss.hand
 									, 1
@@ -3655,12 +3741,26 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		};
 	}
 
+	function removeEmptyPositions(dwellPath) {
+
+		// remove the empty positions from the dwell path
+		var P = [];
+		for (var i = 0; i < dwellPath.length; i++) {
+			if (!dwellPath[i].empty) {
+				P.push(dwellPath[i]);
+			}
+		}
+
+		return P;
+
+	}
+
 	function getDwellPosition(P,juggler,hand,t,v_0,v_T,v_0scale,v_Tscale,matchVelocity) {
 
 		if (hand == LEFT && (v_0 || v_T)) {
 			v_0.dx *= -1;
 			v_T.dx *= -1;
-		}
+		}		
 
 		var dwellPosition = Bezier.interpolateBezierSpline(P,t,v_0,v_T,v_0scale,v_Tscale,matchVelocity);
 
@@ -3929,13 +4029,12 @@ function SiteswapAnimator(containerId, options) {
 			/* clear out all meshes from scene */
 			for( var i = scene.children.length - 1; i >= 0; i--) { scene.remove(scene.children[i]); }
 
-			/* lights */
-			var ceilingLight = new THREE.PointLight( 0xffffff );
-			ceilingLight.position.set(0,20,0);
-			scene.add( ceilingLight );
-			var floorLight = new THREE.PointLight( 0xffffff );
-			floorLight.position.set(0,0,-2);
-			scene.add( floorLight );
+			var light = new THREE.HemisphereLight( 0xffffff, 0x080820, 1 );
+			scene.add( light );
+
+			var pointLight = new THREE.PointLight( 0x888888, 1, 100 );
+			pointLight.position.set( 0, 0, -2 );
+			scene.add( pointLight );
 
 			propMeshes = [];
 			jugglerMeshes = [];
@@ -4149,21 +4248,38 @@ function SiteswapAnimator(containerId, options) {
 
 			var jugglerMesh = new THREE.Object3D();
 
+			/*
 			var jugglerLegsG = new THREE.Geometry();
 			jugglerLegsG.vertices.push(transformVector(-.125,0,0));
 			jugglerLegsG.vertices.push(transformVector(0,.8,0));
 			jugglerLegsG.vertices.push(transformVector(.125,0,0));
 			var jugglerLegs = new THREE.Line(jugglerLegsG, new THREE.LineBasicMaterial({color: 'black'}));
+			*/
 
-			var jugglerTorsoG = new THREE.Geometry();
-			jugglerTorsoG.vertices.push(transformVector(0,.8,0));
-			jugglerTorsoG.vertices.push(transformVector(0,1.5,0));
-			var jugglerTorso = new THREE.Line(jugglerTorsoG, new THREE.LineBasicMaterial({color: 'black'}));
+			//var jugglerTorsoG = new THREE.Geometry();
+			//jugglerTorsoG.vertices.push(transformVector(0,.8,0));
+			//jugglerTorsoG.vertices.push(transformVector(0,1.5,0));
+			var jugglerTorsoG = new THREE.CylinderGeometry( .15, 0, .625, 20, 20 );
+			var jugglerTorso = new THREE.Mesh(jugglerTorsoG, new THREE.MeshLambertMaterial( { color: 'grey' } ));
+			jugglerTorso.position = new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.11,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0);
 
+			/*
 			var jugglerShouldersG = new THREE.Geometry();
 			jugglerShouldersG.vertices.push(transformVector(-.225,1.425,0));
 			jugglerShouldersG.vertices.push(transformVector(.225,1.425,0));
 			var jugglerShoulders = new THREE.Line(jugglerShouldersG, new THREE.LineBasicMaterial({color: 'black'}));	
+			*/
+
+			var shoulderElbowGeometry = new THREE.SphereGeometry( .03, 20, 20 );
+
+			var jugglerLeftShoulder = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: 'grey' } ) );
+			jugglerLeftShoulder.position = transformVector(-.225,1.425,0);
+
+			var jugglerRightShoulder = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: 'grey' } ) );
+			jugglerRightShoulder.position = transformVector(.225,1.425,0);
+
+			var jugglerLeftElbow = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: 'grey' } ) );
+			var jugglerRightElbow = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: 'grey' } ) );			
 
 			for (var h = -1; h <= 1; h+=2) {
 				
@@ -4172,6 +4288,12 @@ function SiteswapAnimator(containerId, options) {
 				armG = new THREE.Geometry();
 				armG.vertices.push(transformVector(h*.225,1.425,0));
 				jugglerElbowVertices[i][hix] = transformVector(h*.225,1.0125,0);
+
+				if (hix == 0) {
+					jugglerLeftElbow.position = jugglerElbowVertices[i][hix];
+				} else {
+					jugglerRightElbow.position = jugglerElbowVertices[i][hix];
+				}
 				
 				armG.vertices.push(jugglerElbowVertices[i][hix]);	
 				jugglerHandVertices[i][hix].push(transformVector(h*.225,1.0125,-.4125));
@@ -4196,7 +4318,7 @@ function SiteswapAnimator(containerId, options) {
 					handG.faces.push( new THREE.Face3( 0, 1, 2 ) );
 					handG.faces.push( new THREE.Face3( 2, 0, 3 ) );
 					handG.dynamic = true;
-					var handMesh = new THREE.Mesh(handG, new THREE.MeshBasicMaterial( { color: 'black', side: THREE.DoubleSide }));
+					var handMesh = new THREE.Mesh(handG, new THREE.MeshLambertMaterial( { color: 'grey', side: THREE.DoubleSide }));
 
 					jugglerMesh.add( handMesh );
 
@@ -4253,12 +4375,15 @@ function SiteswapAnimator(containerId, options) {
 
 			}
 
-			var jugglerHead = new THREE.Mesh( new THREE.SphereGeometry( .1125, 20 ), new THREE.MeshPhongMaterial( { color: 'black' } ) );
+			var jugglerHead = new THREE.Mesh( new THREE.SphereGeometry( .1125, 20, 20 ), new THREE.MeshLambertMaterial( { color: 'grey' } ) );
 			jugglerHead.position = new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.6125,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0);
 			
-			jugglerMesh.add( jugglerLegs );
+			//jugglerMesh.add( jugglerLegs );
 			jugglerMesh.add( jugglerTorso );
-			jugglerMesh.add( jugglerShoulders );
+			jugglerMesh.add( jugglerLeftShoulder );
+			jugglerMesh.add( jugglerRightShoulder );
+			jugglerMesh.add( jugglerLeftElbow );
+			jugglerMesh.add( jugglerRightElbow );
 			jugglerMesh.add( jugglerHead );
 
 			scene.add(jugglerMesh);
@@ -4847,8 +4972,6 @@ window.onload = function () {
 
 	displayMenu('pattern');
 
-	updateAdvancedInputsFromBasic();	
-
 	window.animator = new SiteswapAnimator.SiteswapAnimator('animatorCanvasContainer', {displayPropPaths: false});
 
 	window.onresize();
@@ -4856,10 +4979,52 @@ window.onload = function () {
 	buildExamples();
 	refreshSavedSiteswapsList();
 
-	bindInputs(applyInputDefaults(getInputsFromQueryString()));
+	// load default pattern
+	$.get("defaultPattern.yml", function(data) {
+		var defaultInputs = YAML.parse(data);
 
-	go();
+		$('#inputsAdvanced').val(YAML.stringify(defaultInputs,1,1));
 
+		go();
+	});	
+
+}
+
+//update advanced inputs from basics
+function updateInputSiteswap() {
+	var siteswap = $('#siteswap').val();
+	var inputs = YAML.parse($('#inputsAdvanced').val());
+	inputs.siteswap = siteswap;
+	$('#inputsAdvanced').val(YAML.stringify(inputs,1,1));
+}
+
+function updateInputProp() {
+	var prop = $('#prop').val();
+	var inputs = YAML.parse($('#inputsAdvanced').val());
+	inputs.props.splice(1); // reduce to 1 prop
+	inputs.props[0].type = prop;
+	$('#inputsAdvanced').val(YAML.stringify(inputs,1,1));
+}
+
+function updateInputDwellPath() {
+	var dwellPath = $('#dwellPath').val();
+	var inputs = YAML.parse($('#inputsAdvanced').val());
+	inputs.dwellPath = dwellPath;
+	$('#inputsAdvanced').val(YAML.stringify(inputs,1,1));
+}
+
+function updateInputBeatDuration() {
+	var beatDuration = $('#beatDuration').val();
+	var inputs = YAML.parse($('#inputsAdvanced').val());
+	inputs.beatDuration = beatDuration;
+	$('#inputsAdvanced').val(YAML.stringify(inputs,1,1));
+}
+
+function updateInputDrawHands() {
+	var drawHands = $('#drawHands')[0].checked;
+	var inputs = YAML.parse($('#inputsAdvanced').val());
+	inputs.drawHands = drawHands;
+	$('#inputsAdvanced').val(YAML.stringify(inputs,1,1));
 }
 
 function displayMenu(menu) {	
@@ -4915,172 +5080,25 @@ window.onresize = function () {
 	}	
 }
 
-function updateAdvancedInputsFromBasic() {
-	bindInputs(applyInputDefaults({
-		siteswap: $('#siteswap').val(),
-		props: [{type: $('#prop').val(), color: 'red', radius: .05, C: .97}],
-		beatDuration: $('#beatDuration').val(),
-		dwellPath: $('#dwellPath').val()
-	}));
-	updateAdvancedLabels();
-}
-
-function applyInputDefaults(inputs) {
-	inputs.siteswap = inputs.siteswap === undefined ? "3" : inputs.siteswap;
-	inputs.props = inputs.props === undefined ? [{type: "ball", color: "red", radius: ".05", C: .97}] : inputs.props;
-	inputs.beatDuration = inputs.beatDuration === undefined ? .28 : inputs.beatDuration;
-	inputs.dwellRatio = inputs.dwellRatio === undefined ? .8 : inputs.dwellRatio;
-	inputs.dwellPath = inputs.dwellPath === undefined ? "(30)(10)" : inputs.dwellPath;
-	inputs.matchVelocity = inputs.matchVelocity === undefined ? 0 : inputs.matchVelocity;
-	inputs.dwellCatchScale = inputs.dwellCatchScale === undefined ? .06 : inputs.dwellCatchScale;
-	inputs.dwellTossScale = inputs.dwellTossScale === undefined ? .06 : inputs.dwellTossScale;
-	inputs.emptyTossScale = inputs.emptyTossScale === undefined ? .025 : inputs.emptyTossScale;
-	inputs.emptyCatchScale = inputs.emptyCatchScale === undefined ? .025 : inputs.emptyCatchScale;
-	inputs.armAngle = inputs.armAngle === undefined ? .1 : inputs.armAngle;
-	inputs.jugglers = inputs.jugglers === undefined ? [{position: {x: 0, z: 0}, rotation: 0}] : inputs.jugglers;
-	inputs.surfaces = inputs.surfaces === undefined ? [{position: {x: 0, y: 0, z:0}, normal: {x: 0, y:1, z:0}, scale: 2}] : inputs.surfaces;
-	return inputs;
-}
-
-function bindInputs(inputs) {
-	var inputsText = inputs.siteswap + "\n";
-	inputsText += inputs.beatDuration + " " + inputs.dwellRatio + "\n";
-	for (var i = 0; i < inputs.props.length; i++) {
-		inputsText += inputs.props[i].type + " " + inputs.props[i].color + " " + inputs.props[i].radius + " " + inputs.props[i].C;
-		if (i < inputs.props.length-1) {
-			inputsText += " ";
-		} else {
-			inputsText += "\n";
-		}
-	}
-	inputsText += inputs.dwellPath + "\n";
-	inputsText += inputs.matchVelocity + " " + inputs.dwellCatchScale + " " + inputs.dwellTossScale + " " + inputs.emptyTossScale + " " + inputs.emptyCatchScale + " " + inputs.armAngle + "\n";
-	for (var i = 0; i < inputs.jugglers.length; i++) {
-		inputsText += inputs.jugglers[i].position.x + " " + inputs.jugglers[i].position.z + " " + inputs.jugglers[i].rotation;
-		if (i < inputs.jugglers.length-1) {
-			inputsText += " ";
-		}
-	}
-	if (inputs.surfaces.length > 0) {
-		inputsText += "\n"
-	}
-	for (var i = 0; i < inputs.surfaces.length; i++) {
-		inputsText += inputs.surfaces[i].position.x + " " + inputs.surfaces[i].position.y + " " + inputs.surfaces[i].position.z + " " + inputs.surfaces[i].normal.x + " " + inputs.surfaces[i].normal.y + " " + inputs.surfaces[i].normal.z + " " + inputs.surfaces[i].scale;
-		if (i < inputs.surfaces.length-1) {
-			inputsText += "\n";
-		}
-	}
-	$('#inputsAdvanced').val(inputsText);
-	updateAdvancedLabels();
-} 
-
-function parseInputs(inputs) {
-	var lines = inputs.split('\n');
-	var siteswap = lines[0];
-	var beatDuration = parseFloat(lines[1].split(' ')[0]);
-	var dwellRatio = parseFloat(lines[1].split(' ')[1]);
-	var propsLine = lines[2].split(' ');
-	var props = [];
-	for (var i = 3; i < propsLine.length; i+=4) {
-		props.push({
-			type: propsLine[i-3],
-			color: propsLine[i-2], 
-			radius: parseFloat(propsLine[i-1]), 
-			C: parseFloat(propsLine[i])
-		});
-	}
+function parseInputs() {
 	
-	// this whole bit should probably be moved into the Siteswap class
-	var customDwellPathInput = lines[3];
-	var customDwellPathBeats = customDwellPathInput.split(').').map(function(a,ix,arr) { if (ix < arr.length-1) { return a+')'; } else { return a; } });
-	var dwellPath = [];
-	for (var i = 0; i < customDwellPathBeats.length; i++) {
-		var customDwellPathArr = customDwellPathBeats[i].match(/\(-?\d+(\.\d+)?(,-?\d+(\.\d+)?)?(,-?\d+(\.\d+)?)?(,\{-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?\})?\)/g);
-		if ( customDwellPathArr.reduce(function(a,b) { return a+b }).length == customDwellPathBeats[i].length ) {
-			dwellPath.push(
-				customDwellPathArr.map(function(a,ix) {   
-					var xyz = a.match(/\(-?\d+(\.\d+)?(,-?\d+(\.\d+)?)?(,-?\d+(\.\d+)?)?/g)[0].match(/-?\d+(\.\d+)?/g);
-					var rot = a.match(/\{-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?\}/g); 
-					var xyzth;
-					if (rot) {
-						xyzth = rot[0].match(/-?\d+(\.\d+)?/g);
-					}
-					var rotation;
-					if (xyzth) {
-						rotation = {x:parseFloat(xyzth[0]),y:parseFloat(xyzth[1]),z:parseFloat(xyzth[2]),th:parseFloat(xyzth[3])};
-					} else if (props[0].type == 'club') {
-						rotation = {x:4,y:0,z:(ix == 0 ? -1 : 1),th:Math.PI/2+(ix == 0 ? .5 : -.7)};
-					} else if (props[0].type == 'ring') {
-						rotation = {x:0,y:1,z:0,th:Math.PI/2};
-					} else {
-						rotation = {x:1,y:0,z:0,th:0};
-					}
-					return {
-						x: parseFloat(xyz[0])/100,
-						y: xyz[1] ? parseFloat(xyz[1])/100 : 0,
-						z: xyz[2] ? parseFloat(xyz[2])/100 : 0,
-						rotation: rotation
-					}
-				})
-			);
-		} else {
-			throw 'Invalid custom dwell path';
-		}
-	}
-
-	var dwellPathConfigs = lines[4].split(' ');
-	var matchVelocity = dwellPathConfigs[0] == 1 ? true : false;
-	var dwellCatchScale = parseFloat(dwellPathConfigs[1]);
-	var dwellTossScale = parseFloat(dwellPathConfigs[2]);
-	var emptyTossScale = parseFloat(dwellPathConfigs[3]);
-	var emptyCatchScale = parseFloat(dwellPathConfigs[4]);
-	var armAngle = parseFloat(dwellPathConfigs[5]);
-
-	var jugglerPositions = lines[5].split(' ');
-	var jugglers = undefined;
-	for (var i = 0; i < jugglerPositions.length; i+=3) {
-		if (jugglers === undefined) {
-			jugglers = [];
-		}
-		jugglers.push({
-			position: {x: parseFloat(jugglerPositions[i]), z: parseFloat(jugglerPositions[i+1])},
-			rotation: parseFloat(jugglerPositions[i+2])
-		});
-	}
-
-	var surfaces= [];
-	for (var i = 6; i < lines.length; i++) {
-		var surfaceLine = lines[i].split(' ');
-		surfaces.push({
-			position: {
-				x: parseFloat(surfaceLine[0]),
-				y: parseFloat(surfaceLine[1]),
-				z: parseFloat(surfaceLine[2]),
-			},
-			normal: {
-				x: parseFloat(surfaceLine[3]),
-				y: parseFloat(surfaceLine[4]),
-				z: parseFloat(surfaceLine[5]),	
-			},
-			scale: parseFloat(surfaceLine[6])
-		});
-	}
+	var inputs = YAML.parse($('#inputsAdvanced').val());
 
 	return {
-		siteswap: siteswap,
-		beatDuration: beatDuration,
-		dwellRatio: dwellRatio,
-		props: props,
-		inputDwellPath: customDwellPathInput,
-		dwellPath: dwellPath,
-		matchVelocity: matchVelocity,
-		dwellCatchScale: dwellCatchScale,
-		dwellTossScale: dwellTossScale,
-		emptyTossScale: emptyTossScale,
-		emptyCatchScale: emptyCatchScale,
-		armAngle: armAngle,
-		surfaces: surfaces,
-		jugglers: jugglers
+		siteswap: inputs.siteswap.toString(),
+		beatDuration: inputs.beatDuration,
+		dwellRatio: inputs.dwellRatio,
+		props: inputs.props,
+		dwellPath: inputs.dwellPath,
+		matchVelocity: inputs.matchVelocity,
+		dwellCatchScale: inputs.dwellCatchScale,
+		dwellTossScale: inputs.dwellTossScale,
+		emptyTossScale: inputs.emptyTossScale,
+		emptyCatchScale: inputs.emptyCatchScale,
+		armAngle: inputs.armAngle,
+		surfaces: inputs.surfaces,
+		jugglers: inputs.jugglers,
+		drawHands: inputs.drawHands
 	};
 }
 
@@ -5090,17 +5108,7 @@ function go() {
 		displayMenu('animator');
 	}
 
-	var inputs = parseInputs($('#inputsAdvanced').val());
-
-	var saveURL = window.location.href.replace("#","");
-	if (saveURL.indexOf("?") > -1) {
-		saveURL = saveURL.substring(0,saveURL.indexOf("?"));
-	}
-
-	var saveQueryString = "?v=16&siteswap=" + encodeURIComponent(inputs.siteswap) + "&beatDuration=" + inputs.beatDuration + "&dwellPath=" + inputs.inputDwellPath; 
-
-	$('#saveURL').text(saveURL + saveQueryString);
-	$('#saveURL').attr("href",saveURL + saveQueryString);	
+	var inputs = parseInputs();
 
 	window.siteswap = SiteswapJS.CreateSiteswap(inputs.siteswap, 
 		{
@@ -5131,19 +5139,14 @@ function go() {
 			$('#errorMessage').hide();
 		}		
 
-		var drawHands = false;
-		if (siteswap.props[0].type == 'ball' && siteswap.numJugglers == 1) {
-			drawHands = true;
-		}
-
 		animator.init(siteswap, 
 			{
-				drawHands: $('#drawHands')[0].checked
+				drawHands: inputs.drawHands
 				//, motionBlur: true
 			}
 		);
 		animator.animate();
-
+		
 	}
 
 }
@@ -5178,55 +5181,36 @@ function updateDisplayPropPaths() {
 	}
 }
 
-function updateAdvancedLabels() {
-	var inputs = parseInputs($('#inputsAdvanced').val());
-	$('#lblSiteswap').text(inputs.siteswap);
-	$('#lblBeatDuration').text(inputs.beatDuration);
-	$('#lblDwellRatio').text(inputs.dwellRatio);
-	var lblProps = "";
-	for (var i = 0; i < inputs.props.length; i++) {
-		var prop = inputs.props[i];
-		lblProps += prop.color + ' ' + prop.type + ' ' + prop.radius + 'm ' + prop.C;
-		if (i < inputs.props.length-1) {
-			lblProps += ', ';
-		}
-	}
-	$('#lblProps').text(lblProps);
-	$('#lblDwellPath').text(inputs.inputDwellPath);
-	$('#lblMatchVelocity').text(inputs.matchVelocity == 1 ? 'Y' : 'N');
-	$('#lblDwellCatchScale').text(inputs.dwellCatchScale);
-	$('#lblDwellTossScale').text(inputs.dwellTossScale);
-	$('#lblEmptyTossScale').text(inputs.emptyTossScale);
-	$('#lblEmptyCatchScale').text(inputs.emptyCatchScale);
-	$('#lblArmAngle').text(inputs.armAngle + ' rad');
-
-	var lblSurfaces = "";
-	for (var i = 0; i < inputs.surfaces.length; i++) {
-		var surface = inputs.surfaces[i];
-		lblSurfaces += 'surface ' + i + ': position <' + surface.position.x + ',' + surface.position.y + ',' + surface.position.z + '>' + ' normal <' + surface.normal.x + ',' + surface.normal.y + ',' + surface.normal.z + '> half-width ' + surface.scale + 'm';
-		if (i < inputs.surfaces.length-1) {
-			lblSurfaces += ", ";
-		}
-	}
-	$('#lblSurfaces').text(lblSurfaces);
-
-}
-
-function runExample(exampleName) {
-	$.getJSON("examples.json", function(data) {
-		for (var i = 0; i < data.examples.length; i++) {
-			if (data.examples[i].name == exampleName) {
-				bindInputs(applyInputDefaults(data.examples[i]));
-				go();
+function runExample(exampleIndex) {
+	// first apply defaults
+	$.get("defaultPattern.yml", function(data) {
+		$('#inputsAdvanced').val(data);
+	});	
+	// get example and apply on top of defaults
+	$.get("examples.yml", function(data) {
+		var examples = YAML.parse(data);
+		for (var i = 0; i < examples.length; i++) {
+			if (i == exampleIndex) {
+				var inputs = YAML.parse($('#inputsAdvanced').val());
+				// iterate over all properties set in the example and apply them to the inputs
+				var keys = Object.keys(examples[i])
+				for (var keyIx = 0; keyIx < keys.length; keyIx++) {
+					if (keys[keyIx] != "name") {
+						inputs[keys[keyIx]] = examples[i][keys[keyIx]];
+					}
+				}			
 			}
 		}
+		$('#inputsAdvanced').val(YAML.stringify(inputs,1,1));
+		go();
 	});
 }
 
 function buildExamples() {
-	$.getJSON("examples.json", function(data) {
-		for (var i = 0; i < data.examples.length; i++) {
-			$('#examplesList').append('<li><a href="#" onclick="runExample(\'' + data.examples[i].name + '\');">' + data.examples[i].name + '</a></li>');
+	$.get("examples.yml", function(data) {
+		var examples = YAML.parse(data);
+		for (var i = 0; i < examples.length; i++) {
+			$('#examplesList').append('<li><a href="#" onclick="runExample(\'' + i + '\');">' + examples[i].name + '</a></li>');
 		}
 	});
 }
@@ -5346,7 +5330,7 @@ function findSiteswaps() {
 		sync: $('#explorerSync')[0].checked,
 		callbacks: {
 			siteswapFound: function (siteswap, siteswapIx, excited) {
-				$('#siteswapsList').append('<li><a class="' + (excited ? 'excited' : 'ground') + '" href="#" onclick="runSiteswap(\''+siteswap+'\')">'+siteswap+'</a></li>');
+				$('#siteswapsList').append('<li><a class="' + (excited ? 'excited' : 'ground') + ' patternLink" href="#" onclick="runSiteswap(\''+siteswap+'\')">'+siteswap+'</a></li>');
 			}
 		}
 	};
@@ -5356,7 +5340,7 @@ function findSiteswaps() {
 
 function runSiteswap(s) {
 	$('#siteswap').val(s);
-	updateAdvancedInputsFromBasic();
+	updateInputSiteswap();
 	go();
 }
 
@@ -5374,63 +5358,44 @@ function showHideCameraCustomPosition() {
 	}
 }
 
-function getInputsFromQueryString() {
-	var inputs = {};
-	var siteswap = getURLQueryStringParameterByName("siteswap");
-	var props = JSON.parse(getURLQueryStringParameterByName("props"));
-	var beatDuration = getURLQueryStringParameterByName("beatDuration");
-	var dwellPath = getURLQueryStringParameterByName("dwellPath");
-	
-	if(siteswap !== null) {
-		inputs.siteswap = siteswap;
-	}
-	if (props !== null) {
-		inputs.props = props;
-	}
-	if (beatDuration !== null) {
-		inputs.beatDuration = beatDuration;
-	}
-	if (dwellPath !== null) {
-		inputs.dwellPath = dwellPath;
-	}
-
-	return inputs;
-}
 
 function saveCurrentSiteswap() {
-	var savedSiteswaps = getSavedSiteswaps();
-	savedSiteswaps.push({name: $('#savedName').val(), version: 16, inputs: $('#inputsAdvanced').val()});
-	window.localStorage.setItem("savedSiteswaps",JSON.stringify(savedSiteswaps));
-	refreshSavedSiteswapsList();
-	$('#saveSuccess').show(1000);
-	setTimeout(function() { $('#saveSuccess').hide(1000); }, 2000);
-}
 
-function getSavedSiteswaps() {	
-	if (window.localStorage.getItem("savedSiteswaps") === null) {
-		window.localStorage.setItem("savedSiteswaps", "[]");
-	} 
-	return JSON.parse(window.localStorage.getItem("savedSiteswaps"));	
+	var pattern = {};
+	pattern.inputs = parseInputs();
+	pattern.name = $('#savedName').val();
+
+	$.post("api/patterns", pattern);//.done(function(d) { console.log("success"); console.log(d); });
+
+	refreshSavedSiteswapsList();	
 }
 
 function refreshSavedSiteswapsList() {
-	var savedSiteswaps = getSavedSiteswaps();
-	var savedList = $('#savedList');
-	savedList.empty();
-	for(var i = 0; i < savedSiteswaps.length; i++) {
-		savedList.append('<li><a href="#" class="deleteLink" onclick="deleteSavedSiteswap(' + i + ');"><span class="glyphicon glyphicon-remove"></span></a><a href="#" onclick="runSavedSiteswap(' + i + ');">'+ savedSiteswaps[i].name +'</a></li>');
-	}	
+	$.get("api/patterns?public=1").done(function(patterns) { 
+		var savedList = $('#savedList');
+		savedList.empty();
+		for(var i = 0; i < patterns.length; i++) {
+			savedList.append('<li><a href="#" class="patternLink" onclick="runSavedSiteswap(\'' + patterns[i]._id + '\');">' + patterns[i].name + '</a></li>');
+		}	
+	});
 }
 
-function runSavedSiteswap(savedSiteswapIndex) {
-	var savedSiteswaps = getSavedSiteswaps();
-	$('#inputsAdvanced').val(savedSiteswaps[savedSiteswapIndex].inputs);
-	go();
+function runSavedSiteswap(id) {
+	$.get("api/patterns/"+id).done(function(pattern) {
+		
+		$('#inputsAdvanced').val(YAML.stringify(pattern.inputs,1,1));
+		go();
+
+	});
 }
 
-function deleteSavedSiteswap(savedSiteswapIndex) {
-	var savedSiteswaps = getSavedSiteswaps();
-	savedSiteswaps.splice(savedSiteswapIndex);
-	window.localStorage.setItem("savedSiteswaps",JSON.stringify(savedSiteswaps));
-	refreshSavedSiteswapsList();
+function deleteSavedSiteswap(id) {
+	$.ajax({
+	    url: 'api/patterns/'+id,
+	    type: 'DELETE',
+	    success: function(result) {
+	        refreshSavedSiteswapsList();
+	    }
+	});
+
 }
