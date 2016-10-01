@@ -1,0 +1,108 @@
+	html {
+		overflow: hidden;
+	}
+	body {
+		font-family: "Trebuchet MS", "Helvetica", "Arial",  "Verdana", "sans-serif";
+	}
+	label { 
+		display: block; 
+		width: 100px; 
+		float: left; 
+	}
+	textarea {
+	     width: 100%;
+	     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	     box-sizing: border-box;         /* Opera/IE 8+ */
+	}
+	#patternMenu div {
+		padding: 5px;
+	}
+	#patternMenu {
+		overflow-y:auto;
+	}
+	.control {
+		width: 200px;
+	}
+	#animatorControlsMenu {
+		overflow-y: auto;
+	}
+	#animatorControlsMenu div {
+		padding: 5px;
+	}
+	#explorerMenu div {
+		padding: 5px;
+	}
+	#explorerMenu input {
+		width:40px;
+	}
+	#examplesMenu ul {
+		list-style-type: none;
+	}
+	#examplesMenu a {
+		text-decoration: none;
+	}
+	#examplesMenu a:hover {
+		text-decoration: underline;
+	}
+	.patternLink {
+		display: block;
+		text-align: center;
+		border-bottom: 1px solid #999;
+		text-decoration: none;		
+	}
+	.patternLink:hover {
+		background-color: #ddd;
+		text-decoration: none;	
+	}
+	.list {
+		list-style: none;
+		font-size: 20px;
+		padding-left: 0px;
+	}
+	#nav ul {
+		display: table;
+    	width: 100%;
+    	margin: 0px;
+    	padding: 0px;
+	}
+	#nav ul li {
+		display: table-cell;
+	}
+	.selected {
+		background: #FFF;
+		color: black;
+	}	
+	.unselected {
+		background: #000;
+		color: white;
+	}
+	.unselected:hover {
+		background: #555;
+		color: white;
+	}
+	#nav a {
+		display: block;
+		border-right: 1px solid #fff;
+		border-left: 1px solid #fff;
+		text-align: center;
+		margin: 0px;		
+		padding: 5px;		
+		cursor: pointer;
+		text-decoration: none;
+	}
+	.controlDiv {
+		padding: 10px;
+	}	
+	.alert {
+		color: #a94442;
+		border-color: #ebccd1;
+		background-color: #f2dede;
+	}
+	.success {
+		color: white;
+		background-color: #5cb85c; 
+	}
+	.deleteLink {
+		color: #a94442;
+	}
