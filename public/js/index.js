@@ -76,13 +76,16 @@ window.onresize = function () {
 	var windowHeight = $(window).height()-10;
 	var controlsWidth = 500;
 	var animatorWidth = windowWidth-controlsWidth;
-	var minAnimatorWidth = 250;
+	var minAnimatorWidth = 400;
 	var animatorHeight = windowHeight;
 
 	if (animatorWidth > minAnimatorWidth) {
 		$('#nav #animator').hide();
 		$('#animatorCanvasContainer').appendTo($('body'));
-		$('#animatorMenu').removeClass('controlDiv');		
+		$('#animatorMenu').removeClass('controlDiv');
+
+		$('.navText').show();
+
 		twoWindow = true;
 	} else {
 		if (controlsWidth > windowWidth) {
@@ -95,6 +98,9 @@ window.onresize = function () {
 		controlsWidth = windowWidth;
 		twoWindow = false;
 		animatorHeight = windowHeight - $('#animatorCanvasContainer').offset().top;
+
+		$('.navText').hide();
+
 	}
 
 	$('#controlsContainer').height(windowHeight);
