@@ -66,10 +66,6 @@ acctRouter.post('/signup', passport.authenticate('local-signup', {
     failureFlash: true
 }));
 
-acctRouter.get('/profile', isLoggedIn, function(req,res) {
-    res.render('profile.ejs', { user: req.user });
-});
-
 acctRouter.get('/logout', function(req,res) {
     req.logout();
     res.redirect('/');
@@ -77,6 +73,18 @@ acctRouter.get('/logout', function(req,res) {
 
 acctRouter.get('/', function(req,res) {
     res.render('animator.ejs', { isLoggedIn: req.isAuthenticated(), environment: ENVIRONMENT });
+});
+
+acctRouter.get('/about', function(req,res) {
+    res.render('about/home.ejs');
+});
+
+acctRouter.get('/about/features', function(req,res) {
+    res.render('about/features.ejs');
+});
+
+acctRouter.get('/about/syntax', function(req,res) {
+    res.render('about/syntax.ejs');
 });
 
 function isLoggedIn(req, res, next) {

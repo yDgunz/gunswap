@@ -1,0 +1,72 @@
+<% include ../partials/header.ejs %>
+
+<h3>Advanced Mode Syntax</h3>
+
+<p>Patterns can be defined using a YAML based configuration input. All parameters are optional. The example below demonstrates a complete configuration using all the defaults.</p>
+ 
+<pre>
+<code>siteswap: 3
+beatDuration: 0.28
+dwellRatio: 0.8
+props: [{type: ball, color: red, radius: 0.05, C: 0.9}]
+dwellPath: (30)(10)
+matchVelocity: false
+dwellCatchScale: 0.06
+dwellTossScale: 0.06
+emptyCatchScale: 0.025
+emptyTossScale: 0.025
+armAngle: 0.1
+jugglers: [{position: {x: 0, z: 0}, rotation: 0}]
+surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1}]
+drawHands: true</code>
+</pre>
+
+<b>Pattern</b>
+
+<p>
+<code>siteswap</code> - siteswap string. Supports standard vanilla like <code>531</code>, multiplex like <code>33[33]</code>, and synchronous like <code>(4,6x)(6x,4)</code>. 2's are held by default, make them active by using "2A" like <code>42A3</code>. Passing patterns wrap each beat in &lt;&gt; with each juggler pipe delimited, so <code>&lt;3|3&gt;</code> is two jugglers both running 3 ball cascade. Use P to indicate a pass, so<code>&lt;3P|3P&gt;</code> is a pass on every throw. For multiple jugglers include the index of the juggler who is the target of the pass (starting at 1), so <code>&lt;3P3|3|3P1&gt;</code> is two jugglers passing while a third runs 3 ball cascade. <i>If you input a passing siteswap you need to specify all the juggler positions and rotations, see "Juggler Positions" below</i>. Modify the number of spins with S, so <code>3S{0}3S{2}</code> is alternating flats and doubles. You can optionally specify the club toss orientation by adding the x,y,z components of the vector representing the direction the club handle is pointing in the right hand. So <code>3S{2,.1,.1,1}</code> is a toss that does 2 full rotations and is pointing slightly down and slighly inwards. Modify the dwell ratio with D, so <code>3D{.2}3D{.8}</code> is a 3 ball pattern where one hand is rushing the throw (good for animating half shower patterns). Modify the catch and throw by using C and T, respectively, so <code>3C{P}T{C}</code> is penguin (P) catches followed by claw (C) throws. Bounce using B and optionally specify the bounce type (defaults to lift). So <code>5B</code> is a 5 ball lift bounce and <code>5B{HL}</code> is a 5 ball hyperlift bounce (ie. the ball is traveling down when it is caught). Options are L for lift, HL for hyperlift, F for force, and HF for hyperforce.
+</p>
+
+<b>Timing</b>
+
+<p>
+<code>beatDuration</code> - beat duration in seconds. Higher beat duration means higher throws.
+</p>
+
+<p>
+<code>dwellRatio</code> - dwell ratio, must be between 0 and 1. Higher dwell ratio means the prop stays in the hand longer, and means shorter throws.
+</p>
+
+<b>Props</b>
+
+<p>
+<code>props</code> - array of prop definitions (you can define multiple prop definitions for a pattern). <code>type</code> can be "ball", "club", or "ring". <code>color</code> can be any HTML color name or "random". <radius>radius</radius> is the prop radius in meters (only applies to balls). <radius>C</radius> is the coefficient of restitution - basically how bouncey the prop is. Must be between 0 and 1, where 1 is 100% elastic bounces.
+</p>
+
+<b>Hand Movement</b>
+
+<p>
+<code>dwellPath</code> - customizable dwell path. Positions in the dwell path are wrapped in parentheses with the y and z components optional. Positions are in cm relative to the center of the juggler with the positive direction moving to the outside. The first position is the catch position, the last is the throw, and all points in between are passed through using a bezier cubic spline. Multiple paths are delimited by periods. So <code>(30)(10).(10)(30)</code> is a classic half shower hand movement where the first dwell path (<code>(30)(10)</code>) indicates the prop is caught 30 cm outside the center and then thrown 10 cm outside the center (ie. an inside throw). The second path (<code>(10)(30)</code>) indicates an outside throw.
+</p>
+
+<p>
+<code>matchVelocity</code> - 0 or 1 indicating that the velocity of the hand should match the velocity of the prop on both catching and throwing.
+</p>
+
+<p>
+<code>dwellCatchScale dwellTossScale emptyTossScale emptyCatchScale</code> - value (should be low) that is used to set control points for hand movement through the dwell path. Higher values indicate a more exagerated hand movement. So a high <code>dwellCatchScale</code> would show the hand moving a lot immediately after catching the prop, as if the prop was very heavy. A high <code>emptyTossScale</code> would show the hand moving a lot immediately after throwing, as if the throw had a lot of follow through.
+</p>
+
+<p>
+<code>armAngle</code> - the angle, in radians, the arm will make with the shoulder. 0 means the elbow is pinned to the side. The higher the angle the more the elbow lifts out.
+</p>
+
+<b>Juggler Positions</b>
+
+<p><code>jugglers</code> - array of juggler definitions. <code>position</code> is the (x,y,z) position of the juggler. <code>rotation</code> is the rotation, in radians, around the y axis.</p>
+
+<b>Surfaces</b>
+
+<p><code>surfaces</code> - array of surface definitions. These can be used to define bounce juggling patterns. <code>position</code> is the (x,y,z) position for the center of the surface. <code>normal</code> is the surface's normal vector, essentially defining the direction the surface is pointing. <code>scale</code> is the half-width of the surface, think of it like the radius. The default is a 2-by-2 surface beneath the juggler's feet.</p>
+
+<% include ../partials/footer.ejs %>
