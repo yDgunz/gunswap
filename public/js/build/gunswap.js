@@ -2637,7 +2637,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		}
 
 		/* construct the various regex patterns. see blog post for details about this */
-		var validToss = "(R|L)?([\\da-o])x?A?(" + passPattern + ")?(C{(C|P)?})?(T{(C|P)?})?(B({\\d*(L|HL|F|HF)?})?)?(S{-?\\d+(.\\d+)?(,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?)?})?(D{\\d*\\.?\\d*})?";
+		var validToss = "(R|L)?([\\da-o])x?A?(" + passPattern + ")?(C{(C|P)?})?(T{(C|P)?})?(B({\\d*(L|HL|F|HF)?\\d*})?)?(S{-?\\d+(.\\d+)?(,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?)?})?(D{\\d*\\.?\\d*})?";
 		var validMultiplex = "\\[(" + validToss + ")+\\]";
 		var validSync = "\\((" + validToss + "|" + validMultiplex + "),(" + validToss + "|" + validMultiplex + ")\\)";
 		var validBeat = "(" + validToss + "|" + validMultiplex + "|" + validSync + ")";
@@ -2710,9 +2710,16 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			var bounceOrder = [];
 			var bIx = siteswapStr.indexOf("B");
 			if (bIx > 0) {
-				if (siteswapStr[bIx+1] == "{" && !isNaN(siteswapStr[bIx+2])) {
-					numBounces = parseInt(siteswapStr[bIx+2]);
-					for (var i = bIx + 3; i < siteswapStr.length; i++) {
+				var bpIx;
+				if (!isNaN(siteswapStr[bIx+3])) {
+					bpIx = 3;
+				}
+				if (!isNaN(siteswapStr[bIx+4])) {
+					bpIx = 4;
+				}
+				if (siteswapStr[bIx+1] == "{" && bpIx != undefined) {
+					numBounces = parseInt(siteswapStr[bIx+bpIx]);
+					for (var i = bIx + bpIx + 1; i < siteswapStr.length; i++) {
 						if (!isNaN(siteswapStr[i])) {
 							var surfaceIx = parseInt(siteswapStr[i]);
 							if (surfaceIx >= siteswap.surfaces.length) {
