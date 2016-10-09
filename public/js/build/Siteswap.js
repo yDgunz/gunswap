@@ -143,6 +143,17 @@ function negate(a) {
 		}
 	}
 
+	this.simple = false;
+	// if we're only doing 1 bounce on 1 surface that has a standard normal, we can simplify the member generation
+	if (
+		fitnessConfig.numBounces == 1 && 
+		fitnessConfig.surfaces.length == 1 && 
+		fitnessConfig.surfaces[0].normal.x == 0 && 
+		fitnessConfig.surfaces[0].normal.z == 0 &&
+		fitnessConfig.minT == fitnessConfig.maxT) {
+		this.simple = true;
+	}
+
 	this.generations = 0;
 	this.rankedPopulation = [];	// the current, ranked, population
 	this.fittestMembers = []; // array of the fittest members by generation
@@ -235,7 +246,6 @@ BounceGA.prototype.getBouncePath = function(v) {
 					T: t,
 					actualpT: this.fitnessConfig.pT // need this for comparator function below
 				});
-				//return {path: p, T: t};
 			}
 		}		
 
@@ -261,66 +271,75 @@ BounceGA.prototype.generateMember = function(parent) {
 	if (parent && parent.fitness < 100) {
 
 		if (Math.random() < this.gaConfig.mutationChance) {			
-			v.x = (1-2*Math.random())*(parent.fitness < this.gaConfig.mutationScale ? parent.fitness : this.gaConfig.mutationScale);
+			
 			v.y = (1-2*Math.random())*(parent.fitness < this.gaConfig.mutationScale ? parent.fitness : this.gaConfig.mutationScale);
-			v.z = (1-2*Math.random())*(parent.fitness < this.gaConfig.mutationScale ? parent.fitness : this.gaConfig.mutationScale);
+
+			//only edit x/z if we're not in simple mode
+			if (!this.simple) {
+				v.x = (1-2*Math.random())*(parent.fitness < this.gaConfig.mutationScale ? parent.fitness : this.gaConfig.mutationScale);	
+				v.z = (1-2*Math.random())*(parent.fitness < this.gaConfig.mutationScale ? parent.fitness : this.gaConfig.mutationScale);
+			}
+
 			add(v, parent.v);
 		} else {
 			v = cloneObject(parent.v);
 		}
 	} else {
 
-		// v.x = (1-2*Math.random())*this.gaConfig.initialScale;
-		// v.y = (1-2*Math.random())*this.gaConfig.initialScale;
-		// v.z = (1-2*Math.random())*this.gaConfig.initialScale;
-		
-		// should always be tossing towards the first bounce surface
-		// TO DO - get this working...
+		if (this.simple) {
+			
+			v.x = (this.fitnessConfig.pT.x-this.fitnessConfig.p0.x)/this.fitnessConfig.minT;
+			v.z = (this.fitnessConfig.pT.z-this.fitnessConfig.p0.z)/this.fitnessConfig.minT;
+			
+			v.y = this.fitnessConfig.tossSign * Math.random() * this.gaConfig.initialScale;
 
-		var targetSurface;
-		if(this.fitnessConfig.surfaceBounceOrder) {
-			targetSurface = this.fitnessConfig.surfaces[this.fitnessConfig.surfaceBounceOrder[0]];
 		} else {
-			targetSurface = this.fitnessConfig.surfaces[Math.floor(Math.random()*this.fitnessConfig.surfaces.length)];
+
+			var targetSurface;
+			if(this.fitnessConfig.surfaceBounceOrder) {
+				targetSurface = this.fitnessConfig.surfaces[this.fitnessConfig.surfaceBounceOrder[0]];
+			} else {
+				targetSurface = this.fitnessConfig.surfaces[Math.floor(Math.random()*this.fitnessConfig.surfaces.length)];
+			}
+			
+			// first find a random spot on the surface
+			v = cloneObject(targetSurface.position);
+			add(v, multiply(cloneObject(targetSurface.axis1), 1-2*Math.random()));
+			add(v, multiply(cloneObject(targetSurface.axis2), 1-2*Math.random()));
+
+			// save and remove the y component
+			var targetY = v.y;
+			v.y = 0;
+
+			var p0copy = cloneObject(this.fitnessConfig.p0);
+			p0copy.y = 0;
+			var pTcopy = cloneObject(this.fitnessConfig.pT);
+			pTcopy.y = 0;
+
+			// the minimum possible velocity is for us to get to this spot at the half-way point
+			// var minV = p0copy.distanceTo(v)+pTcopy.distanceTo(v) / (this.fitnessConfig.maxT);
+			// maximum velocity is for us to go directly to the spot and back in minT
+			// ACTUALLY THIS SHOULD BE HIGHER
+			// var maxV = (p0copy.distanceTo(v)+pTcopy.distanceTo(v) / (this.fitnessConfig.minT))/this.fitnessConfig.C;
+			var minV = 0;
+			var maxV = this.gaConfig.initialScale;
+
+			// create velocity vector from p0 to random spot on surface
+			sub(v, p0copy);
+			
+			normalize(v);
+			multiply(v, minV + (maxV-minV)*Math.random());
+
+			// now get minV and maxV for y-component
+			// the min velocity (or max velocity down) is either 0 if tossSign is 1 or targetY is above, or the time it takes to bounce back from straight down
+			// this calculation is naively simplified to not consider C or G, may need to refactor
+			minV = (this.fitnessConfig.tossSign == 1 || targetY > this.fitnessConfig.p0.y) ? 0 : -( (this.fitnessConfig.p0.y - targetY)*2 / (this.fitnessConfig.minT) );
+			// the max velocity is either 0 if tossSign is -1 or the time it takes to get back from a straight toss up
+			//maxV = (this.fitnessConfig.pT.y - this.fitnessConfig.p0.y - .5*this.fitnessConfig.G*this.fitnessConfig.maxT*this.fitnessConfig.maxT)/this.fitnessConfig.maxT;
+			maxV = this.gaConfig.initialScale;
+
+			v.y = minV + (maxV-minV)*Math.random();
 		}
-		
-		// first find a random spot on the surface
-		v = cloneObject(targetSurface.position);
-		add(v, multiply(cloneObject(targetSurface.axis1), 1-2*Math.random()));
-		add(v, multiply(cloneObject(targetSurface.axis2), 1-2*Math.random()));
-
-		// save and remove the y component
-		var targetY = v.y;
-		v.y = 0;
-
-		var p0copy = cloneObject(this.fitnessConfig.p0);
-		p0copy.y = 0;
-		var pTcopy = cloneObject(this.fitnessConfig.pT);
-		pTcopy.y = 0;
-
-		// the minimum possible velocity is for us to get to this spot at the half-way point
-		// var minV = p0copy.distanceTo(v)+pTcopy.distanceTo(v) / (this.fitnessConfig.maxT);
-		// maximum velocity is for us to go directly to the spot and back in minT
-		// ACTUALLY THIS SHOULD BE HIGHER
-		// var maxV = (p0copy.distanceTo(v)+pTcopy.distanceTo(v) / (this.fitnessConfig.minT))/this.fitnessConfig.C;
-		var minV = 0;
-		var maxV = this.gaConfig.initialScale;
-
-		// create velocity vector from p0 to random spot on surface
-		sub(v, p0copy);
-		
-		normalize(v);
-		multiply(v, minV + (maxV-minV)*Math.random());
-
-		// now get minV and maxV for y-component
-		// the min velocity (or max velocity down) is either 0 if tossSign is 1 or targetY is above, or the time it takes to bounce back from straight down
-		// this calculation is naively simplified to not consider C or G, may need to refactor
-		minV = (this.fitnessConfig.tossSign == 1 || targetY > this.fitnessConfig.p0.y) ? 0 : -( (this.fitnessConfig.p0.y - targetY)*2 / (this.fitnessConfig.minT) );
-		// the max velocity is either 0 if tossSign is -1 or the time it takes to get back from a straight toss up
-		//maxV = (this.fitnessConfig.pT.y - this.fitnessConfig.p0.y - .5*this.fitnessConfig.G*this.fitnessConfig.maxT*this.fitnessConfig.maxT)/this.fitnessConfig.maxT;
-		maxV = this.gaConfig.initialScale;
-
-		v.y = minV + (maxV-minV)*Math.random();
 	
 	}
 

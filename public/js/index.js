@@ -17,7 +17,12 @@ window.onload = function () {
 	$.get("defaultPattern.yml", function(data) {
 		DEFAULT_INPUTS = YAML.parse(data);		
 
-		$('#inputsAdvanced').val(YAML.stringify(DEFAULT_INPUTS.inputs,1,1));
+		var patternId = getURLQueryStringParameterByName("patternId");
+		if (patternId != undefined) {
+			runSavedSiteswap(patternId);
+		} else {
+			$('#inputsAdvanced').val(YAML.stringify(DEFAULT_INPUTS.inputs,1,1));
+		}
 
 		go();
 	});	
