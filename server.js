@@ -138,7 +138,7 @@ router.route('/patterns/:pattern_id')
                 res.send(err);
             }
             // only return this pattern if it's the user's pattern or it's public
-            if (req.user.id == pattern.user_id || pattern.public) {
+            if (pattern.public || req.user.id == pattern.user_id) {
                 res.json(pattern);
             }            
         });

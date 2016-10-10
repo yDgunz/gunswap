@@ -22,9 +22,9 @@ window.onload = function () {
 			runSavedSiteswap(patternId);
 		} else {
 			$('#inputsAdvanced').val(YAML.stringify(DEFAULT_INPUTS.inputs,1,1));
+			go();
 		}
 
-		go();
 	});	
 
 }
@@ -427,15 +427,33 @@ function refreshSavedSiteswapsList() {
 function runSavedSiteswap(id) {
 	$.get("api/patterns/"+id).done(function(pattern) {
 		
+		// clear out irrelevant fields
 		if (pattern.inputs.surfaces.length == 0) {
 			delete pattern.inputs.surfaces;
+		} else {
+			for (var i = 0; i < pattern.inputs.surfaces.length; i++) {
+				delete pattern.inputs.surfaces[i]._id;
+			}
 		}
+
 		if (pattern.inputs.jugglers.length == 0) {
 			delete pattern.inputs.jugglers;
+		} else {
+			for (var i = 0; i < pattern.inputs.jugglers.length; i++) {
+				delete pattern.inputs.jugglers[i]._id;
+			}
 		}
+
 		if (pattern.inputs.props.length == 0) {
 			delete pattern.inputs.props;
+		} else {
+			for (var i = 0; i < pattern.inputs.props.length; i++) {
+				delete pattern.inputs.props[i]._id;
+			}
 		}
+
+		// set URL query string for sharing pattern
+		document.location = document.location + "?patternId=" + id;
 
 		$('#inputsAdvanced').val(YAML.stringify(pattern.inputs,1,1));
 		go();

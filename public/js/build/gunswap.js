@@ -3737,7 +3737,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				populationSize: 50,
 				mutationChance: .7,
 				mutationScale: 5,
-				initialScale: 20,
+				initialScale: 40,
 				fitnessThreshold: .05,
 				noGA: false
 			};
