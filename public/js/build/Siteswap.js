@@ -1594,6 +1594,15 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 		}
 
+		// check that we don't have a 1 toss with a dwellRatio >= 1 which would cause dwellDuration >= beatDuration which is impossible
+		for (var i = 0; i < siteswap.tosses.length; i++) {
+			for (var j = 0; j < siteswap.tosses[i].length; j++) {
+				if (siteswap.tosses[i][j].dwellDuration >= siteswap.beatDuration) {
+					siteswap.errorMessage = "Cannot have a '1' toss with a dwellRatio >= 1"
+				}
+			}
+		}
+
 		/* if we've gotten to this point, the pattern is repeatable and thus valid */
 		siteswap.numSteps = siteswap.states.length*siteswap.numStepsPerBeat;
 		siteswap.validPattern = true;

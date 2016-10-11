@@ -3084,6 +3084,15 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 		}
 
+		// check that we don't have a 1 toss with a dwellRatio >= 1 which would cause dwellDuration >= beatDuration which is impossible
+		for (var i = 0; i < siteswap.tosses.length; i++) {
+			for (var j = 0; j < siteswap.tosses[i].length; j++) {
+				if (siteswap.tosses[i][j].dwellDuration >= siteswap.beatDuration) {
+					siteswap.errorMessage = "Cannot have a '1' toss with a dwellRatio >= 1"
+				}
+			}
+		}
+
 		/* if we've gotten to this point, the pattern is repeatable and thus valid */
 		siteswap.numSteps = siteswap.states.length*siteswap.numStepsPerBeat;
 		siteswap.validPattern = true;
@@ -5022,9 +5031,9 @@ window.onload = function () {
 			runSavedSiteswap(patternId);
 		} else {
 			$('#inputsAdvanced').val(YAML.stringify(DEFAULT_INPUTS.inputs,1,1));
+			go();
 		}
 
-		go();
 	});	
 
 }
@@ -5427,15 +5436,33 @@ function refreshSavedSiteswapsList() {
 function runSavedSiteswap(id) {
 	$.get("api/patterns/"+id).done(function(pattern) {
 		
+		// clear out irrelevant fields
 		if (pattern.inputs.surfaces.length == 0) {
 			delete pattern.inputs.surfaces;
+		} else {
+			for (var i = 0; i < pattern.inputs.surfaces.length; i++) {
+				delete pattern.inputs.surfaces[i]._id;
+			}
 		}
+
 		if (pattern.inputs.jugglers.length == 0) {
 			delete pattern.inputs.jugglers;
+		} else {
+			for (var i = 0; i < pattern.inputs.jugglers.length; i++) {
+				delete pattern.inputs.jugglers[i]._id;
+			}
 		}
+
 		if (pattern.inputs.props.length == 0) {
 			delete pattern.inputs.props;
+		} else {
+			for (var i = 0; i < pattern.inputs.props.length; i++) {
+				delete pattern.inputs.props[i]._id;
+			}
 		}
+
+		// set URL query string for sharing pattern
+		document.location = document.location + "?patternId=" + id;
 
 		$('#inputsAdvanced').val(YAML.stringify(pattern.inputs,1,1));
 		go();
