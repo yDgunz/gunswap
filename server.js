@@ -79,12 +79,9 @@ acctRouter.get('/about', function(req,res) {
     res.render('about/home.ejs');
 });
 
-acctRouter.get('/about/features', function(req,res) {
-    res.render('about/features.ejs');
-});
-
-acctRouter.get('/about/syntax', function(req,res) {
-    res.render('about/syntax.ejs');
+acctRouter.get('/about/:name', function(req,res) {
+    var name = req.params.name;
+    res.render('about/' + name + '.ejs');
 });
 
 function isLoggedIn(req, res, next) {

@@ -1,0 +1,72 @@
+<% include ../partials/header.ejs %>
+
+<h3>Finding Elbow Positions</h3>
+
+<h4>Intro</h4>
+
+<p>
+One of the glaring issues with the gunswap animator was the lack of elbow movement. It's fairly easy to calculate the hand positions of a juggler throughout a pattern; they are well defined by the dwell path of the pattern, and when a prop is in flight the hand is just moving towards the next catch. The elbows are a bit trickier though. My goal was to define a function that will return the elbow position given the hand position.
+</p>
+
+<p>
+This problem is called "inverse kinematics" and it is fairly well studied. However, a google search on the topic yields papers like <a href="http://www.ro.feri.uni-mb.si/predmeti/robotizacija/knjiga/inverzna.pdf">this</a>. As someone who got a C in linear algebra over 7 years ago, I felt a bit in over my head.
+</p>
+
+<p>
+Since Juggling Lab has already solved this problem, I decided to sift through their source code. I've used Juggling Lab as a reference for a lot of parts of this project - the bulk of my siteswap syntax is based on the Juggling Lab syntax. After a little searching I found <a href="http://sourceforge.net/p/jugglinglab/code/HEAD/tree/trunk/source/jugglinglab/renderer/Juggler.java#l128">the section of code I was looking for</a>.
+</p>
+
+<p>
+Unfortunately I was having a hard time following the Juggling Lab code, and didn't want to just start copy/pasting things into gunswap without understanding them. So I sought help from the main developer of Juggling Lab, Jack Boyce. Here's what he had to say:
+</p>
+
+<p>
+If you think about the connection between the shoulder and the hand as a linkage of two stiff pieces (upper arm and lower arm), then the position of the elbow becomes constrained once the hand and shoulder locations are specified. There is only one degree of freedom left, the rotation of the entire arm around the shoulder-hand axis. (Imagine a chicken flapping its wings to show the motion I'm talking about.)"
+</p>
+
+<p>
+Up to this point I had been trying to work out complicated solutions considering the individual rotation angles of the shoulder and elbow. However, thinking about the the problem with one degree of freedom - the "chicken wing angle" - was the key to unlocking the solution.
+</p>
+
+<h4>Solution</h4>
+
+<p>
+Below is how I came up with a function getElbowPosition(S,H,l,w,hand) that returns elbow coordinates given inputs for the shoulder position (S), hand position (H), forearm/bicep length (l), "chicken wing" angle (w) and hand. The hand input is just 0/1 (left/right) indicating which direction the chicken wing angle should rotate. A higher chicken wing angle means your elbows are lifted higher. A chicken wing angle of 0 means the plane created by your shoulder/elbow/hand is parallel to the y axis. The juggler in Fig 1. has a high chicken wing angle.
+</p>
+
+<div>
+<img src="../img/elbow_pos_fig1.jpg" height="200px" /><br/>
+Fig 1.
+</div>
+
+<div>
+<img src="../img/elbow_pos_fig2.jpg" height="200px" /><br/>
+Fig 2.
+</div>
+
+<div>
+<img src="../img/elbow_pos_fig3.jpg" height="200px" /><br/>
+Fig 3.
+</div>
+
+<div>
+<img src="../img/elbow_pos_fig4.jpg" height="200px" /><br/>
+Fig 4.
+</div>
+
+<p>
+Below is a step-by-step explanation of the equations in Fig 4.
+
+	<ul>
+		<li>The first step is to transform H to a coordinate system where S is at the origin. This gives a new hand position H'.</li>
+		<li>Another transformation. H'' is the hand position in a coordinate system rotated along the y-axis (the dashed lines in Fig. 2). H'' is a simpler vector to work with because it has a 0 z component.</li>
+		<li>Theta is used to go back to H' from H''. This will be useful later on. Note that in the code I actually use Math.atan2 since Math.atan only goes from -pi/2 to pi/2 and Math.atan2 determines the angle based on the quadrant the input coordinates are in.</li>
+		<li>h is the distance from the shoulder/hand axis to the elbow. This is the height of an isosceles triangle with sides of length l.</li>
+		<li>Now we find unit vectors u1 and u2 that are both orthogonal to each other and the shoulder/hand axis. These are simple to find because H'' has a 0 z component.</li>
+		<li>Here is where the chicken wing angle comes into play. This is the position of the elbow as defined by an equation for a circle around the shoulder/hand axis. <a href="http://math.stackexchange.com/questions/73237/parametric-equation-of-a-circle-in-3d-space">http://math.stackexchange.com/questions/73237/parametric-equation-of-a-circle-in-3d-space</a></li>
+		<li>Transforming E'' to E' using theta which we solved for in (3).</li>
+		<li>Transforming E' to E which is our final result.</li>
+	</ul>
+</p>
+
+<% include ../partials/footer.ejs %>

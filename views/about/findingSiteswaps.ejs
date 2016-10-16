@@ -1,0 +1,53 @@
+<% include ../partials/header.ejs %>
+
+<h3>Finding Siteswaps</h3>
+
+<h4><a href="../SiteswapGraph.html">Demo</a></h4>
+
+<h4>Intro</h4>
+
+<p>
+How can you generate all valid siteswaps? First you need to clarify that question with some parameters: the maximum period (P), maximum toss height (let's assume the max toss is the same as the period and that "height" in this context means number of beats and not altitude) and number of props (N). Let's also assume, for now, we're just talking about vanilla siteswap.
+</p>
+
+<p>
+A naive, brute force, approach would be to test the validity of every string of length P with siteswap characters 0 through P (an array of P+1). However, this approach would have to validate ==(P+1)^P== siteswaps, which quickly becomes unfeasible.
+</p>
+
+<p>
+A second approach that I gave some thought to was to approach the problem from the standpoint of prop orbits. If a prop orbit is a sequence of states where a state is defined as a location and beat, then you can pretty easily come up with all possible prop orbits given the parameters discussed above. A prop orbit could be expressed as <code>[{beat:0,hand:left},{beat:3,hand:right}]</code>. To find siteswaps with max period P and number of props N, you need to find all combinations of N prop orbits where the beat value in a state cannot exceed P-1 (if you include a beat 0). I worked on a generator that used this approach but it was still somewhat slow.
+</p>
+
+<p>
+The approach I outline below (which I believe is the same as J2, though I did not use that as a reference) is much faster and reliable.
+</p>
+
+<h4>The Graph</h4>
+
+<p>
+First let's define what many folks should recognize as the classic siteswap state graph. Each node in the graph is a unique "landing schedule" that tells how many props are being caught in a given beat. For vanilla siteswap our graph will have ==P!/(N!(P-N)!)== unique nodes. That is, all combinations of N props landing at P different beats.
+</p>
+
+<p>
+The edges of this graph correspond to the actual tosses that make up a siteswap. The edges are directional and can be found using the following algorithm that considers a source node (Ns) and a destination node (Nd). First, shift all elements in Ns to the left and add a 0 to the end, so 1011 would become 0110. If the first element of Ns that was shifted out is 0, and the shifted Ns matches Nd, then there is an edge between Ns and Nd with a value of 0. If the first element of Ns that was shifted out is 1, then look for the first instance of a mismatch between the shifted Ns and Nd where the value is 0 in Ns and 1 in Nd. If that is the only mismatch between the two nodes then there is an edge between Ns and Nd with a value of that index plus one. Below is the completed graph. INSERT IMAGE
+</p>
+
+<h4>Finding Siteswaps</h4>
+
+<p>
+A siteswap is a repeating pattern, which means the same "landing schedule" must be returned to at the end of the pattern. In the graph this would correspond to a closed circuit, so a siteswap would be defined by the sequence of edge values used to create the circuit. A prime siteswap is one where the circuit never repeats nodes. You can find all closed circuits in the graph by doing a depth first search starting from each node, following up to P edges, looking to get back to the starting node. 
+</p>
+
+<h4>Other points still to cover in this post:</h4>
+
+<p>
+	<ul>
+		<li>Excited vs ground</li>
+		<li>Multiplex</li>
+		<li>Sync</li>
+		<li>Visualization with D3</li>
+		<li>Integration into animator</li>
+	</ul>
+</p>
+
+<% include ../partials/footer.ejs %>
