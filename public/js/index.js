@@ -19,7 +19,7 @@ window.onload = function () {
 
 		var patternId = getURLQueryStringParameterByName("patternId");
 		if (patternId != undefined) {
-			runSavedSiteswap(patternId);
+			runSavedSiteswap(patternId, false);
 		} else {
 			$('#inputsAdvanced').val(YAML.stringify(DEFAULT_INPUTS.inputs,1,1));
 			go();
@@ -241,7 +241,7 @@ function buildExamples() {
 	$.get("examples.yml", function(data) {
 		var examples = YAML.parse(data);
 		for (var i = 0; i < examples.length; i++) {
-			$('#examplesList').append('<li><a href="#" onclick="runExample(\'' + i + '\');">' + examples[i].name + '</a></li>');
+			$('#examplesList').append('<li><a href="" onclick="runExample(\'' + i + '\');">' + examples[i].name + '</a></li>');
 		}
 	});
 }
@@ -361,7 +361,7 @@ function findSiteswaps() {
 		sync: $('#explorerSync')[0].checked,
 		callbacks: {
 			siteswapFound: function (siteswap, siteswapIx, excited) {
-				$('#siteswapsList').append('<li><a class="' + (excited ? 'excited' : 'ground') + ' patternLink" href="#" onclick="runSiteswap(\''+siteswap+'\')">'+siteswap+'</a></li>');
+				$('#siteswapsList').append('<li><a class="' + (excited ? 'excited' : 'ground') + ' patternLink" href="" onclick="runSiteswap(\''+siteswap+'\')">'+siteswap+'</a></li>');
 			}
 		}
 	};
@@ -415,8 +415,8 @@ function refreshSavedSiteswapsList() {
 			savedList.append('\
 				<li>\
 					<div class="patternLink">\
-						<a href="#" onclick="runSavedSiteswap(\'' + patterns[i]._id + '\');">' + patterns[i].name + '</a>\
-						<a href="#" style="float:right;" onclick="deleteSavedSiteswap(\'' + patterns[i]._id + '\');">X</a>\
+						<a href="" onclick="runSavedSiteswap(\'' + patterns[i]._id + '\',true);">' + patterns[i].name + '</a>\
+						<a href="" style="float:right;" onclick="deleteSavedSiteswap(\'' + patterns[i]._id + '\');">X</a>\
 					</div>\
 				</li>'
 			);
@@ -424,7 +424,7 @@ function refreshSavedSiteswapsList() {
 	});
 }
 
-function runSavedSiteswap(id) {
+function runSavedSiteswap(id,updateUrl) {
 	$.get("api/patterns/"+id).done(function(pattern) {
 		
 		// clear out irrelevant fields
@@ -453,7 +453,9 @@ function runSavedSiteswap(id) {
 		}
 
 		// set URL query string for sharing pattern
-		document.location = document.location + "?patternId=" + id;
+		if (updateUrl) {
+			document.location = document.origin + "?patternId=" + id;
+		}	
 
 		$('#inputsAdvanced').val(YAML.stringify(pattern.inputs,1,1));
 		go();
