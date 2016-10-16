@@ -25,6 +25,7 @@ function SiteswapAnimator(containerId, options) {
 		propPathLines = [],
 		jugglerHandVertices,
 		jugglerElbowVertices,
+		jugglerTorso,
 		highestPoint,
 		startTime,
 		siteswap,
@@ -363,27 +364,9 @@ function SiteswapAnimator(containerId, options) {
 
 			var jugglerMesh = new THREE.Object3D();
 
-			/*
-			var jugglerLegsG = new THREE.Geometry();
-			jugglerLegsG.vertices.push(transformVector(-.125,0,0));
-			jugglerLegsG.vertices.push(transformVector(0,.8,0));
-			jugglerLegsG.vertices.push(transformVector(.125,0,0));
-			var jugglerLegs = new THREE.Line(jugglerLegsG, new THREE.LineBasicMaterial({color: 'black'}));
-			*/
-
-			//var jugglerTorsoG = new THREE.Geometry();
-			//jugglerTorsoG.vertices.push(transformVector(0,.8,0));
-			//jugglerTorsoG.vertices.push(transformVector(0,1.5,0));
 			var jugglerTorsoG = new THREE.CylinderGeometry( .15, 0, .625, 20, 20 );
-			var jugglerTorso = new THREE.Mesh(jugglerTorsoG, new THREE.MeshLambertMaterial( { color: 'grey' } ));
+			jugglerTorso = new THREE.Mesh(jugglerTorsoG, new THREE.MeshLambertMaterial( { color: 'grey' } ));
 			jugglerTorso.position = new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.11,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0);
-
-			/*
-			var jugglerShouldersG = new THREE.Geometry();
-			jugglerShouldersG.vertices.push(transformVector(-.225,1.425,0));
-			jugglerShouldersG.vertices.push(transformVector(.225,1.425,0));
-			var jugglerShoulders = new THREE.Line(jugglerShouldersG, new THREE.LineBasicMaterial({color: 'black'}));	
-			*/
 
 			var shoulderElbowGeometry = new THREE.SphereGeometry( .03, 20, 20 );
 
@@ -493,7 +476,6 @@ function SiteswapAnimator(containerId, options) {
 			var jugglerHead = new THREE.Mesh( new THREE.SphereGeometry( .1125, 20, 20 ), new THREE.MeshLambertMaterial( { color: 'grey' } ) );
 			jugglerHead.position = new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.6125,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0);
 			
-			//jugglerMesh.add( jugglerLegs );
 			jugglerMesh.add( jugglerTorso );
 			jugglerMesh.add( jugglerLeftShoulder );
 			jugglerMesh.add( jugglerRightShoulder );
@@ -596,6 +578,7 @@ function SiteswapAnimator(containerId, options) {
 
 	function updateCamera() {
 		if (cameraMode.mode == 'sky') {
+			if (jugglerTorso) jugglerTorso.visible = true;
 			camera.position.x = camRadius * Math.sin( camTheta ) * Math.cos( camPhi );
 			camera.position.y = camRadius * Math.sin( camPhi );
 			camera.position.z = camRadius * Math.cos( camTheta ) * Math.cos( camPhi );
@@ -611,6 +594,7 @@ function SiteswapAnimator(containerId, options) {
 			}			
 			camera.lookAt(lookAt);
 		} else if (cameraMode.mode == 'juggler') {
+			if (jugglerTorso) jugglerTorso.visible = false; // hide juggler torso so it doesn't interfere with seeing the pattern
 			/* need to update x and y to reflect the position of the juggler you are possessing */
 			camera.position.x = 0;
 			camera.position.y = 1.6125;
@@ -618,6 +602,7 @@ function SiteswapAnimator(containerId, options) {
 			//camera.lookAt(new THREE.Vector3(Math.sin(camTheta),3,Math.cos(camTheta)));
 			camera.lookAt(new THREE.Vector3(Math.sin(camTheta)*Math.cos(camPhi),1.6125-Math.sin(camPhi),Math.cos(camTheta)*Math.cos(camPhi)));
 		} else if (cameraMode.mode == 'custom') {
+			if (jugglerTorso) jugglerTorso.visible = true;
 			var cameraPosition = new THREE.Vector3(cameraMode.x,cameraMode.y,cameraMode.z);
 			camera.position = cameraPosition;
 			camera.lookAt(new THREE.Vector3(cameraPosition.x-Math.sin(camTheta)*Math.cos(camPhi),cameraPosition.y-Math.sin(camPhi),cameraPosition.z-Math.cos(camTheta)*Math.cos(camPhi)));
