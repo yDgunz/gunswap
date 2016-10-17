@@ -48,7 +48,7 @@
  name: 'Dwell path - Backcrosses'
  siteswap: '3'
  dwellRatio: '1.4'
- dwellPath: '(2.5,5)(-30,5).(-2.5,-10)(30,-10).(0,-10)(-30,-10)'
+ dwellPath: '(30)(10,0,50)'
 -
  name: 'Toss/catch modifier - claw'
  siteswap: '3C{C}T{C}'
@@ -61,21 +61,20 @@
 -
  name: 'Bouncing - lift bounce'
  siteswap: 5B
- beatDuration: '.24'
- dwellPath: (25)(15)
+ dwellPath: (30)(25)
+ beatDuration: 0.29
  surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1}]
 -
  name: 'Bouncing - force bounce'
- siteswap: '5B{F}'
- beatDuration: '.25'
- dwellPath: '(30)(25,-5)'
- emptyTossScale: '.1'
+ siteswap: 5B{F}
+ dwellPath: (30)(15)
+ beatDuration: 0.26
  surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1}]
 -
  name: 'Bouncing - hyperlift bounce'
- siteswap: '5B{HL}'
- beatDuration: '.26'
- dwellPath: (25)(20)
+ siteswap: 5B{HL}
+ dwellPath: (30)
+ beatDuration: 0.4
  surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1}]
 -
  name: 'Bouncing - hyperforce bounce'
