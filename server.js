@@ -72,7 +72,7 @@ acctRouter.get('/logout', function(req,res) {
 });
 
 acctRouter.get('/', function(req,res) {
-    res.render('animator.ejs', { isLoggedIn: req.isAuthenticated(), environment: ENVIRONMENT });
+    res.render('animator.ejs', { isLoggedIn: req.isAuthenticated(), environment: req.query.environment || ENVIRONMENT });
 });
 
 acctRouter.get('/about', function(req,res) {
