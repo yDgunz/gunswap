@@ -5409,7 +5409,7 @@ function refreshSavedSiteswapsList() {
 			savedList.append('\
 				<li>\
 					<div class="patternLink">\
-						<a href="" onclick="runSavedSiteswap(\'' + patterns[i]._id + '\',true);">' + patterns[i].name + '</a>\
+						<a href="#" onclick="runSavedSiteswap(\'' + patterns[i]._id + '\',true);">' + patterns[i].name + '</a>\
 						<a href="" style="float:right;" onclick="deleteSavedSiteswap(\'' + patterns[i]._id + '\');">X</a>\
 					</div>\
 				</li>'
