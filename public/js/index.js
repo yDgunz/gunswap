@@ -454,7 +454,7 @@ function runSavedSiteswap(id,updateUrl) {
 
 		// set URL query string for sharing pattern
 		if (updateUrl) {
-			document.location = document.origin + "?patternId=" + id;
+			window.location.href = window.location.origin + "?patternId=" + id;
 		}	
 
 		$('#inputsAdvanced').val(YAML.stringify(pattern.inputs,1,1));
