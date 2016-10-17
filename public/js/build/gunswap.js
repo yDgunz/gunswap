@@ -5235,7 +5235,7 @@ function buildExamples() {
 	$.get("examples.yml", function(data) {
 		var examples = YAML.parse(data);
 		for (var i = 0; i < examples.length; i++) {
-			$('#examplesList').append('<li><a href="" onclick="runExample(\'' + i + '\');">' + examples[i].name + '</a></li>');
+			$('#examplesList').append('<li><a href="#" onclick="runExample(\'' + i + '\');">' + examples[i].name + '</a></li>');
 		}
 	});
 }
