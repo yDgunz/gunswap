@@ -25,6 +25,8 @@ function SiteswapAnimator(containerId, options) {
 		propPathLines = [],
 		jugglerHandVertices,
 		jugglerElbowVertices,
+		jugglerLeftElbow,
+		jugglerRightElbow,
 		jugglerTorso,
 		highestPoint,
 		startTime,
@@ -151,6 +153,8 @@ function SiteswapAnimator(containerId, options) {
 			var pointLight = new THREE.PointLight( 0x888888, 1, 100 );
 			pointLight.position.set( 0, 0, -2 );
 			scene.add( pointLight );
+
+			//scene.background = new THREE.Color(0xff0000);
 
 			propMeshes = [];
 			jugglerMeshes = [];
@@ -366,18 +370,18 @@ function SiteswapAnimator(containerId, options) {
 
 			var jugglerTorsoG = new THREE.CylinderGeometry( .15, 0, .625, 20, 20 );
 			jugglerTorso = new THREE.Mesh(jugglerTorsoG, new THREE.MeshLambertMaterial( { color: 'grey' } ));
-			jugglerTorso.position = new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.11,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0);
+			jugglerTorso.position.set(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.11,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0);
 
 			var shoulderElbowGeometry = new THREE.SphereGeometry( .03, 20, 20 );
 
 			var jugglerLeftShoulder = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: 'grey' } ) );
-			jugglerLeftShoulder.position = transformVector(-.225,1.425,0);
+			jugglerLeftShoulder.position.copy(transformVector(-.225,1.425,0));
 
 			var jugglerRightShoulder = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: 'grey' } ) );
-			jugglerRightShoulder.position = transformVector(.225,1.425,0);
+			jugglerRightShoulder.position.copy(transformVector(.225,1.425,0));
 
-			var jugglerLeftElbow = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: 'grey' } ) );
-			var jugglerRightElbow = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: 'grey' } ) );			
+			jugglerLeftElbow = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: 'grey' } ) );
+			jugglerRightElbow = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: 'grey' } ) );			
 
 			for (var h = -1; h <= 1; h+=2) {
 				
@@ -388,9 +392,9 @@ function SiteswapAnimator(containerId, options) {
 				jugglerElbowVertices[i][hix] = transformVector(h*.225,1.0125,0);
 
 				if (hix == 0) {
-					jugglerLeftElbow.position = jugglerElbowVertices[i][hix];
+					jugglerLeftElbow.position.copy(jugglerElbowVertices[i][hix]);
 				} else {
-					jugglerRightElbow.position = jugglerElbowVertices[i][hix];
+					jugglerRightElbow.position.copy(jugglerElbowVertices[i][hix]);
 				}
 				
 				armG.vertices.push(jugglerElbowVertices[i][hix]);	
@@ -474,7 +478,7 @@ function SiteswapAnimator(containerId, options) {
 			}
 
 			var jugglerHead = new THREE.Mesh( new THREE.SphereGeometry( .1125, 20, 20 ), new THREE.MeshLambertMaterial( { color: 'grey' } ) );
-			jugglerHead.position = new THREE.Vector3(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.6125,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0);
+			jugglerHead.position.set(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.6125,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0);
 			
 			jugglerMesh.add( jugglerTorso );
 			jugglerMesh.add( jugglerLeftShoulder );
@@ -566,12 +570,10 @@ function SiteswapAnimator(containerId, options) {
 
 			}
 
-			jugglerElbowVertices[i][0].x = siteswap.jugglerElbowPositions[i][0][step].x;
-			jugglerElbowVertices[i][0].y = siteswap.jugglerElbowPositions[i][0][step].y;
-			jugglerElbowVertices[i][0].z = siteswap.jugglerElbowPositions[i][0][step].z;
-			jugglerElbowVertices[i][1].x = siteswap.jugglerElbowPositions[i][1][step].x;
-			jugglerElbowVertices[i][1].y = siteswap.jugglerElbowPositions[i][1][step].y;
-			jugglerElbowVertices[i][1].z = siteswap.jugglerElbowPositions[i][1][step].z;
+			jugglerElbowVertices[i][0].set(siteswap.jugglerElbowPositions[i][0][step].x, siteswap.jugglerElbowPositions[i][0][step].y, siteswap.jugglerElbowPositions[i][0][step].z);
+			jugglerElbowVertices[i][1].set(siteswap.jugglerElbowPositions[i][1][step].x, siteswap.jugglerElbowPositions[i][1][step].y, siteswap.jugglerElbowPositions[i][1][step].z);
+			jugglerLeftElbow.position.copy(jugglerElbowVertices[i][0]);
+			jugglerRightElbow.position.copy(jugglerElbowVertices[i][1]);
 
 		}
 	}
@@ -603,9 +605,8 @@ function SiteswapAnimator(containerId, options) {
 			camera.lookAt(new THREE.Vector3(Math.sin(camTheta)*Math.cos(camPhi),1.6125-Math.sin(camPhi),Math.cos(camTheta)*Math.cos(camPhi)));
 		} else if (cameraMode.mode == 'custom') {
 			if (jugglerTorso) jugglerTorso.visible = true;
-			var cameraPosition = new THREE.Vector3(cameraMode.x,cameraMode.y,cameraMode.z);
-			camera.position = cameraPosition;
-			camera.lookAt(new THREE.Vector3(cameraPosition.x-Math.sin(camTheta)*Math.cos(camPhi),cameraPosition.y-Math.sin(camPhi),cameraPosition.z-Math.cos(camTheta)*Math.cos(camPhi)));
+			camera.position.set(cameraMode.x,cameraMode.y,cameraMode.z);
+			camera.lookAt(new THREE.Vector3(camera.position.x-Math.sin(camTheta)*Math.cos(camPhi),camera.position.y-Math.sin(camPhi),camera.position.z-Math.cos(camTheta)*Math.cos(camPhi)));
 		}
 	}
 
