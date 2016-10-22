@@ -284,12 +284,38 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		var validPass = "<" + validBeat + "(\\|" + validBeat + ")+>";
 		var validSiteswap = "^(" + validPass + ")+|(" + validBeat + ")+$";
 
+		// use this to identify passing pattern shorthand like <3P333|3P333>
+		// we will then convert those patterns to standard notation like <3P|3P><3|3><3|3><3|3> 
+		// and parse them as we did before
+		var validPassShorthand = "<" + validBeat + "+(\\|" + validBeat + "+)+>"; 
+
 		validTossRe = new RegExp(validToss,"g");
 		validMultiplexRe = new RegExp(validMultiplex,"g");
 		validSyncRe = new RegExp(validSync,"g");
 		validBeatRe = new RegExp(validBeat,"g");
 		validPassRe = new RegExp(validPass,"g");
 		validSiteswapRe = new RegExp(validSiteswap,"g");
+		validPassShorthandRe = new RegExp(validPassShorthand,"g");
+
+		if (siteswapStr.match(validPassShorthandRe) == siteswapStr) {
+			var newSiteswapStr = "";
+			var jugglerSiteswaps = siteswapStr.split('|');
+			var jugglerBeats = [];
+			for(var i = 0; i < jugglerSiteswaps.length; i++) {
+				jugglerBeats.push(jugglerSiteswaps[i].match(validBeatRe));
+			}
+			for (var i = 0; i < jugglerBeats[0].length; i++) {
+				newSiteswapStr += "<";
+				for (var j = 0; j < jugglerBeats.length; j++) {
+					newSiteswapStr += jugglerBeats[j][i];
+					if (j < jugglerBeats.length - 1) {
+						newSiteswapStr += "|";
+					}
+				}
+				newSiteswapStr += ">";
+			}
+			siteswapStr = newSiteswapStr;
+		}
 
 		if (siteswapStr.match(validSiteswapRe) == siteswapStr) {
 			siteswap.validSyntax = true;
