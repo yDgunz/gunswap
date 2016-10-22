@@ -361,7 +361,7 @@ function findSiteswaps() {
 		sync: $('#explorerSync')[0].checked,
 		callbacks: {
 			siteswapFound: function (siteswap, siteswapIx, excited) {
-				$('#siteswapsList').append('<li><a class="' + (excited ? 'excited' : 'ground') + ' patternLink" href="" onclick="runSiteswap(\''+siteswap+'\')">'+siteswap+'</a></li>');
+				$('#siteswapsList').append('<li><a class="' + (excited ? 'excited' : 'ground') + ' patternLink" href="#" onclick="runSiteswap(\''+siteswap+'\')">'+siteswap+'</a></li>');
 			}
 		}
 	};
