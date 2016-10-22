@@ -182,7 +182,8 @@ function go() {
 		animator.init(siteswap, 
 			{
 				drawHands: inputs.drawHands
-				//, motionBlur: true
+				, motionBlur: inputs.motionBlur
+				, backgroundColor: inputs.backgroundColor
 			}
 		);
 		animator.animate();

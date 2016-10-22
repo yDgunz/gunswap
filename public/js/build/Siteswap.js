@@ -1066,7 +1066,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		}
 
 		if (options.surfaces === undefined) {
-			siteswap.surfaces = [{position:{x:0,y:0,z:0}, normal:{x:0,y:1,z:0}, scale: 5}];
+			siteswap.surfaces = [{position:{x:0,y:0,z:0}, normal:{x:0,y:1,z:0}, scale: 5, color: 'grey'}];
 		} else {
 			siteswap.surfaces = options.surfaces;
 		}
@@ -1078,7 +1078,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				siteswap.jugglers.push(
 					{
 						position: {x:0,z:-2*i},
-						rotation: i*Math.PI
+						rotation: i*Math.PI,
+						color: 'grey'
 					}
 				);
 			}
@@ -1087,7 +1088,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				siteswap.jugglers.push(
 					{
 						position: options.jugglers[i].position,
-						rotation: options.jugglers[i].rotation
+						rotation: options.jugglers[i].rotation,
+						color: options.jugglers[i].color
 					}
 				);
 			}

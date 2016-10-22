@@ -152,7 +152,7 @@ function SiteswapAnimator(containerId, options) {
 			pointLight.position.set( 0, 0, -2 );
 			scene.add( pointLight );
 
-			//scene.background = new THREE.Color(0xff0000);
+			scene.background = new THREE.Color(options.backgroundColor);
 
 			propMeshes = [];
 			jugglerMeshes = [];
@@ -336,7 +336,7 @@ function SiteswapAnimator(containerId, options) {
 			surfaceGeom.faces.push( new THREE.Face3( 0, 1, 2 ) );
 			surfaceGeom.faces.push( new THREE.Face3( 2, 0, 3 ) );
 
-			var surfaceMesh = new THREE.Mesh(surfaceGeom, new THREE.MeshBasicMaterial( { color: 'grey', side: THREE.DoubleSide } ));
+			var surfaceMesh = new THREE.Mesh(surfaceGeom, new THREE.MeshBasicMaterial( { color: a.color, side: THREE.DoubleSide } ));
 			surfaceMeshes.push(surfaceMesh);
 			scene.add(surfaceMesh);
 		});
@@ -363,23 +363,24 @@ function SiteswapAnimator(containerId, options) {
 			jugglerElbowMeshes.push([]);
 			
 			/* create juggler mesh at 0,0,0 */
+			var jugglerColor = siteswap.jugglers[i].color;
 
 			var jugglerMesh = new THREE.Object3D();
 
 			var jugglerTorsoG = new THREE.CylinderGeometry( .15, 0, .625, 20, 20 );
-			jugglerTorso = new THREE.Mesh(jugglerTorsoG, new THREE.MeshLambertMaterial( { color: 'grey' } ));
+			jugglerTorso = new THREE.Mesh(jugglerTorsoG, new THREE.MeshLambertMaterial( { color: jugglerColor } ));
 			jugglerTorso.position.set(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.11,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0);
 
 			var shoulderElbowGeometry = new THREE.SphereGeometry( .03, 20, 20 );
 
-			var jugglerLeftShoulder = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: 'grey' } ) );
+			var jugglerLeftShoulder = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: jugglerColor } ) );
 			jugglerLeftShoulder.position.copy(transformVector(-.225,1.425,0));
 
-			var jugglerRightShoulder = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: 'grey' } ) );
+			var jugglerRightShoulder = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: jugglerColor } ) );
 			jugglerRightShoulder.position.copy(transformVector(.225,1.425,0));
 
-			var jugglerLeftElbow = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: 'grey' } ) );
-			var jugglerRightElbow = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: 'grey' } ) );			
+			var jugglerLeftElbow = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: jugglerColor } ) );
+			var jugglerRightElbow = new THREE.Mesh( shoulderElbowGeometry , new THREE.MeshLambertMaterial( { color: jugglerColor } ) );			
 
 			for (var h = -1; h <= 1; h+=2) {
 				
@@ -417,7 +418,7 @@ function SiteswapAnimator(containerId, options) {
 					handG.faces.push( new THREE.Face3( 0, 1, 2 ) );
 					handG.faces.push( new THREE.Face3( 2, 0, 3 ) );
 					handG.dynamic = true;
-					var handMesh = new THREE.Mesh(handG, new THREE.MeshLambertMaterial( { color: 'grey', side: THREE.DoubleSide }));
+					var handMesh = new THREE.Mesh(handG, new THREE.MeshLambertMaterial( { color: jugglerColor, side: THREE.DoubleSide }));
 
 					jugglerMesh.add( handMesh );
 
@@ -474,7 +475,7 @@ function SiteswapAnimator(containerId, options) {
 
 			}
 
-			var jugglerHead = new THREE.Mesh( new THREE.SphereGeometry( .1125, 20, 20 ), new THREE.MeshLambertMaterial( { color: 'grey' } ) );
+			var jugglerHead = new THREE.Mesh( new THREE.SphereGeometry( .1125, 20, 20 ), new THREE.MeshLambertMaterial( { color: jugglerColor } ) );
 			jugglerHead.position.set(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.6125,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0);
 			
 			jugglerMesh.add( jugglerTorso );

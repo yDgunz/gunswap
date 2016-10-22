@@ -16,9 +16,11 @@ dwellTossScale: 0.06
 emptyCatchScale: 0.025
 emptyTossScale: 0.025
 armAngle: 0.1
-jugglers: [{position: {x: 0, z: 0}, rotation: 0}]
-surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1}]
-drawHands: true</code>
+jugglers: [{position: {x: 0, z: 0}, rotation: 0, color: gray}]
+surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1, color: gray}]
+drawHands: true
+motionBlur: true
+backgroundColor: white</code>
 </pre>
 
 <b>Pattern</b>
@@ -68,5 +70,11 @@ drawHands: true</code>
 <b>Surfaces</b>
 
 <p><code>surfaces</code> - array of surface definitions. These can be used to define bounce juggling patterns. <code>position</code> is the (x,y,z) position for the center of the surface. <code>normal</code> is the surface's normal vector, essentially defining the direction the surface is pointing. <code>scale</code> is the half-width of the surface, think of it like the radius. The default is a 2-by-2 surface beneath the juggler's feet.</p>
+
+<b>Animator Settings</b>
+
+<p><code>drawHands</code> - boolean indicating whether or not to draw hands.</p>
+<p><code>motionBlur</code> - boolean indicating whether or not draw tails behind props simulating motion blur.</p>
+<p><code>backgroundColor</code> - sets the scene background color.</p>
 
 <% include ../partials/footer.ejs %>

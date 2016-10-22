@@ -18,8 +18,8 @@
  props:
   - {type: club, color: red, radius: '.05', C: '.97'}
  jugglers:
-  - {position: {x: 0, z: 0}, rotation: 0}
-  - {position: {x: 0, z: -2}, rotation: 3.14}
+  - {position: {x: 0, z: 0}, rotation: 0, color: grey}
+  - {position: {x: 0, z: -2}, rotation: 3.14, color: grey}
  surfaces: []  
  drawHands: false
 -
@@ -63,30 +63,30 @@
  siteswap: 5B
  dwellPath: (30)(25)
  beatDuration: 0.29
- surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1}]
+ surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1, color: grey}]
 -
  name: 'Bouncing - force bounce'
  siteswap: 5B{F}
  dwellPath: (30)(15)
  beatDuration: 0.26
- surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1}]
+ surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1, color: grey}]
 -
  name: 'Bouncing - hyperlift bounce'
  siteswap: 5B{HL}
  dwellPath: (30)
  beatDuration: 0.4
- surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1}]
+ surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1, color: grey}]
 -
  name: 'Bouncing - hyperforce bounce'
  siteswap: '5B{HF}'
  beatDuration: '.14'
  dwellPath: '(20)(25,-5)'
  matchVelocity: '1'
- surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1}]
+ surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1, color: grey}]
 -
  name: 'Bouncing - custom surface'
  siteswap: 5B
- surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: .25}, scale: 3}]
+ surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: .25}, scale: 3, color: grey}]
 -
  name: 'Bouncing - multiple surfaces'
  siteswap: '7B{HL10}5B{HL11}3155B{HL10}51'
@@ -94,7 +94,7 @@
  beatDuration: 0.26
  dwellRatio: 0.8
  drawHands: false
- surfaces: [{scale: 2, normal: {x: 0, y: 0, z: 1}, position: {x: 0, y: 2.5, z: 0.5}}, {scale: 0.5, normal: {x: 1, y: 0, z: 0}, position: {x: 1, y: 2.5, z: -0.5}}]
+ surfaces: [{scale: 2, normal: {x: 0, y: 0, z: 1}, position: {x: 0, y: 2.5, z: 0.5}, color: grey}, {scale: 0.5, normal: {x: 1, y: 0, z: 0}, position: {x: 1, y: 2.5, z: -0.5}, color: grey}]
  props: [{type: ball, color: red, radius: 0.05, C: 0.9}]
 -
  name: 'Spin modifier - flats and doubles'
