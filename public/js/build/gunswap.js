@@ -2656,9 +2656,10 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		}
 
 		siteswap.jugglers = [];
-		// if no juggler's were specified or there was a mismatch, just default to jugglers facing eachother
+		// if no juggler's were specified or there was a mismatch in the inputs
 		if (options.jugglers === undefined || siteswap.numJugglers != options.jugglers.length) {				
-			for (var i = 0; i < siteswap.numJugglers; i++) {
+			// if 1 juggler just put them in the middle
+			if (siteswap.numJugglers == 1) {				
 				siteswap.jugglers.push(
 					{
 						position: {x:0,z:-2*i},
@@ -2666,7 +2667,19 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						color: 'grey'
 					}
 				);
-			}
+			} else {
+				// if more than 1 put them in even numbers around a circle facing the middle
+				for (var i = 0; i < siteswap.numJugglers; i++) {
+					var rot = i*2*Math.PI/siteswap.numJugglers;
+					siteswap.jugglers.push(
+						{
+							position: {x:Math.cos(rot),z:Math.sin(rot)},
+							rotation: rot-Math.PI/2,
+							color: 'grey'
+						}
+					);
+				}
+			}		
 		} else {
 			for (var i = 0; i < options.jugglers.length; i++) {
 				siteswap.jugglers.push(
