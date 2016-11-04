@@ -2197,7 +2197,12 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						jugglerHandPositions[juggler][hand].push(tmpJugglerHandPositions[juggler][hand]);
 						jugglerElbowPositions[juggler][hand].push(
 							getElbowPosition(
-								{x:siteswap.jugglers[juggler].position.x+Math.cos(siteswap.jugglers[juggler].rotation)*(hand == LEFT ? - 1 : 1)*.225,y:1.425,z:siteswap.jugglers[juggler].position.z+Math.sin(siteswap.jugglers[juggler].rotation)*(hand == LEFT ? - 1 : 1)*.225}, // shoulder
+								// shoulder position
+								{
+									x:siteswap.jugglers[juggler].position.x+Math.cos(siteswap.jugglers[juggler].rotation)*(hand == LEFT ? - 1 : 1)*.225
+									, y:1.425
+									, z:siteswap.jugglers[juggler].position.z+Math.sin(siteswap.jugglers[juggler].rotation)*(hand == LEFT ? - 1 : 1)*.225
+								},
 								tmpJugglerHandPositions[juggler][hand], // hand position
 								.45, // half arm length
 								siteswap.armAngle, // chicken wing factor
@@ -2366,6 +2371,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 	}
 
 	function getElbowPosition(S,H,l,w,hand) {
+		w*=-1;
+		
 		var Hp = {};
 		Hp.x = H.x - S.x;
 		Hp.y = H.y - S.y;
@@ -2405,7 +2412,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		Epp.z = Hpp.z/2 + h*u1.z*Math.cos(w) + h*u2.z*Math.sin(w);
 
 		var Ep = {};
-		Ep.x = Epp.x*Math.cos(th) + Epp.z*Math.sin(th);
+		Ep.x = Epp.x*Math.cos(th) - Epp.z*Math.sin(th);
 		Ep.y = Epp.y;
 		Ep.z = Epp.x*Math.sin(th) + Epp.z*Math.cos(th);	
 
