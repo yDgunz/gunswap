@@ -177,7 +177,9 @@ function go() {
 			$('#message').text("This pattern has collisions.");
 		} else {
 			$('#errorMessage').hide();
-		}		
+		}
+
+		updateCameraModeNumJugglers(siteswap.numJugglers);
 
 		animator.init(siteswap, 
 			{
@@ -473,4 +475,8 @@ function deleteSavedSiteswap(id) {
 	    }
 	});
 
+}
+
+function updateCameraModeNumJugglers(numJugglers) {
+	
 }

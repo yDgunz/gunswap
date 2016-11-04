@@ -74,7 +74,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		armAngle: 				undefined,
 		surfaces: 				undefined,		
 		errorMessage:  			undefined
-	};
+	};	
 
 	/* regexps */
 	var validTossRe,
@@ -82,7 +82,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		validSyncRe,
 		validBeatRe,
 		validPassRe,
-		validSiteswapRe;
+		validSiteswapRe,
+		validPassShorthandRe;
 
 	validateSyntax();
 
@@ -295,7 +296,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		var validSync = "\\((" + validToss + "|" + validMultiplex + "),(" + validToss + "|" + validMultiplex + ")\\)";
 		var validBeat = "(" + validToss + "|" + validMultiplex + "|" + validSync + ")";
 		var validPass = "<" + validBeat + "(\\|" + validBeat + ")+>";
-		var validSiteswap = "^(" + validPass + ")+|(" + validBeat + ")+$";
+		var validSiteswap = "^(" + validPass + ")+|(" + validBeat + ")+\\*?$";
 
 		// use this to identify passing pattern shorthand like <3P333|3P333>
 		// we will then convert those patterns to standard notation like <3P|3P><3|3><3|3><3|3> 
@@ -310,6 +311,9 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		validSiteswapRe = new RegExp(validSiteswap,"g");
 		validPassShorthandRe = new RegExp(validPassShorthand,"g");
 
+		// if the input string was shorthand for a passing pattern
+		// then replace the siteswap string with a fully formed passing pattern
+		// ie. transform <33|33> to <3|3><3|3>
 		if (siteswapStr.match(validPassShorthandRe) == siteswapStr) {
 			var newSiteswapStr = "";
 			var jugglerSiteswaps = siteswapStr.split('|');
@@ -329,6 +333,10 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			}
 			siteswapStr = newSiteswapStr;
 		}
+
+		if (siteswapStr.substr(siteswapStr.length-1) == "*") {
+			siteswapStr = siteswapStr.substr(0,siteswapStr.length-1) + siteswapStr.substr(0,siteswapStr.length-1).split("").reverse().join("");
+		} 
 
 		if (siteswapStr.match(validSiteswapRe) == siteswapStr) {
 			siteswap.validSyntax = true;

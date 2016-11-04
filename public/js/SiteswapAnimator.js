@@ -599,7 +599,6 @@ function SiteswapAnimator(containerId, options) {
 			camera.position.x = 0;
 			camera.position.y = 1.6125;
 			camera.position.z = 0;
-			//camera.lookAt(new THREE.Vector3(Math.sin(camTheta),3,Math.cos(camTheta)));
 			camera.lookAt(new THREE.Vector3(Math.sin(camTheta)*Math.cos(camPhi),1.6125-Math.sin(camPhi),Math.cos(camTheta)*Math.cos(camPhi)));
 		} else if (cameraMode.mode == 'custom') {
 			if (jugglerTorso) jugglerTorso.visible = true;
