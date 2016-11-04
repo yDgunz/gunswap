@@ -659,7 +659,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		var patternComplete = false;
 		var initComplete = false;
 		var beat = 0;
-		var hand = LEFT; /* default to starting with the left hand. this will automatically alternate */
+		var hand = RIGHT; /* default to starting with the left hand. this will automatically alternate */
 
 		/* keep going until pattern complete */
 		while (!patternComplete) {
