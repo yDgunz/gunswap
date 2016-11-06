@@ -336,7 +336,7 @@ function SiteswapAnimator(containerId, options) {
 			surfaceGeom.faces.push( new THREE.Face3( 0, 1, 2 ) );
 			surfaceGeom.faces.push( new THREE.Face3( 2, 0, 3 ) );
 
-			var surfaceMesh = new THREE.Mesh(surfaceGeom, new THREE.MeshBasicMaterial( { color: a.color, side: THREE.DoubleSide } ));
+			var surfaceMesh = new THREE.Mesh(surfaceGeom, new THREE.MeshBasicMaterial( { color: a.color ? a.color : "grey", side: THREE.DoubleSide } ));
 			surfaceMeshes.push(surfaceMesh);
 			scene.add(surfaceMesh);
 		});

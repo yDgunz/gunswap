@@ -14,7 +14,8 @@ var Juggler = new mongoose.Schema({
         x: Number,
         z: Number
     },
-    rotation: Number
+    rotation: Number,
+    color: String
 });
 
 var Surface = new mongoose.Schema({
@@ -28,7 +29,8 @@ var Surface = new mongoose.Schema({
         y: Number,
         z: Number
     },
-    scale: Number
+    scale: Number,
+    color: String
 });
 
 var PatternSchema   = new mongoose.Schema({
