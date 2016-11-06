@@ -544,6 +544,7 @@ function SiteswapAnimator(containerId, options) {
 						new THREE.Vector3(-handSize,0,-handSize+zOffset),
 						new THREE.Vector3(-handSize,.01,-2*handSize+zOffset),
 						new THREE.Vector3(-handSize,.05,-3*handSize+zOffset),
+						// thumbs
 						new THREE.Vector3((j == 0 ? -1 : 1)*handSize,0,handSize+zOffset),
 						new THREE.Vector3((j == 0 ? -1 : 1)*2*handSize,0,handSize+zOffset-.02),
 						new THREE.Vector3((j == 0 ? -1 : 1)*2*handSize,.02,handSize+zOffset-.04)
@@ -559,9 +560,10 @@ function SiteswapAnimator(containerId, options) {
 						var newY = handVerticesDiff[k].y*Math.cos(angle) + handVerticesDiff[k].x*Math.sin(angle);
 						newX = newX*Math.cos(handAngle) - handVerticesDiff[k].z*Math.sin(handAngle);
 						var newZ = handVerticesDiff[k].z*Math.cos(handAngle) + newX*Math.sin(handAngle);
-						handVerticesDiff[k].x = newX;
+						// rotate w/ juggler cos - sin, cos + sin
+						handVerticesDiff[k].x = newX*Math.cos(siteswap.jugglers[i].rotation) - newZ*Math.sin(siteswap.jugglers[i].rotation); 
 						handVerticesDiff[k].y = newY;
-						handVerticesDiff[k].z = newZ;
+						handVerticesDiff[k].z = newZ*Math.cos(siteswap.jugglers[i].rotation) + newX*Math.sin(siteswap.jugglers[i].rotation);						
 						jugglerHandVertices[i][j][k].copy((new THREE.Vector3()).copy(jugglerWristPosition).add(handVerticesDiff[k]));
 					}
 				} else {
