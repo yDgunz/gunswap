@@ -17,13 +17,6 @@ describe('Syntax', function(){
 		});
 	});
 
-	describe('Vanilla with hand override', function(){
-		it('should return true for valid syntax', function(){
-			var s = Siteswap.CreateSiteswap('R3L3',{validationOnly: true});
-			assert.equal(s.validSyntax, true);
-		});
-	});	
-
 	describe('Multiplex', function(){
 		it('should return true for multiplex', function(){
 			var s = Siteswap.CreateSiteswap('33[33]',{validationOnly: true});

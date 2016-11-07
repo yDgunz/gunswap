@@ -2502,6 +2502,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		multiplex: 				undefined,
 		sync: 					undefined,
 		pass: 					undefined,
+		startingHand:			RIGHT,
 		numJugglers: 			undefined,
 		numProps: 				undefined,
 		maxHeight: 				undefined,
@@ -2573,7 +2574,13 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		siteswap.emptyTossScale = (options.emptyTossScale === undefined ? 0.05 : options.emptyTossScale);
 		siteswap.emptyCatchScale = (options.emptyCatchScale === undefined ? 0.05 : options.emptyCatchScale);
 		siteswap.armAngle = (options.armAngle === undefined ? 0.1 : options.armAngle);
-		
+				
+		if (options.startingHand == "L" || options.startingHand == "LEFT") {
+			siteswap.startingHand = LEFT;			
+		} else { 
+			siteswap.startingHand = RIGHT;
+		}
+
 		if (options.props === undefined) {
 			siteswap.props = [{type: 'ball', radius: .05, C: .95}];
 		} else {
@@ -2747,7 +2754,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		}
 
 		/* construct the various regex patterns. see blog post for details about this */
-		var validToss = "(R|L)?([\\da-o])x?A?(" + passPattern + ")?(C{(C|P)?})?(T{(C|P)?})?(B({\\d*(L|HL|F|HF)?\\d*})?)?(S{-?\\d+(.\\d+)?(,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?)?})?(D{\\d*\\.?\\d*})?";
+		var validToss = "([\\da-o])x?A?(" + passPattern + ")?(C{(C|P)?})?(T{(C|P)?})?(B({\\d*(L|HL|F|HF)?\\d*})?)?(S{-?\\d+(.\\d+)?(,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?)?})?(D{\\d*\\.?\\d*})?";
 		var validMultiplex = "\\[(" + validToss + ")+\\]";
 		var validSync = "\\((" + validToss + "|" + validMultiplex + "),(" + validToss + "|" + validMultiplex + ")\\)";
 		var validBeat = "(" + validToss + "|" + validMultiplex + "|" + validSync + ")";
@@ -3115,7 +3122,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		var patternComplete = false;
 		var initComplete = false;
 		var beat = 0;
-		var hand = LEFT; /* default to starting with the left hand. this will automatically alternate */
+		var hand = siteswap.startingHand;
 
 		/* keep going until pattern complete */
 		while (!patternComplete) {
@@ -4412,7 +4419,7 @@ function SiteswapAnimator(containerId, options) {
 			surfaceGeom.faces.push( new THREE.Face3( 0, 1, 2 ) );
 			surfaceGeom.faces.push( new THREE.Face3( 2, 0, 3 ) );
 
-			var surfaceMesh = new THREE.Mesh(surfaceGeom, new THREE.MeshBasicMaterial( { color: a.color, side: THREE.DoubleSide } ));
+			var surfaceMesh = new THREE.Mesh(surfaceGeom, new THREE.MeshBasicMaterial( { color: a.color ? a.color : "grey", side: THREE.DoubleSide } ));
 			surfaceMeshes.push(surfaceMesh);
 			scene.add(surfaceMesh);
 		});
@@ -4620,6 +4627,7 @@ function SiteswapAnimator(containerId, options) {
 						new THREE.Vector3(-handSize,0,-handSize+zOffset),
 						new THREE.Vector3(-handSize,.01,-2*handSize+zOffset),
 						new THREE.Vector3(-handSize,.05,-3*handSize+zOffset),
+						// thumbs
 						new THREE.Vector3((j == 0 ? -1 : 1)*handSize,0,handSize+zOffset),
 						new THREE.Vector3((j == 0 ? -1 : 1)*2*handSize,0,handSize+zOffset-.02),
 						new THREE.Vector3((j == 0 ? -1 : 1)*2*handSize,.02,handSize+zOffset-.04)
@@ -4635,9 +4643,10 @@ function SiteswapAnimator(containerId, options) {
 						var newY = handVerticesDiff[k].y*Math.cos(angle) + handVerticesDiff[k].x*Math.sin(angle);
 						newX = newX*Math.cos(handAngle) - handVerticesDiff[k].z*Math.sin(handAngle);
 						var newZ = handVerticesDiff[k].z*Math.cos(handAngle) + newX*Math.sin(handAngle);
-						handVerticesDiff[k].x = newX;
+						// rotate w/ juggler cos - sin, cos + sin
+						handVerticesDiff[k].x = newX*Math.cos(siteswap.jugglers[i].rotation) - newZ*Math.sin(siteswap.jugglers[i].rotation); 
 						handVerticesDiff[k].y = newY;
-						handVerticesDiff[k].z = newZ;
+						handVerticesDiff[k].z = newZ*Math.cos(siteswap.jugglers[i].rotation) + newX*Math.sin(siteswap.jugglers[i].rotation);						
 						jugglerHandVertices[i][j][k].copy((new THREE.Vector3()).copy(jugglerWristPosition).add(handVerticesDiff[k]));
 					}
 				} else {
@@ -5305,7 +5314,8 @@ function go() {
 			emptyCatchScale: 	inputs.emptyCatchScale,
 			armAngle: 			inputs.armAngle,
 			surfaces: 			inputs.surfaces,
-			jugglers: 			inputs.jugglers
+			jugglers: 			inputs.jugglers,
+			startingHand: 		inputs.startingHand
 		});
 
 	if (siteswap.errorMessage) {

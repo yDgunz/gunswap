@@ -163,7 +163,8 @@ function go() {
 			emptyCatchScale: 	inputs.emptyCatchScale,
 			armAngle: 			inputs.armAngle,
 			surfaces: 			inputs.surfaces,
-			jugglers: 			inputs.jugglers
+			jugglers: 			inputs.jugglers,
+			startingHand: 		inputs.startingHand
 		});
 
 	if (siteswap.errorMessage) {

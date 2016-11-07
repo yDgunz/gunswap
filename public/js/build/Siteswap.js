@@ -918,6 +918,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		multiplex: 				undefined,
 		sync: 					undefined,
 		pass: 					undefined,
+		startingHand:			RIGHT,
 		numJugglers: 			undefined,
 		numProps: 				undefined,
 		maxHeight: 				undefined,
@@ -989,7 +990,13 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		siteswap.emptyTossScale = (options.emptyTossScale === undefined ? 0.05 : options.emptyTossScale);
 		siteswap.emptyCatchScale = (options.emptyCatchScale === undefined ? 0.05 : options.emptyCatchScale);
 		siteswap.armAngle = (options.armAngle === undefined ? 0.1 : options.armAngle);
-		
+				
+		if (options.startingHand == "L" || options.startingHand == "LEFT") {
+			siteswap.startingHand = LEFT;			
+		} else { 
+			siteswap.startingHand = RIGHT;
+		}
+
 		if (options.props === undefined) {
 			siteswap.props = [{type: 'ball', radius: .05, C: .95}];
 		} else {
@@ -1163,7 +1170,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		}
 
 		/* construct the various regex patterns. see blog post for details about this */
-		var validToss = "(R|L)?([\\da-o])x?A?(" + passPattern + ")?(C{(C|P)?})?(T{(C|P)?})?(B({\\d*(L|HL|F|HF)?\\d*})?)?(S{-?\\d+(.\\d+)?(,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?)?})?(D{\\d*\\.?\\d*})?";
+		var validToss = "([\\da-o])x?A?(" + passPattern + ")?(C{(C|P)?})?(T{(C|P)?})?(B({\\d*(L|HL|F|HF)?\\d*})?)?(S{-?\\d+(.\\d+)?(,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?)?})?(D{\\d*\\.?\\d*})?";
 		var validMultiplex = "\\[(" + validToss + ")+\\]";
 		var validSync = "\\((" + validToss + "|" + validMultiplex + "),(" + validToss + "|" + validMultiplex + ")\\)";
 		var validBeat = "(" + validToss + "|" + validMultiplex + "|" + validSync + ")";
@@ -1531,7 +1538,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		var patternComplete = false;
 		var initComplete = false;
 		var beat = 0;
-		var hand = LEFT; /* default to starting with the left hand. this will automatically alternate */
+		var hand = siteswap.startingHand;
 
 		/* keep going until pattern complete */
 		while (!patternComplete) {

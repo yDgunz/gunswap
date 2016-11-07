@@ -15,6 +15,7 @@ pattern:
  drawHands: true
  motionBlur: false
  backgroundColor: white
+ startingHand: RIGHT
 inputs:
  siteswap: 3
  props: [{type: ball, color: red, radius: 0.05, C: 0.9}]
