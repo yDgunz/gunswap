@@ -1,5 +1,11 @@
 <% include ../partials/header.ejs %>
 
+<script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+
 <h3>Finding Elbow Positions</h3>
 
 <h4>Intro</h4>
@@ -31,7 +37,7 @@ Up to this point I had been trying to work out complicated solutions considering
 <h4>Solution</h4>
 
 <p>
-Below is how I came up with a function getElbowPosition(S,H,l,w,hand) that returns elbow coordinates given inputs for the shoulder position (S), hand position (H), forearm/bicep length (l), "chicken wing" angle (w) and hand. The hand input is just 0/1 (left/right) indicating which direction the chicken wing angle should rotate. A higher chicken wing angle means your elbows are lifted higher. A chicken wing angle of 0 means the plane created by your shoulder/elbow/hand is parallel to the y axis. The juggler in Fig 1. has a high chicken wing angle.
+Below is how I came up with a function $getElbowPosition(\mathbf{S},\mathbf{H},l,\omega,hand)$ that returns elbow coordinates given inputs for the shoulder position $\mathbf{S}$, hand position $\mathbf{H}$, forearm/bicep length $l$, "chicken wing" angle $\omega$, and $hand$. The hand input is just 0/1 (left/right) indicating which direction the chicken wing angle should rotate. A higher chicken wing angle means your elbows are lifted higher. A chicken wing angle of 0 means the plane created by your shoulder/elbow/hand is parallel to the y axis. The juggler in Fig 1. has a high chicken wing angle.
 </p>
 
 <div>
@@ -49,24 +55,38 @@ Fig 2.
 Fig 3.
 </div>
 
-<div>
-<img src="../img/elbow_pos_fig4.jpg" height="200px" /><br/>
-Fig 4.
-</div>
+<p>The first step is to transform $\mathbf{H}$ to a coordinate system where $\mathbf{S}$ is at the origin. This gives a new hand position $\mathbf{H'}$.</p>
 
-<p>
-Below is a step-by-step explanation of the equations in Fig 4.
+$$\mathbf{H'} = \mathbf{H} - \mathbf{S}$$
 
-	<ul>
-		<li>The first step is to transform H to a coordinate system where S is at the origin. This gives a new hand position H'.</li>
-		<li>Another transformation. H'' is the hand position in a coordinate system rotated along the y-axis (the dashed lines in Fig. 2). H'' is a simpler vector to work with because it has a 0 z component.</li>
-		<li>Theta is used to go back to H' from H''. This will be useful later on. Note that in the code I actually use Math.atan2 since Math.atan only goes from -pi/2 to pi/2 and Math.atan2 determines the angle based on the quadrant the input coordinates are in.</li>
-		<li>h is the distance from the shoulder/hand axis to the elbow. This is the height of an isosceles triangle with sides of length l.</li>
-		<li>Now we find unit vectors u1 and u2 that are both orthogonal to each other and the shoulder/hand axis. These are simple to find because H'' has a 0 z component.</li>
-		<li>Here is where the chicken wing angle comes into play. This is the position of the elbow as defined by an equation for a circle around the shoulder/hand axis. <a href="http://math.stackexchange.com/questions/73237/parametric-equation-of-a-circle-in-3d-space">http://math.stackexchange.com/questions/73237/parametric-equation-of-a-circle-in-3d-space</a></li>
-		<li>Transforming E'' to E' using theta which we solved for in (3). <b>Note</b>: the equation in the picture above is wrong. The x component should be cos - sin, not cos + sin. See commit associated with this issue: <a href="https://github.com/yDgunz/gunswap/issues/10">https://github.com/yDgunz/gunswap/issues/10</a></li>
-		<li>Transforming E' to E which is our final result.</li>
-	</ul>
-</p>
+<p>Next we have another transformation. $\mathbf{H''}$ is the hand position in a coordinate system rotated along the y-axis (the dashed lines in Fig. 2). $\mathbf{H''}$ is a simpler vector to work with because it has a 0 z component.</p>
+
+$$\mathbf{H''} = \langle \sqrt{{H'}_{x}^2 + {H'}_{z}^2} , {H'}_{y} , 0 \rangle$$
+
+<p>Now let's define $\theta$ which will be used to go back to $\mathbf{H'}$ from $\mathbf{H''}$, this will be useful later on. Note that in the code I actually use Math.atan2 since Math.atan only goes from -pi/2 to pi/2 and Math.atan2 determines the angle based on the quadrant the input coordinates are in.</p>
+
+$$\theta = \arctan{\frac{{H'}_{z}}{{H'}_{x}}}$$
+
+<p>$h$ is the distance from the shoulder/hand axis to the elbow. This is the height of an isosceles triangle with sides of length $l$.</p>
+
+$$h = \sqrt{l^2 - \frac{1}{4}{|H'|}^2}$$
+
+<p>Now we find unit vectors $\hat{u_1}$ and $\hat{u_2}$ that are both orthogonal to each other and the shoulder/hand axis. These are simple to find because ${H''}_{z} = 0$.</p>
+
+$$\hat{u_{1}} = \frac{\langle {H''}_{y}, -{H''}_{x}, 0 \rangle}{|H'|}$$
+
+$$\hat{u_{2}} = \langle 0, 0, 1 \rangle$$
+
+<p>Here is where the chicken wing angle comes into play. This is the position of the elbow as defined by an equation for a circle around the shoulder/hand axis. <a href="http://math.stackexchange.com/questions/73237/parametric-equation-of-a-circle-in-3d-space">http://math.stackexchange.com/questions/73237/parametric-equation-of-a-circle-in-3d-space</a></p>
+
+$$\mathbf{E''} = \frac{\mathbf{H''}}{2} + h\hat{u_{1}}\cos{\omega} + h\hat{u_{2}}\sin{\omega}$$
+
+<p>Now we transform $\mathbf{E''}$ to $\mathbf{E'}$ using $\theta$ which we solved for above.</p>
+
+$$\mathbf{E'} = \langle {E''}_{x}cos{\theta} - {E''}_{z}sin{\theta}, {E''}_{y}, {E''}_{x}sin{\theta} + {E''}_{z}cos{\theta} \rangle$$
+
+<p>Finally we transform $\mathbf{E'}$ to $\mathbf{E}$ which is our final result for the elbow position.</p>
+
+$$\mathbf{E} = \mathbf{S} + \mathbf{E'}$$
 
 <% include ../partials/footer.ejs %>
