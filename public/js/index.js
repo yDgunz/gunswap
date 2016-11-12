@@ -82,7 +82,7 @@ window.onresize = function () {
 	var controlsWidth = 500;
 	var animatorWidth = windowWidth-controlsWidth;
 	var minAnimatorWidth = 400;
-	var animatorHeight = windowHeight;
+	var animatorHeight = windowHeight - 30;
 
 	if (animatorWidth > minAnimatorWidth) {
 		$('#nav #animator').hide();
@@ -101,7 +101,7 @@ window.onresize = function () {
 		animatorWidth = windowWidth;
 		controlsWidth = windowWidth;
 		twoWindow = false;
-		animatorHeight = windowHeight - $('#animatorCanvasContainer').offset().top;
+		animatorHeight = animatorHeight - $('#animatorCanvasContainer').offset().top;
 		$('.navText').hide();
 	}
 
@@ -118,7 +118,7 @@ window.onresize = function () {
 	$('#patternMenu').height(windowHeight-$('#patternMenu').offset().top-10);
 
 	if (animator.resize) {
-		animator.resize(animatorWidth, windowHeight);
+		animator.resize(animatorWidth, animatorHeight);
 	}	
 }
 
@@ -189,6 +189,7 @@ function go() {
 				, backgroundColor: inputs.backgroundColor
 			}
 		);
+		animator.usingSlider = false;
 		animator.animate();
 		
 	}

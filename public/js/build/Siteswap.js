@@ -2368,6 +2368,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			v_T.dx *= -1;
 		}		
 
+		// juggler rotation transformation should be done before interpolating spline
+
 		var dwellPosition = Bezier.interpolateBezierSpline(P,t,v_0,v_T,v_0scale,v_Tscale,matchVelocity);
 
 		return {

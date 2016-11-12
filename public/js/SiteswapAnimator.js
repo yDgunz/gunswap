@@ -35,15 +35,19 @@ function SiteswapAnimator(containerId, options) {
 		drawHands = false;
 
 	this.displayPropPaths = options.displayPropPaths === true ? true : false;
+	this.step = 0;
+	this.usingSlider = false;
 
 	container = $('#' + containerId);
+
+	this.slider = container.find('input');
 
 	width = container.width();
 	height = container.height();
 
 	if (renderMode == '2D') {
 
-		container.append('<canvas id="siteswapAnimatorCanvas"></canvas>');
+		container.prepend('<canvas id="siteswapAnimatorCanvas"></canvas>');
 		canvas = container.find('canvas')[0];
 		canvas.height = height;
 		canvas.width = width;
@@ -68,8 +72,7 @@ function SiteswapAnimator(containerId, options) {
 		
 		renderer.setSize( width, height );
 
-		container.empty();
-		container.append(renderer.domElement);
+		container.prepend(renderer.domElement);
 
 		//add the event listeners for mouse interaction
 		renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
@@ -253,9 +256,20 @@ function SiteswapAnimator(containerId, options) {
 		if (timeElapsed > (siteswap.states.length*siteswap.beatDuration*1000)) {
 			this.oneCycleComplete = true;
 		}
-		var t = timeElapsed % (siteswap.states.length*siteswap.beatDuration*1000); // need to *1000 b/c timeElapsed is in ms
 		
-		this.render(t);
+		// if we're using the slider to play the animation then set the step based on the slider value
+		// otherwise use time elapsed and update the slider accordingly
+		if (this.usingSlider) {
+			this.step = Math.floor(this.slider.val()*(siteswap.numSteps-1));
+		} else {
+			// t is the time elapsed into the pattern
+			var t = timeElapsed % (siteswap.states.length*siteswap.beatDuration*1000); // need to *1000 b/c timeElapsed is in ms
+			this.step = Math.floor(t/(siteswap.states.length*siteswap.beatDuration*1000)*siteswap.numSteps);
+			//update slider based on the current step
+			this.slider.val(this.step/siteswap.numSteps);
+		}
+
+		this.render();
 
 		if (!this.paused) {
 			var self = this;
@@ -264,15 +278,13 @@ function SiteswapAnimator(containerId, options) {
 
 	}
 
-	this.render = function(t) {
-
-		var step = Math.floor(t/(siteswap.states.length*siteswap.beatDuration*1000)*siteswap.numSteps);
+	this.render = function() {		
 
 		/* update prop mesh positions and rotations */
 		for (var i = 0; i < propMeshes.length; i++) {
 			for (var j = 0; j < propMeshes[i].length; j++) {
 
-				var stepIx = step-j*Math.floor(siteswap.numStepsPerBeat/8); // the 10 here is the tail length factor
+				var stepIx = this.step-j*Math.floor(siteswap.numStepsPerBeat/8); // the 10 here is the tail length factor
 				if (stepIx < 0) {
 					stepIx += siteswap.numSteps; 
 				}
@@ -298,7 +310,7 @@ function SiteswapAnimator(containerId, options) {
 		}
 
 		/* update juggler hand positions */
-		updateHandAndElbowPositions(step);
+		this.updateHandAndElbowPositions();
 
 		updateCamera();
 
@@ -521,7 +533,7 @@ function SiteswapAnimator(containerId, options) {
 		}		
 	}
 
-	function updateHandAndElbowPositions(step) {
+	this.updateHandAndElbowPositions = function() {
 				
 		for (var i = 0; i < jugglerHandVertices.length; i++) {
 			for (var j = 0; j < 2; j++) {
@@ -549,11 +561,11 @@ function SiteswapAnimator(containerId, options) {
 						new THREE.Vector3((j == 0 ? -1 : 1)*2*handSize,0,handSize+zOffset-.02),
 						new THREE.Vector3((j == 0 ? -1 : 1)*2*handSize,.02,handSize+zOffset-.04)
 					];
-					var angle = siteswap.jugglerHandPositions[i][j][step].angle;
+					var angle = siteswap.jugglerHandPositions[i][j][this.step].angle;
 					var propRadius = siteswap.props[0].radius;
-					var jugglerWristPosition = toVector3(siteswap.jugglerHandPositions[i][j][step]).add(new THREE.Vector3(propRadius*Math.sin(angle),-propRadius*Math.cos(angle),0));
+					var jugglerWristPosition = toVector3(siteswap.jugglerHandPositions[i][j][this.step]).add(new THREE.Vector3(propRadius*Math.sin(angle),-propRadius*Math.cos(angle),0));
 					
-					var handAngle = -Math.atan2(siteswap.jugglerElbowPositions[i][j][step].x-siteswap.jugglerHandPositions[i][j][step].x,siteswap.jugglerElbowPositions[i][j][step].z-siteswap.jugglerHandPositions[i][j][step].z);
+					var handAngle = -Math.atan2(siteswap.jugglerElbowPositions[i][j][this.step].x-siteswap.jugglerHandPositions[i][j][this.step].x,siteswap.jugglerElbowPositions[i][j][this.step].z-siteswap.jugglerHandPositions[i][j][this.step].z);
 
 					for (var k = 0; k < handVerticesDiff.length; k++) {
 						var newX = handVerticesDiff[k].x*Math.cos(angle) - handVerticesDiff[k].y*Math.sin(angle);
@@ -567,13 +579,13 @@ function SiteswapAnimator(containerId, options) {
 						jugglerHandVertices[i][j][k].copy((new THREE.Vector3()).copy(jugglerWristPosition).add(handVerticesDiff[k]));
 					}
 				} else {
-					jugglerHandVertices[i][j][0].copy(toVector3(siteswap.jugglerHandPositions[i][j][step])); 
+					jugglerHandVertices[i][j][0].copy(toVector3(siteswap.jugglerHandPositions[i][j][this.step])); 
 				}
 
 			}
 
-			jugglerElbowMeshes[i][0].position.set(siteswap.jugglerElbowPositions[i][0][step].x, siteswap.jugglerElbowPositions[i][0][step].y, siteswap.jugglerElbowPositions[i][0][step].z);
-			jugglerElbowMeshes[i][1].position.set(siteswap.jugglerElbowPositions[i][1][step].x, siteswap.jugglerElbowPositions[i][1][step].y, siteswap.jugglerElbowPositions[i][1][step].z);
+			jugglerElbowMeshes[i][0].position.set(siteswap.jugglerElbowPositions[i][0][this.step].x, siteswap.jugglerElbowPositions[i][0][this.step].y, siteswap.jugglerElbowPositions[i][0][this.step].z);
+			jugglerElbowMeshes[i][1].position.set(siteswap.jugglerElbowPositions[i][1][this.step].x, siteswap.jugglerElbowPositions[i][1][this.step].y, siteswap.jugglerElbowPositions[i][1][this.step].z);
 
 		}
 	}
