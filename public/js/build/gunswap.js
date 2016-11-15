@@ -5438,7 +5438,8 @@ function generateGIF() {
 
 	var addFrame = function () {
 
-		animator.render((currentFrame/numFrames)*(siteswap.states.length*siteswap.beatDuration)*1000);
+		animator.step = Math.floor((currentFrame/numFrames)*siteswap.numSteps);
+		animator.render();
 
 		context.drawImage( animator.renderer.domElement, 0, 0 );
 
