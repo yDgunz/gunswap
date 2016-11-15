@@ -98,7 +98,7 @@ window.onresize = function () {
 		$('#nav #animator').show();
 		$('#animatorCanvasContainer').appendTo($('#controlsContainer #animatorMenu'));
 		$('#animatorMenu').addClass('controlDiv');
-		animatorWidth = windowWidth;
+		animatorWidth = windowWidth-15;
 		controlsWidth = windowWidth;
 		twoWindow = false;
 		animatorHeight = animatorHeight - $('#animatorCanvasContainer').offset().top;
