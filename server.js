@@ -79,9 +79,10 @@ acctRouter.get('/about', function(req,res) {
     res.render('about/home.ejs');
 });
 
-acctRouter.get('/about/:name', function(req,res) {
+acctRouter.get('/:folder/:name', function(req,res) {
     var name = req.params.name;
-    res.render('about/' + name + '.ejs');
+    var folder = req.params.folder;
+    res.render(folder + '/' + name + '.ejs');
 });
 
 function isLoggedIn(req, res, next) {
