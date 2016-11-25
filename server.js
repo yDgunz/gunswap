@@ -17,6 +17,7 @@ var flash    = require('connect-flash');
 var morgan       = require('morgan');
 var cookieParser = require('cookie-parser');
 var session      = require('express-session');
+var fs = require('fs');
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
@@ -79,10 +80,30 @@ acctRouter.get('/about', function(req,res) {
     res.render('about/home.ejs');
 });
 
-acctRouter.get('/:folder/:name', function(req,res) {
+acctRouter.get('/about/:name', function(req,res) {
     var name = req.params.name;
-    var folder = req.params.folder;
-    res.render(folder + '/' + name + '.ejs');
+    res.render('about/' + name + '.ejs');
+});
+
+function getTutorials() {
+    return JSON.parse(fs.readFileSync('views/tutorials/tutorials.json', 'utf8'));
+}
+
+acctRouter.get('/tutorials', function(req,res) {
+    res.render('tutorials/tutorials.ejs', getTutorials());
+});
+
+acctRouter.get('/tutorials/:name', function(req,res) {
+    var name = req.params.name;
+    var tutorials = getTutorials();
+    var tutorial;
+    for (var i = 0; i < tutorials.tutorials.length; i++) {
+        console.log(tutorials.tutorials[i].name + " " + name);
+        if (tutorials.tutorials[i].name == name) {
+            tutorial = tutorials.tutorials[i];            
+        }
+    }
+    res.render('tutorials/tutorial.ejs', tutorial);
 });
 
 function isLoggedIn(req, res, next) {

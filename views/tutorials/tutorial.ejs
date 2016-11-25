@@ -1,0 +1,22 @@
+<% include ../partials/header.ejs %>
+
+<div style="text-align:center;">
+    <h3><%= displayName %></h3>
+    <% headerImages.forEach(function(img) { %>
+        <img src='../img/tutorials/<%= name %>/<%= img %>' width="300px" style="border: 1px solid black"/>
+    <% }); %>
+</div>
+
+<hr/>
+
+<% content.forEach(function(c) { %>
+    <% if(c.text) { %>
+        <p><%= c.text %></p>
+    <% } else if (c.img) { %>
+        <div style="text-align:center;">
+            <img src='../img/tutorials/<%= name %>/<%= c.img %>' width="300px" style="border: 1px solid black"/>
+        </div>
+    <% } %>  
+<% }); %>
+
+<% include ../partials/footer.ejs %>

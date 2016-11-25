@@ -1,0 +1,34 @@
+<% include ../partials/header.ejs %>
+
+<h3>Tutorials</h3>
+
+<!-- sort tutorials by category then level then alpha -->
+<% tutorials.sort(function(a,b) { return (a.category + a.level + a.alpha) > (b.category + b.level + b.alpha) }); %>
+
+<a href='../tutorials/<%= tutorials[0].name %>'><%= tutorials[0].displayName %></a>
+
+<div class="container">
+    <div class="row">
+        
+        <div class="col-md-2">
+            <% var currentCategory = tutorials[1].category; %>
+            <%= currentCategory %>
+            <ul>
+            <% for(var i = 1; i < tutorials.length; i++) { %>
+                <% if (currentCategory != tutorials[i].category) { %>
+                    </ul>
+                    </div>
+                    <% currentCategory = tutorials[i].category; %>                    
+                    <div class="col-md-2">
+                    <%= currentCategory %>
+                    <ul>   
+                <% } %>
+                <li><a href='../tutorials/<%= tutorials[i].name %>'><%= tutorials[i].displayName %></a></li>
+            <% } %>
+            </ul>
+        </div>
+
+    </div>
+</div>
+
+<% include ../partials/footer.ejs %>

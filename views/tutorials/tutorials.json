@@ -1,0 +1,51 @@
+{
+    "tutorials": [
+        {
+            "name": "3ballCascade",
+            "displayName": "3 Ball Cascade",
+            "category": "0",
+            "level": 1,
+            "headerImages": ["3ballCascade.gif", "3ballCascadePOV.gif"],    
+            "content": [
+                {"text": "Practice the 2 ball exchange"},
+                {"img": "2ballExchange.gif"},
+                {"text": "Focus on making scoops."},
+                {"img": "2ballExchangeWithPaths.gif"},
+                {"text": "Try to keep the pattern in 1 plane."},
+                {"img": "3ballCascadeSideView.gif"}
+            ]
+        },{
+            "name": "columns",
+            "displayName": "Columns",
+            "category": "Sync",
+            "level": 2,
+            "headerImages": ["columns.gif", "columnsPOV.gif"],    
+            "content": [
+                {"text": "Practice 2 in 1 hand (both sides)."},
+                {"img": "2ball1Hand.gif"},
+                {"text": "Practice 2 in 1 hand columns (both sides)."},
+                {"img": "2ball1HandColumns.gif"},
+                {"text": "Toss up 2 balls the same height."},
+                {"img": "columns2ball.gif"}
+            ]
+        },{
+            "name": "reverseCascade",
+            "displayName": "Reverse Cascade",
+            "category": "Dwell Path",
+            "level": 2,
+            "headerImages": ["reverseCascade.gif","reverseCascadePOV.gif"],
+            "content": [
+            ]
+        },{
+            "name": "tennis",
+            "displayName": "Tennis",
+            "category": "Dwell Path",
+            "level": 2,
+            "headerImages": ["tennis.gif","tennisPOV.gif"],
+            "content": [
+                {"text": ""},
+                {"img": "tennisPath.gif"}
+            ]
+        }
+    ]
+}
