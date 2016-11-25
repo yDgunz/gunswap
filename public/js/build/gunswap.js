@@ -2856,6 +2856,14 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				isPass = true;
 			}
 
+			var dIx = siteswapStr.indexOf("D");
+			var dwellDuration;
+			if (dIx > 0) {
+				dwellDuration = siteswap.beatDuration*parseFloat(siteswapStr.substring(dIx+2,siteswapStr.indexOf("}")));
+			} else {
+				dwellDuration = siteswap.dwellDuration;
+			}
+
 			var numBounces = 0;
 			var bounceOrder = [];
 			var bIx = siteswapStr.indexOf("B");
@@ -2904,14 +2912,19 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				} else if (siteswapStr.match("L")) {
 					bounceType = "L";
 				} else {
-					bounceType = "L";
-				}
-			}
+					
+					// determine appropriate bounce type according to some hardcoded timing constraints
+					// these were determined via trial and error with the default bounce params
+					var bounceTime = siteswap.beatDuration*numBeats - dwellDuration;
+					if (bounceTime < .68) {
+						bounceType = "HF";
+					} else if (bounceTime < 1.25) {
+						bounceType = "F";	
+					} else {
+						bounceType = "L";
+					}
 
-			var dIx = siteswapStr.indexOf("D");
-			var dwellDuration;
-			if (dIx > 0) {
-				dwellDuration = siteswap.beatDuration*parseFloat(siteswapStr.substring(dIx+2,siteswapStr.indexOf("}")));
+				}
 			}
 
 			var tIx = siteswapStr.indexOf("T");
@@ -2995,7 +3008,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 					bounceType: bounceType,
 					numSpins: numSpins,					
 					dwellPathIx: dwellPathIx,
-					dwellDuration: dwellDuration === undefined ? siteswap.dwellDuration : dwellDuration,
+					dwellDuration: dwellDuration,
 					tossType: tossType,
 					catchType: catchType,
 					tossOrientation: tossOrientation,
