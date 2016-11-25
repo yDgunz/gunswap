@@ -415,9 +415,10 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				var bpIx;
 				if (!isNaN(siteswapStr[bIx+3])) {
 					bpIx = 3;
-				}
-				if (!isNaN(siteswapStr[bIx+4])) {
+				} else if (!isNaN(siteswapStr[bIx+4])) {
 					bpIx = 4;
+				} else {
+					bpIx = 2;
 				}
 				if (siteswapStr[bIx+1] == "{" && bpIx != undefined) {
 					numBounces = parseInt(siteswapStr[bIx+bpIx]);
