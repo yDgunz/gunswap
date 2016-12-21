@@ -2,26 +2,52 @@
 
 <h3>Tutorials</h3>
 
-<!-- sort tutorials by category then level then alpha -->
-<% tutorials.sort(function(a,b) { return (a.category + a.level + a.alpha) > (b.category + b.level + b.alpha) }); %>
+<p>The following tutorials are intended to provide a foundational set of skills for exploring toss juggling. 
+This is by no means an exhaustive list of juggling tricks - there are infinite! When you learn a new juggling skill
+try to incorporate it into your existing skills. Consider tricks like 531 mills mess or 423 with backcrosses.</p>
 
-<a href='../tutorials/<%= tutorials[0].name %>'><%= tutorials[0].displayName %></a>
+<p>The base skill is the 3 ball cascade and that's where you should start. From there it's helpful to work on
+each of the following skills:</p>
+
+<p>
+    <ul>
+        <li><b>Dwell Path</b> - the basic 3 ball cascade has outside catches and inside tosses. But you can catch and 
+        toss from anywhere that you can reach. Cross-armed, behind your back, etc. This can be used to produce very 
+        complicated and beautiful patterns.</li>
+        <li><b>Siteswap</b> - siteswap is the language of juggling. It can be used to define patterns where the props
+        don't all follow the same orbit. Think "high-medium-low" patterns where you throw every ball a different height 
+        and you can still repeat the pattern.</li>
+        <li><b>Sync</b> - sync (short for "synchronous") patterns involve making tosses with both hands at the same
+        time. This can be used to produce very symmetrical and busy patterns.</li>
+        <li><b>Toss/Catch Mod</b> - not every toss and catch must be made with a palm-up hand. Try clawing the balls
+        out of the air, using the back of your hand, etc.</li>
+    </ul>
+</p>
+
+<!-- sort tutorials by category then level then alpha -->
+<% tutorials.sort(function(a,b) 
+    { return a.category + a.level + a.displayName > b.category + b.level + b.displayName ? 1 : -1 }); 
+%>
+
+<hr/>
+
+<h4><a href='../tutorials/<%= tutorials[0].name %>'>Basic <%= tutorials[0].displayName %> Tutorial</a></h4>
 
 <div class="container">
     <div class="row">
         
         <div class="col-md-2">
             <% var currentCategory = tutorials[1].category; %>
-            <%= currentCategory %>
-            <ul>
+            <h4><%= currentCategory %></h4>
+            <ul class="list-unstyled">
             <% for(var i = 1; i < tutorials.length; i++) { %>
                 <% if (currentCategory != tutorials[i].category) { %>
                     </ul>
                     </div>
                     <% currentCategory = tutorials[i].category; %>                    
                     <div class="col-md-2">
-                    <%= currentCategory %>
-                    <ul>   
+                    <h4><%= currentCategory %></h4>
+                    <ul class="list-unstyled">   
                 <% } %>
                 <li><a href='../tutorials/<%= tutorials[i].name %>'><%= tutorials[i].displayName %></a></li>
             <% } %>

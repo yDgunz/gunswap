@@ -98,7 +98,6 @@ acctRouter.get('/tutorials/:name', function(req,res) {
     var tutorials = getTutorials();
     var tutorial;
     for (var i = 0; i < tutorials.tutorials.length; i++) {
-        console.log(tutorials.tutorials[i].name + " " + name);
         if (tutorials.tutorials[i].name == name) {
             tutorial = tutorials.tutorials[i];            
         }

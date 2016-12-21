@@ -46,6 +46,117 @@
                 {"text": ""},
                 {"img": "tennisPath.gif"}
             ]
+        },{
+            "name": "box",
+            "displayName": "Box",
+            "category": "Sync",
+            "level": 3,
+            "headerImages": [],
+            "content": [
+                {"text": ""}
+            ]
+        },{
+            "name": "nBox",
+            "displayName": "N-Box",
+            "category": "Sync",
+            "level": 4,
+            "headerImages": [],
+            "content": [
+                {"text": ""}
+            ]
+        },{
+            "name": "upsideDownBox",
+            "displayName": "Upside-Down Box",
+            "category": "Sync",
+            "level": 5,
+            "headerImages": [],
+            "content": [
+                {"text": ""}
+            ]
+        },{
+            "name": "millsMess",
+            "displayName": "Mills Mess",
+            "category": "Dwell Path",
+            "level": 3,
+            "headerImages": [],
+            "content": [
+                {"text": ""}
+            ]
+        },{
+            "name": "factory",
+            "displayName": "Factory",
+            "category": "Dwell Path",
+            "level": 3,
+            "headerImages": ["factory.gif", "factoryPOV.gif"],
+            "content": [
+                {"text": "Practice fake columns carrying the ball over the top."},
+                {"img": "factoryFakeColumns.gif"},
+                {"text": "Instead of carrying the ball back over the top, drop it in to the opposite hand. In order to clear a path for this ball, make a crossing throw with the hand that has been juggling 2 balls."},
+                {"img": "factoryFakeColumnsMix.gif"}
+            ]
+        },{
+            "name": "claw",
+            "displayName": "Claw",
+            "category": "Toss/Catch Mod",
+            "level": 2,
+            "headerImages": [],
+            "content": [
+                {"text": ""}
+            ]
+        },{
+            "name": "penguin",
+            "displayName": "Penguin",
+            "category": "Toss/Catch Mod",
+            "level": 3,
+            "headerImages": [],
+            "content": [
+                {"text": ""}
+            ]
+        },{
+            "name": "fork",
+            "displayName": "Fork",
+            "category": "Toss/Catch Mod",
+            "level": 4,
+            "headerImages": [],
+            "content": [
+                {"text": ""}
+            ]
+        },{
+            "name": "423",
+            "displayName": "423",
+            "category": "Siteswap",
+            "level": 2,
+            "headerImages": [],
+            "content": [
+                {"text": ""}
+            ]
+        },{
+            "name": "51",
+            "displayName": "51",
+            "category": "Siteswap",
+            "level": 3,
+            "headerImages": [],
+            "content": [
+                {"text": ""}
+            ]
+        },{
+            "name": "531",
+            "displayName": "531",
+            "category": "Siteswap",
+            "level": 3,
+            "headerImages": [],
+            "content": [
+                {"text": ""}
+            ]
+        },{
+            "name": "441",
+            "displayName": "441",
+            "category": "Siteswap",
+            "level": 3,
+            "headerImages": [],
+            "content": [
+                {"text": ""}
+            ]
         }
     ]
 }
