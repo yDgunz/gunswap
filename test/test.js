@@ -56,13 +56,22 @@ describe('Syntax', function(){
 	});
 
 	describe('Multiple multiplex sync', function(){
-		it('should return true for max toss', function(){
+		it('should return true for multiple multiplex sync', function(){
 			var s = Siteswap.CreateSiteswap('([44],[44])',{validationOnly: true});
 			assert.equal(s.validSyntax, true);
 			assert.equal(s.sync, true);
 			assert.equal(s.multiplex, true);
 		});
 	});	
+
+	describe('Asterisk notation', function(){
+		it('should return return true for asterisk notation and create all appropriate beats', function(){
+			var s = Siteswap.CreateSiteswap('(4,2x)*',{validationOnly: true});
+			assert.equal(s.validSyntax, true);
+			assert.equal(s.beats[0], "(4,2x)");
+			assert.equal(s.beats[2], "(2x,4)");
+		});
+	});
 
 });
 
