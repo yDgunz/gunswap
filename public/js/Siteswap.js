@@ -80,6 +80,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 	/* regexps */
 	var validTossRe,
 		validMultiplexRe,
+	    	validThrowRe,
 		validSyncRe,
 		validBeatRe,
 		validPassRe,
@@ -300,8 +301,9 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		/* construct the various regex patterns. see blog post for details about this */
 		var validToss = "([\\da-o])x?A?(" + passPattern + ")?(C{(C|P)?})?(T{(C|P)?})?(B({\\d*(L|HL|F|HF)?\\d*})?)?(S{-?\\d+(.\\d+)?(,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?)?})?(D{\\d*\\.?\\d*})?";
 		var validMultiplex = "\\[(" + validToss + ")+\\]";
-		var validSync = "\\((" + validToss + "|" + validMultiplex + "),(" + validToss + "|" + validMultiplex + ")\\)";
-		var validBeat = "(" + validToss + "|" + validMultiplex + "|" + validSync + ")";
+		var validThrow = validToss + "|" + validMultiplex;
+		var validSync = "\\((" + validThrow + "),(" + validThrow + ")\\)";
+		var validBeat = "(" + validThrow + "|" + validSync + ")";
 		var validPass = "<" + validBeat + "(\\|" + validBeat + ")+>";
 		var validSiteswap = "^(" + validPass + ")+|(" + validBeat + ")+\\*?$";
 
@@ -312,6 +314,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 		validTossRe = new RegExp(validToss,"g");
 		validMultiplexRe = new RegExp(validMultiplex,"g");
+		validThrowRe = new RegExp(validThrow,"g");
 		validSyncRe = new RegExp(validSync,"g");
 		validBeatRe = new RegExp(validBeat,"g");
 		validPassRe = new RegExp(validPass,"g");
@@ -341,9 +344,20 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			siteswapStr = newSiteswapStr;
 		}
 
-		if (siteswapStr.substr(siteswapStr.length-1) == "*") {
-			siteswapStr = siteswapStr.substr(0,siteswapStr.length-1) + siteswapStr.substr(0,siteswapStr.length-1).split("").reverse().join("");
-		} 
+		// if the input string was a synchronous siteswap ending in *
+		// then we repeat the input pattern, but swap the throws in each pair
+		// to make the pattern symmetric
+		// e.g. transform (6x,4)* to (6x,4)(4,6x)
+		if (siteswapStr.charAt(siteswapStr.length-1) == "*") {
+			var newSiteswapStr = siteswapStr.slice(0,-1);
+			var pairs = newSiteswapStr.match(validSyncRe);
+			if (pairs !== null) {
+				for (var i = 0; i < pairs.length; i++) {
+					newSiteswapStr += "(" + pairs[i].match(validThrowRe).reverse().join(",") + ")";
+				}
+				siteswapStr = newSiteswapStr;
+			}
+		}
 
 		if (siteswapStr.match(validSiteswapRe) == siteswapStr) {
 			siteswap.validSyntax = true;
