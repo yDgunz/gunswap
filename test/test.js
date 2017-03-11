@@ -73,6 +73,13 @@ describe('Syntax', function(){
 		});
 	});
 
+	describe('Whitespace', function(){
+		it('should return return true for patterns that have whitespace', function(){
+			var s = Siteswap.CreateSiteswap('5 3   1',{validationOnly: true});
+			assert.equal(s.validSyntax, true);
+		});
+	});
+
 });
 
 describe('Pattern properties', function(){

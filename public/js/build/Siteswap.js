@@ -1140,6 +1140,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 	/* check that the siteswap has the correct syntax */
 	function validateSyntax() {
+		siteswapStr = siteswapStr.replace(/\s/g,"");
 		var numJugglers = 1;
 		var isPassingPattern = /<[^ ]+>/.test(siteswapStr);
 
