@@ -30,8 +30,7 @@ function SiteswapAnimator(containerId, options) {
 		startTime,
 		siteswap,
 		renderMode = '3D',
-		context,
-		randomColors = ['red','blue','green','black','yellow','purple'],
+		context,		
 		drawHands = false;
 
 	this.displayPropPaths = options.displayPropPaths === true ? true : false;
@@ -213,7 +212,7 @@ function SiteswapAnimator(containerId, options) {
 				
 				var tmpPropMeshes = [];
 				
-				var propColor = (siteswap.props[i].color == "random" ? randomColors[Math.floor(Math.random()*randomColors.length)] : siteswap.props[i].color);
+				var propColor = (siteswap.props[i].color == "random" ? randomColors.getIndexCyclic(i) : siteswap.props[i].color);
 
 				for (var j = 0; j <= numTails; j++) {
 

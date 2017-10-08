@@ -114,6 +114,7 @@ window.onresize = function () {
 	// resize divs containing lists
 	$('#generatedSiteswaps').height(windowHeight-$('#generatedSiteswaps').offset().top-10);
 	$('#exampleSiteswaps').height(windowHeight-$('#exampleSiteswaps').offset().top-10);
+	$('#stateDiagramTableContainer').height(windowHeight-$('#exampleSiteswaps').offset().top-10);
 	$('#savedSiteswaps').height(windowHeight-$('#exampleSiteswaps').offset().top-10);
 	$('#patternMenu').height(windowHeight-$('#patternMenu').offset().top-10);
 
@@ -166,6 +167,29 @@ function go() {
 			jugglers: 			inputs.jugglers,
 			startingHand: 		inputs.startingHand
 		});
+
+	/* display state diagram if it's available */
+	if (siteswap.stateDiagram) {
+		var headerColSpan = (siteswap.stateDiagram[0].length-2)/2;
+		var sdHtml = "<tr><th colspan='2'></th><th colspan='" + headerColSpan + "'>L</th><th colspan='" + headerColSpan + "'>R</th></tr>";
+		siteswap.stateDiagram.map(function(r) {
+			sdHtml += "<tr>";
+			r.map(function(c) { 
+				var props = c.toString();
+				var bgColor = "white";
+				if (!isNaN(props) && props < siteswap.props.length) {
+					if (siteswap.props[parseInt(props)].color == "random") {
+						bgColor = randomColors.getIndexCyclic(parseInt(props));
+					} else {
+						bgColor = siteswap.props[parseInt(props)];
+					}
+				}
+				sdHtml += ("<td bgcolor='" + bgColor + "'>" + c.toString() + "</td>"); 
+			});
+			sdHtml += "</tr>";
+		});
+		$('#stateDiagramTable').html(sdHtml);
+	}
 
 	if (siteswap.errorMessage) {
 		animator.paused = true;

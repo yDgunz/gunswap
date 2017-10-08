@@ -1,0 +1,23 @@
+<% include ../partials/header.ejs %>
+
+<h3>Reading State Diagrams</h3>
+
+<p>
+In the <a href="../about/validatingSiteswap">"Validating Siteswap" article</a> we discuss how to ensure a siteswap string represents a valid, repeatable, pattern. To do that we use the concept of a siteswap "state diagram" that represents when each prop is going to be tossed again. The Gunswap animator now provides a built in state diagram that can be helpful for debugging patterns.
+</p>
+
+<div style="text-align:center;">
+<img src="../img/state_diagram_1.png" height="300px" />
+</div>
+
+<p>
+Each row in the state diagram table represents a beat in the pattern. During each beat N number of throws can be made. The first column in the table shows the hand making the throw that beat. The only time there is an exception to this is for synchronous patterns where both hands can make a throw on the same beat. However, in patterns that transition between sync and async, the alternating hand association for each beat is important to determine which hand is throwing when going from sync to async.
+</p>
+
+<p>The second column in the table shows the props that are being thrown that beat and the number of beats that each prop is being thrown. The prop is the first number followed by a hyphen and then the siteswap. So 1-5 indicates that prop 1 is being thrown with a siteswap of 5 (ie. it will be thrown again in 5 beats). 3-ax indicates that prop 3 is being thrown with a siteswap of ax (ie. it will be thrown again in 10 beats but by the opposite hand).</p>
+
+<p>The remaining columns show the landing schedule for each hand. This currently only works for one juggler in a pattern, so passing patterns will just show the first juggler. The landing schedule on a given row represents the state <i>after</i> the throw on that row has been made. The columns are color coded to help distinguish props.</p>
+
+<p>Finally, the table shows both the initialization states as well as the repeating states. The asterisk next to the hand indicator shows the beat when the states start repeating.</p>
+
+<% include ../partials/footer.ejs %>

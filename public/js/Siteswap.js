@@ -74,7 +74,8 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		emptyCatchScale:		undefined,
 		armAngle: 				undefined,
 		surfaces: 				undefined,		
-		errorMessage:  			undefined
+		errorMessage:  			undefined,
+		stateDiagram:			undefined
 	};	
 
 	/* regexps */
@@ -681,6 +682,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		/* initialize the state and prop orbits array */
 		siteswap.states = [];
 		siteswap.propOrbits = [];
+		siteswap.stateDiagram = [];
 
 		/* initialize current state */
 		var curState = [];
@@ -695,10 +697,18 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		var patternComplete = false;
 		var initComplete = false;
 		var beat = 0;
+		var stateDiagramBeatCounter = 0;
 		var hand = siteswap.startingHand;
 
 		/* keep going until pattern complete */
 		while (!patternComplete) {
+
+			/* start constructing the state diagram by indicating which hand we're on */
+			siteswap.stateDiagram.push([hand == 1 ? "R" : "L"]);
+			/* add an asterisk to indicate when the cycle actually begins */
+			if (beat == 0 && initComplete) {
+				siteswap.stateDiagram[stateDiagramBeatCounter][0] += "*";
+			}
 
 			/* TODO: explain this */
 			var tmpPropOrbits = cloneObject(siteswap.propOrbits);
@@ -725,6 +735,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			}
 
 			/* iterate through all the tosses and update the current state */
+			var stateDiagramTossString = "";
 			for (var j = 0; j < siteswap.tosses[beat % siteswap.tosses.length].length; j++) {
 				
 				var toss = siteswap.tosses[beat % siteswap.tosses.length][j];
@@ -758,6 +769,11 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 					siteswap.errorMessage = "No prop available to toss at beat " + beat;
 					return;
 				}
+				
+				stateDiagramTossString += (prop === undefined ? "X" : prop) + "-" + toss.siteswapStr;
+				if(j < siteswap.tosses[beat % siteswap.tosses.length].length-1) {
+					stateDiagramTossString += ",";
+				}
 
 				/* so long as this isn't a 0 toss, update the current state and append to prop orbits */
 				if (toss.numBeats > 0) {
@@ -777,6 +793,21 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				}
 				
 			}
+			siteswap.stateDiagram[stateDiagramBeatCounter].push(stateDiagramTossString);
+			curState[0][0].map(function(a) {
+				if (a == undefined) {
+					siteswap.stateDiagram[stateDiagramBeatCounter].push("X");
+				} else {
+					siteswap.stateDiagram[stateDiagramBeatCounter].push(a.reduce(function(p1,p2) { return p1.toString() + p2.toString(); } ));
+				}
+			});
+			curState[0][1].map(function(a) {
+				if (a == undefined) {
+					siteswap.stateDiagram[stateDiagramBeatCounter].push("X");
+				} else {
+					siteswap.stateDiagram[stateDiagramBeatCounter].push(a.reduce(function(p1,p2) { return p1.toString() + p2.toString(); } ));
+				}
+			});
 							
 
 			/* if we're at the beginning of the toss array and we've returned to the original state, the pattern is complete */
@@ -797,6 +828,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			}			
 
 			beat++;
+			stateDiagramBeatCounter++;
 			hand = 1 - hand; //alternate hands
 
 			/* fail safe in case the pattern is too long */
