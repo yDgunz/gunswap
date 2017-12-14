@@ -193,3 +193,6 @@ input[type=range].animSlider:focus::-ms-fill-lower {
 input[type=range].animSlider:focus::-ms-fill-upper {
   background: rgba(64, 64, 64, 0.5);
 }
+#stateDiagramMenu table, th, td { 
+  border: 1px solid black;
+}

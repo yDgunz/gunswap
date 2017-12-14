@@ -74,12 +74,14 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		emptyCatchScale:		undefined,
 		armAngle: 				undefined,
 		surfaces: 				undefined,		
-		errorMessage:  			undefined
+		errorMessage:  			undefined,
+		stateDiagram:			undefined
 	};	
 
 	/* regexps */
 	var validTossRe,
 		validMultiplexRe,
+	    	validThrowRe,
 		validSyncRe,
 		validBeatRe,
 		validPassRe,
@@ -267,6 +269,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 	/* check that the siteswap has the correct syntax */
 	function validateSyntax() {
+		siteswapStr = siteswapStr.replace(/\s/g,"");
 		var numJugglers = 1;
 		var isPassingPattern = /<[^ ]+>/.test(siteswapStr);
 
@@ -300,8 +303,9 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		/* construct the various regex patterns. see blog post for details about this */
 		var validToss = "([\\da-o])x?A?(" + passPattern + ")?(C{(C|P)?})?(T{(C|P)?})?(B({\\d*(L|HL|F|HF)?\\d*})?)?(S{-?\\d+(.\\d+)?(,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?,-?\\d+(.\\d+)?)?})?(D{\\d*\\.?\\d*})?";
 		var validMultiplex = "\\[(" + validToss + ")+\\]";
-		var validSync = "\\((" + validToss + "|" + validMultiplex + "),(" + validToss + "|" + validMultiplex + ")\\)";
-		var validBeat = "(" + validToss + "|" + validMultiplex + "|" + validSync + ")";
+		var validThrow = validToss + "|" + validMultiplex;
+		var validSync = "\\((" + validThrow + "),(" + validThrow + ")\\)";
+		var validBeat = "(" + validThrow + "|" + validSync + ")";
 		var validPass = "<" + validBeat + "(\\|" + validBeat + ")+>";
 		var validSiteswap = "^(" + validPass + ")+|(" + validBeat + ")+\\*?$";
 
@@ -312,6 +316,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 
 		validTossRe = new RegExp(validToss,"g");
 		validMultiplexRe = new RegExp(validMultiplex,"g");
+		validThrowRe = new RegExp(validThrow,"g");
 		validSyncRe = new RegExp(validSync,"g");
 		validBeatRe = new RegExp(validBeat,"g");
 		validPassRe = new RegExp(validPass,"g");
@@ -341,9 +346,20 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			siteswapStr = newSiteswapStr;
 		}
 
-		if (siteswapStr.substr(siteswapStr.length-1) == "*") {
-			siteswapStr = siteswapStr.substr(0,siteswapStr.length-1) + siteswapStr.substr(0,siteswapStr.length-1).split("").reverse().join("");
-		} 
+		// if the input string was a synchronous siteswap ending in *
+		// then we repeat the input pattern, but swap the throws in each pair
+		// to make the pattern symmetric
+		// e.g. transform (6x,4)* to (6x,4)(4,6x)
+		if (siteswapStr.charAt(siteswapStr.length-1) == "*") {
+			var newSiteswapStr = siteswapStr.slice(0,-1);
+			var pairs = newSiteswapStr.match(validSyncRe);
+			if (pairs !== null) {
+				for (var i = 0; i < pairs.length; i++) {
+					newSiteswapStr += "(" + pairs[i].match(validThrowRe).reverse().join(",") + ")";
+				}
+				siteswapStr = newSiteswapStr;
+			}
+		}
 
 		if (siteswapStr.match(validSiteswapRe) == siteswapStr) {
 			siteswap.validSyntax = true;
@@ -400,6 +416,14 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				isPass = true;
 			}
 
+			var dIx = siteswapStr.indexOf("D");
+			var dwellDuration;
+			if (dIx > 0) {
+				dwellDuration = siteswap.beatDuration*parseFloat(siteswapStr.substring(dIx+2,siteswapStr.indexOf("}")));
+			} else {
+				dwellDuration = siteswap.dwellDuration;
+			}
+
 			var numBounces = 0;
 			var bounceOrder = [];
 			var bIx = siteswapStr.indexOf("B");
@@ -407,9 +431,10 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				var bpIx;
 				if (!isNaN(siteswapStr[bIx+3])) {
 					bpIx = 3;
-				}
-				if (!isNaN(siteswapStr[bIx+4])) {
+				} else if (!isNaN(siteswapStr[bIx+4])) {
 					bpIx = 4;
+				} else {
+					bpIx = 2;
 				}
 				if (siteswapStr[bIx+1] == "{" && bpIx != undefined) {
 					numBounces = parseInt(siteswapStr[bIx+bpIx]);
@@ -448,14 +473,19 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				} else if (siteswapStr.match("L")) {
 					bounceType = "L";
 				} else {
-					bounceType = "L";
-				}
-			}
+					
+					// determine appropriate bounce type according to some hardcoded timing constraints
+					// these were determined via trial and error with the default bounce params
+					var bounceTime = siteswap.beatDuration*numBeats - dwellDuration;
+					if (bounceTime < .68) {
+						bounceType = "HF";
+					} else if (bounceTime < 1.25) {
+						bounceType = "F";	
+					} else {
+						bounceType = "L";
+					}
 
-			var dIx = siteswapStr.indexOf("D");
-			var dwellDuration;
-			if (dIx > 0) {
-				dwellDuration = siteswap.beatDuration*parseFloat(siteswapStr.substring(dIx+2,siteswapStr.indexOf("}")));
+				}
 			}
 
 			var tIx = siteswapStr.indexOf("T");
@@ -539,7 +569,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 					bounceType: bounceType,
 					numSpins: numSpins,					
 					dwellPathIx: dwellPathIx,
-					dwellDuration: dwellDuration === undefined ? siteswap.dwellDuration : dwellDuration,
+					dwellDuration: dwellDuration,
 					tossType: tossType,
 					catchType: catchType,
 					tossOrientation: tossOrientation,
@@ -652,6 +682,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		/* initialize the state and prop orbits array */
 		siteswap.states = [];
 		siteswap.propOrbits = [];
+		siteswap.stateDiagram = [];
 
 		/* initialize current state */
 		var curState = [];
@@ -666,10 +697,18 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 		var patternComplete = false;
 		var initComplete = false;
 		var beat = 0;
+		var stateDiagramBeatCounter = 0;
 		var hand = siteswap.startingHand;
 
 		/* keep going until pattern complete */
 		while (!patternComplete) {
+
+			/* start constructing the state diagram by indicating which hand we're on */
+			siteswap.stateDiagram.push([hand == 1 ? "R" : "L"]);
+			/* add an asterisk to indicate when the cycle actually begins */
+			if (beat == 0 && initComplete) {
+				siteswap.stateDiagram[stateDiagramBeatCounter][0] += "*";
+			}
 
 			/* TODO: explain this */
 			var tmpPropOrbits = cloneObject(siteswap.propOrbits);
@@ -696,6 +735,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			}
 
 			/* iterate through all the tosses and update the current state */
+			var stateDiagramTossString = "";
 			for (var j = 0; j < siteswap.tosses[beat % siteswap.tosses.length].length; j++) {
 				
 				var toss = siteswap.tosses[beat % siteswap.tosses.length][j];
@@ -729,6 +769,11 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 					siteswap.errorMessage = "No prop available to toss at beat " + beat;
 					return;
 				}
+				
+				stateDiagramTossString += (prop === undefined ? "X" : prop) + "-" + toss.siteswapStr;
+				if(j < siteswap.tosses[beat % siteswap.tosses.length].length-1) {
+					stateDiagramTossString += ",";
+				}
 
 				/* so long as this isn't a 0 toss, update the current state and append to prop orbits */
 				if (toss.numBeats > 0) {
@@ -748,6 +793,21 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 				}
 				
 			}
+			siteswap.stateDiagram[stateDiagramBeatCounter].push(stateDiagramTossString);
+			curState[0][0].map(function(a) {
+				if (a == undefined) {
+					siteswap.stateDiagram[stateDiagramBeatCounter].push("X");
+				} else {
+					siteswap.stateDiagram[stateDiagramBeatCounter].push(a.reduce(function(p1,p2) { return p1.toString() + p2.toString(); } ));
+				}
+			});
+			curState[0][1].map(function(a) {
+				if (a == undefined) {
+					siteswap.stateDiagram[stateDiagramBeatCounter].push("X");
+				} else {
+					siteswap.stateDiagram[stateDiagramBeatCounter].push(a.reduce(function(p1,p2) { return p1.toString() + p2.toString(); } ));
+				}
+			});
 							
 
 			/* if we're at the beginning of the toss array and we've returned to the original state, the pattern is complete */
@@ -768,6 +828,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 			}			
 
 			beat++;
+			stateDiagramBeatCounter++;
 			hand = 1 - hand; //alternate hands
 
 			/* fail safe in case the pattern is too long */

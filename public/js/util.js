@@ -46,6 +46,12 @@ if (!Array.prototype.last){
     };
 }
 
+if (!Array.prototype.getIndexCyclic){
+    Array.prototype.getIndexCyclic = function(i){
+    	return this[i % this.length];
+    };
+}
+
 if (!Array.prototype.getNextCyclic){
     Array.prototype.getNextCyclic = function(i){
     	i = i % this.length;
@@ -117,3 +123,6 @@ function negate(a) {
 	multiply(a,-1);
 	return a;
 }
+
+/* global vars */
+window.randomColors = ['red','blue','green','black','yellow','purple'];

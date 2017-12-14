@@ -2,7 +2,7 @@ pattern:
  siteswap: 3
  beatDuration: 0.28
  dwellRatio: 0.8
- props: [{type: ball, color: red, radius: 0.05, C: 0.9}]
+ props: [{type: ball, color: random, radius: 0.05, C: 0.9}]
  dwellPath: (30)(10)
  matchVelocity: false
  dwellCatchScale: 0.06
@@ -18,7 +18,7 @@ pattern:
  startingHand: RIGHT
 inputs:
  siteswap: 3
- props: [{type: ball, color: red, radius: 0.05, C: 0.9}]
+ props: [{type: ball, color: random, radius: 0.05, C: 0.9}]
  dwellPath: (30)(10)
  beatDuration: 0.28
  surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1, color: grey}]
