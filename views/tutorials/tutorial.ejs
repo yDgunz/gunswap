@@ -1,22 +1,28 @@
-<% include ../partials/header.ejs %>
-
 <div style="text-align:center;">
-    <h3><%= displayName %></h3>
-    <% headerImages.forEach(function(img) { %>
-        <img src='../img/tutorials/<%= name %>/<%= img %>' width="300px" style="border: 1px solid black"/>
+    <h3><%= tutorial.displayName %></h3>
+    <% tutorial.headerImages.forEach(function(img) { %>
+        <img src='../img/tutorials/<%= tutorial.name %>/<%= img %>' width="300px" style="border: 1px solid black"/>
     <% }); %>
 </div>
 
 <hr/>
 
-<% content.forEach(function(c) { %>
-    <% if(c.text) { %>
+<% tutorial.content.forEach(function(c) { %>
+    <% if(c.text && c.img) { %>
+        <div class="row">
+            <div class="col-md-4" style="text-align:center;">
+                <img src='../img/tutorials/<%= tutorial.name %>/<%= c.img %>' width="300px" style="border: 1px solid black"/>
+            </div>            
+            <div class="col-md-8">
+                <p><%= c.text %></p>
+            </div>
+        </div>
+    <% } else if(c.text) { %>
         <p><%= c.text %></p>
     <% } else if (c.img) { %>
         <div style="text-align:center;">
-            <img src='../img/tutorials/<%= name %>/<%= c.img %>' width="300px" style="border: 1px solid black"/>
+            <img src='../img/tutorials/<%= tutorial.name %>/<%= c.img %>' width="300px" style="border: 1px solid black"/>
         </div>
     <% } %>  
+    <hr/>
 <% }); %>
-
-<% include ../partials/footer.ejs %>

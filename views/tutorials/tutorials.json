@@ -1,12 +1,26 @@
 {
+    "categories": [
+        {"name": "fundamental", "displayName": "Fundamentals"},
+        {"name": "advanced", "displayName": "Advanced"},
+        {"name": "experimental", "displayName": "Experimental"}
+    ],
     "tutorials": [
         {
-            "name": "3ballCascade",
-            "displayName": "3 Ball Cascade",
-            "category": "0",
-            "level": 1,
-            "headerImages": ["3ballCascade.gif", "3ballCascadePOV.gif"],    
+            "name": "SuggestedProgression",
+            "displayName": "Suggested Progression",
+            "headerImages": ["3ballCascade.gif", "3ballCascadePOV.gif"],
+            "category": "fundamental",
             "content": [
+                {"text": "You should work on patterns in this order"}
+            ]
+        },{
+            "name": "3BallCascade",
+            "displayName": "3 Ball Cascade",
+            "category": "fundamental",
+            "headerImages": ["3ballCascade.gif", "3ballCascadePOV.gif"],
+            "content": [
+                {"text": "The 3 ball \"cascade\" is the most basic juggling pattern and provides the foundation for all juggling patterns. Frequent practice is better than infrequent long sessions. Everyone learns at a different pace, but with practice you can definitely learn this pattern. Once you are comfortable running a 3 ball cascade for several rounds you should move on to more advanced patterns."},
+                {"text": "Stop doing a 2 ball \"shower\". While there is no generally agreed upon definition of what makes a true \"juggling pattern\", this simple exchange does not provide a meaningful foundation for any growth.", "img": "2ballExchange.gif"},
                 {"text": "Practice the 2 ball exchange"},
                 {"img": "2ballExchange.gif"},
                 {"text": "Focus on making scoops."},
@@ -15,10 +29,9 @@
                 {"img": "3ballCascadeSideView.gif"}
             ]
         },{
-            "name": "columns",
+            "name": "Columns",
             "displayName": "Columns",
-            "category": "Sync",
-            "level": 2,
+            "category": "fundamental",
             "headerImages": ["columns.gif", "columnsPOV.gif"],    
             "content": [
                 {"text": "Practice 2 in 1 hand (both sides)."},
@@ -29,64 +42,25 @@
                 {"img": "columns2ball.gif"}
             ]
         },{
-            "name": "reverseCascade",
+            "name": "ReverseCascade",
             "displayName": "Reverse Cascade",
-            "category": "Dwell Path",
-            "level": 2,
+            "category": "fundamental",
             "headerImages": ["reverseCascade.gif","reverseCascadePOV.gif"],
             "content": [
             ]
         },{
-            "name": "tennis",
+            "name": "Tennis",
             "displayName": "Tennis",
-            "category": "Dwell Path",
-            "level": 2,
+            "category": "fundamental",
             "headerImages": ["tennis.gif","tennisPOV.gif"],
             "content": [
                 {"text": ""},
                 {"img": "tennisPath.gif"}
             ]
         },{
-            "name": "box",
-            "displayName": "Box",
-            "category": "Sync",
-            "level": 3,
-            "headerImages": [],
-            "content": [
-                {"text": ""}
-            ]
-        },{
-            "name": "nBox",
-            "displayName": "N-Box",
-            "category": "Sync",
-            "level": 4,
-            "headerImages": [],
-            "content": [
-                {"text": ""}
-            ]
-        },{
-            "name": "upsideDownBox",
-            "displayName": "Upside-Down Box",
-            "category": "Sync",
-            "level": 5,
-            "headerImages": [],
-            "content": [
-                {"text": ""}
-            ]
-        },{
-            "name": "millsMess",
-            "displayName": "Mills Mess",
-            "category": "Dwell Path",
-            "level": 3,
-            "headerImages": [],
-            "content": [
-                {"text": ""}
-            ]
-        },{
             "name": "factory",
             "displayName": "Factory",
-            "category": "Dwell Path",
-            "level": 3,
+            "category": "fundamental",
             "headerImages": ["factory.gif", "factoryPOV.gif"],
             "content": [
                 {"text": "Practice fake columns carrying the ball over the top."},
@@ -97,8 +71,7 @@
         },{
             "name": "claw",
             "displayName": "Claw",
-            "category": "Toss/Catch Mod",
-            "level": 2,
+            "category": "fundamental",
             "headerImages": [],
             "content": [
                 {"text": ""}
@@ -106,8 +79,7 @@
         },{
             "name": "penguin",
             "displayName": "Penguin",
-            "category": "Toss/Catch Mod",
-            "level": 3,
+            "category": "fundamental",
             "headerImages": [],
             "content": [
                 {"text": ""}
@@ -115,8 +87,7 @@
         },{
             "name": "fork",
             "displayName": "Fork",
-            "category": "Toss/Catch Mod",
-            "level": 4,
+            "category": "fundamental",
             "headerImages": [],
             "content": [
                 {"text": ""}
@@ -124,8 +95,7 @@
         },{
             "name": "423",
             "displayName": "423",
-            "category": "Siteswap",
-            "level": 2,
+            "category": "fundamental",
             "headerImages": [],
             "content": [
                 {"text": ""}
@@ -133,8 +103,7 @@
         },{
             "name": "51",
             "displayName": "51",
-            "category": "Siteswap",
-            "level": 3,
+            "category": "fundamental",
             "headerImages": [],
             "content": [
                 {"text": ""}
@@ -142,8 +111,7 @@
         },{
             "name": "531",
             "displayName": "531",
-            "category": "Siteswap",
-            "level": 3,
+            "category": "fundamental",
             "headerImages": [],
             "content": [
                 {"text": ""}
@@ -151,8 +119,7 @@
         },{
             "name": "441",
             "displayName": "441",
-            "category": "Siteswap",
-            "level": 3,
+            "category": "fundamental",
             "headerImages": [],
             "content": [
                 {"text": ""}

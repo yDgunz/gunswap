@@ -89,20 +89,13 @@ function getTutorials() {
     return JSON.parse(fs.readFileSync('views/tutorials/tutorials.json', 'utf8'));
 }
 
-acctRouter.get('/tutorials', function(req,res) {
-    res.render('tutorials/tutorials.ejs', getTutorials());
-});
-
 acctRouter.get('/tutorials/:name', function(req,res) {
     var name = req.params.name;
-    var tutorials = getTutorials();
-    var tutorial;
-    for (var i = 0; i < tutorials.tutorials.length; i++) {
-        if (tutorials.tutorials[i].name == name) {
-            tutorial = tutorials.tutorials[i];            
-        }
-    }
-    res.render('tutorials/tutorial.ejs', tutorial);
+    var tutorialsData = getTutorials();
+    res.render('tutorials/tutorials.ejs', {
+        tutorialsData: tutorialsData,
+        tutorial: tutorialsData.tutorials.filter(t => t.name == name)[0]
+    });
 });
 
 function isLoggedIn(req, res, next) {
