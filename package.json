@@ -4,7 +4,7 @@
   "main": "server.js",
   "dependencies": {
     "express": "~4.0.0",
-    "ejs" : "~0.8.5",
+    "ejs" : "2.5.5",
     "mongoose": "4.6.1",
     "body-parser": "~1.0.1",
     "passport" : "~0.1.17",

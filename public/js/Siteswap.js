@@ -929,70 +929,7 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						lastTossTime -= (siteswap.beatDuration*siteswap.states.length);
 					}
 
-					if (curToss.hold) {
-
-						var dwellPath = cloneObject(siteswap.dwellPath[curToss.dwellPathIx]);
-						dwellPath.push(siteswap.dwellPath[nextToss.dwellPathIx][0]);					
-
-						// velocity of last catch
-						var v_0 = interpolateFlightPath(
-							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[prevToss.dwellPathIx]),prevToss.juggler,prevToss.hand,1),
-							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,0),
-							prevToss.numBeats*siteswap.beatDuration-prevToss.dwellDuration,
-							0
-						);
-
-						// velocity of toss if it wasn't held
-						var T = curToss.numBeats*siteswap.beatDuration-curToss.dwellDuration;
-						var v_T = interpolateFlightPath(
-							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,1),
-							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[nextToss.dwellPathIx]),nextToss.juggler,nextToss.hand,0),
-							T,
-							T
-						);
-						
-						pos = getDwellPosition(
-							removeEmptyPositions(dwellPath)
-							, curToss.juggler
-							, curToss.hand
-							, (currentTime-(tossTime-curToss.dwellDuration))/(catchTime-(tossTime-curToss.dwellDuration)) // can't use lastCatchTime since it may be > catchTime
-							, v_0
-							, v_T
-							, siteswap.emptyTossScale
-							, siteswap.emptyCatchScale
-						);
-
-						var catchAngle = Math.atan2(-v_0.dx,-v_0.dy);
-						var tossAngle = Math.atan2(v_T.dx,v_T.dy);
-						if (curToss.tossType == 'claw') {
-							tossAngle -= Math.PI;
-						} else if (curToss.tossTypeId == 'penguin') {
-							tossAngle -= 2*Math.PI;
-						}
-						if (curToss.catchType == 'claw') {
-							catchAngle -= Math.PI;
-						} else if (curToss.catchType == 'penguin') {
-							catchAngle -= 2*Math.PI;
-						}
-						pos.angle = catchAngle + (currentTime-(tossTime-curToss.dwellDuration))/(catchTime-(tossTime-curToss.dwellDuration))*(tossAngle-catchAngle);						
-						if (curToss.hand == RIGHT)
-							pos.angle *= -1;
-
-						pos.dwell = true;
-						
-						propPositions[prop].push(pos);
-						
-						/* assign juggler hand positions */
-						if (tmpJugglerHandPositions[curToss.juggler][curToss.hand] == undefined) {
-							tmpJugglerHandPositions[curToss.juggler][curToss.hand] = pos;
-						}					
-
-						var q = getPropQuaternion(curToss.tossOrientation, curToss.rotationAxis, siteswap.jugglers[curToss.juggler].rotation, 0, curToss.hand);
-						var q2 = getPropQuaternion(nextToss.tossOrientation, nextToss.rotationAxis, siteswap.jugglers[nextToss.juggler].rotation, 0, nextToss.hand);
-						q.slerp(q2, (currentTime-(tossTime-curToss.dwellDuration))/(catchTime-(tossTime-curToss.dwellDuration)));
-						propRotations[prop].push(q);
-
-					} else if (currentTime < tossTime) {
+					if (currentTime < tossTime) {
 						/* interpolate dwell path */
 
 						var launches = [];
@@ -1159,7 +1096,76 @@ exports.CreateSiteswap = function(siteswapStr, options) {
 						var q2 = getPropQuaternion(curToss.tossOrientation, curToss.rotationAxis, siteswap.jugglers[curToss.juggler].rotation, 0, curToss.hand);
 						q.slerp(q2, t);
 						propRotations[prop].push(q);
-					} else {
+					} 
+					else if (curToss.hold) {
+
+						// extra dwell path for the hold is from the end of the dwell path for the current toss 
+						// to the beginning of the dwell path for the next toss
+						var dwellPath = [siteswap.dwellPath[curToss.dwellPathIx].last(), siteswap.dwellPath[nextToss.dwellPathIx][0]];
+
+						// velocity of toss if it wasn't held
+						var T = curToss.numBeats*siteswap.beatDuration-curToss.dwellDuration;
+						var v_0 = interpolateFlightPath(
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,1),
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[nextToss.dwellPathIx]),nextToss.juggler,nextToss.hand,0),
+							T,
+							0
+						);
+
+						// velocity of catch if it wasn't held
+						var v_T = interpolateFlightPath(
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[curToss.dwellPathIx]),curToss.juggler,curToss.hand,1),
+							getDwellPosition(removeEmptyPositions(siteswap.dwellPath[nextToss.dwellPathIx]),nextToss.juggler,nextToss.hand,0),
+							T,
+							T
+						);
+						
+						// using the velocity of the toss/catch if it wasn't held to help inform the additional dwell path
+						// there's really no right way to do this part, you don't need the velocity of the toss/catch if it wasn't held
+						// but it helps it look better
+						pos = getDwellPosition(
+							removeEmptyPositions(dwellPath)
+							, curToss.juggler
+							, curToss.hand
+							, (currentTime-tossTime)/(catchTime-tossTime)
+							, v_0
+							, v_T
+							, siteswap.emptyTossScale
+							, siteswap.emptyCatchScale
+						);
+
+						var catchAngle = Math.atan2(-v_0.dx,-v_0.dy);
+						var tossAngle = Math.atan2(v_T.dx,v_T.dy);
+						if (curToss.tossType == 'claw') {
+							tossAngle -= Math.PI;
+						} else if (curToss.tossTypeId == 'penguin') {
+							tossAngle -= 2*Math.PI;
+						}
+						if (curToss.catchType == 'claw') {
+							catchAngle -= Math.PI;
+						} else if (curToss.catchType == 'penguin') {
+							catchAngle -= 2*Math.PI;
+						}
+						pos.angle = catchAngle + (currentTime-(tossTime-curToss.dwellDuration))/(catchTime-(tossTime-curToss.dwellDuration))*(tossAngle-catchAngle);						
+						if (curToss.hand == RIGHT)
+							pos.angle *= -1;
+
+						pos.dwell = true;
+						
+						propPositions[prop].push(pos);
+						
+						/* assign juggler hand positions */
+						if (tmpJugglerHandPositions[curToss.juggler][curToss.hand] == undefined) {
+							tmpJugglerHandPositions[curToss.juggler][curToss.hand] = pos;
+						}					
+
+						var q = getPropQuaternion(curToss.tossOrientation, curToss.rotationAxis, siteswap.jugglers[curToss.juggler].rotation, 0, curToss.hand);
+						var q2 = getPropQuaternion(nextToss.tossOrientation, nextToss.rotationAxis, siteswap.jugglers[nextToss.juggler].rotation, 0, nextToss.hand);
+						q.slerp(q2, (currentTime-(tossTime-curToss.dwellDuration))/(catchTime-(tossTime-curToss.dwellDuration)));
+						propRotations[prop].push(q);
+
+					}
+					else {
 
 						/*
 						calculate position at current time
