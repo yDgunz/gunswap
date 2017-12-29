@@ -1,40 +1,53 @@
 <% include ../partials/header.ejs %>
 
-<ul>
-	<li><a href="https://github.com/yDgunz/gunswap/">Source Code</a></li>
-	<li><a href="../about/features">Feature list</a></li>
-	<li><a href="../about/syntax">Advanced Mode Syntax Guide</a></li>
-	<li><a href="../SiteswapGraph.html">Siteswap Generator/Visualizer</a></li>
-</ul>
+<div>
+	<div class="row">
+		<div class="col-md-3">
+			<img src="/img/tutorials/3ballcascade/3ballCascade.gif" height="200px" style="border: 1px black solid;" />
+		</div>
+		<div class="col-md-9" style="padding-left:20px;">
+		<h1>Juggling Animator and Pattern Library</h1>
+		<p>Gunswap is a web based, open source, juggling animator and pattern library.</p>
+		<p>
+			<a href="/" class="btn btn-primary">Run Animator</a>
+			<a href="/about/features" class="btn btn-success">Features</a>
+			<a href="../SiteswapGraph.html" class="btn btn-info">Siteswap Generator/Visualizer</a>
+			<a href="../about/syntax" class="btn btn-warning">Syntax Help</a>			
+			<a href="https://github.com/yDgunz/gunswap/" class="btn btn-secondary">Source Code</a>
+		</p>
+		<p>Found a bug or have an enhancement idea? <a href="https://github.com/yDgunz/gunswap/issues/new">Open a ticket in Github</a> or email me at <a href="mailto:gunswapjuggling@gmail.com">gunswapjuggling@gmail.com</a>.</p>
+		</div>
+	</div>
+</div>
+<hr/>
+<div class="row">
+	<div class="col-md-6">
+		<h4>Articles</h4>
+		<ul>
+			<li><a href="../about/parsingSiteswap">Parsing Siteswap</a></li>
+			<li><a href="../about/validatingSiteswap">Validating Siteswap</a></li>
+			<li><a href="../about/elbowPositions">Finding Elbow Positions</a></li>
+			<li><a href="../about/geneticAlgorithm">Genetic Algorithm for Finding Bounce Paths</a></li>
+			<li><a href="../about/findingSiteswaps">Finding Siteswaps</a></li>
+		</ul>
+	</div>
+	<div class="col-md-6">
+	<h4>Additional Resources</h4>
+	<ul>  		
+		<li><a href="http://jugglinglab.sourceforge.net/">Juggling Lab</a></li>
+		<li><a href="http://www.juggle.org/">International Juggler's Association</a></li>
+		<li><a href="https://www.reddit.com/r/juggling/">/r/juggling</a></li>
+		<li><a href="http://www.jugglingedge.com/">Juggling Edge</a></li>      
+	</ul>
+	</div>
+</div>
 
-<p>Found a bug or have an enhancement idea? <a href="https://github.com/yDgunz/gunswap/issues/new">Open a ticket in Github</a> or email me at <a href="mailto:gunswapjuggling@gmail.com">gunswapjuggling@gmail.com</a>.</p>
 
 <hr/>
-<h4>Articles</h4>
 
+<h4>Software Credits</h4>
 <ul>
-	<li><a href="../about/parsingSiteswap">Parsing Siteswap</a></li>
-	<li><a href="../about/validatingSiteswap">Validating Siteswap</a></li>
-	<li><a href="../about/elbowPositions">Finding Elbow Positions</a></li>
-	<li><a href="../about/geneticAlgorithm">Genetic Algorithm for Finding Bounce Paths</a></li>
-	<li><a href="../about/findingSiteswaps">Finding Siteswaps</a></li>
-</ul>
-
-<hr/>
-<h4>Additional Resources</h4>
-
-<p>Juggling</p>
-<ul>  		
-	<li><a href="https://www.reddit.com/r/siteswap/wiki/index#wiki_siteswap.org">Siteswap.org</a> - for more information about siteswap and juggling science, math and technology</li>
-	<li><a href="http://jugglinglab.sourceforge.net/">Juggling Lab</a></li>
-	<li><a href="http://www.juggle.org/">International Juggler's Association</a></li>
-	<li><a href="https://www.reddit.com/r/juggling/">/r/juggling</a></li>
-	<li><a href="http://www.jugglingedge.com/">Juggling Edge</a></li>      
-</ul>
-
-<p>Software</p>
-<ul>
-	<li>Frontend
+	<li>Front-end
 		<ul>
 			<li><a href="http://threejs.org/">Three.js</a> - 3D graphics</li>
 			<li><a href="https://github.com/deanm/omggif">omggif</a> - GIF generation</li>
@@ -43,7 +56,7 @@
 			<li><a href="https://www.npmjs.com/package/yamljs">yamljs</a> - YAML parsing</li>
 		</ul>
 	</li>
-	<li>Backend
+	<li>Back-end
 		<ul>
 			<li><a href="https://nodejs.org/en/">Node.js</a></li>
 			<li><a href="https://www.mongodb.com/">MongoDB</a> - database</li>
