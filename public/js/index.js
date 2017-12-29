@@ -281,60 +281,18 @@ function generateGIF() {
 	$('#gifLink').empty();
 
 	animator.paused = true;
-	var numFrames = Math.round((siteswap.states.length*siteswap.beatDuration)*35);
+	var numFrames = Math.round((siteswap.states.length*siteswap.beatDuration)*90);
 	var currentFrame = 0;
 
-	var canvas = document.createElement( 'canvas' );
-	canvas.width = animator.renderer.domElement.width;
-	canvas.height = animator.renderer.domElement.height;
-
-	var context = canvas.getContext( '2d' );
-
-	var buffer = new Uint8Array( canvas.width * canvas.height * numFrames * 5 );
-	var gif = new GifWriter( buffer, canvas.width, canvas.height, { loop: 0 } );
-
-	var pixels = new Uint8Array( canvas.width * canvas.height );
+	var capturer = new CCapture( { format: 'gif', workersPath: 'js/lib/', name: "gunswap-juggling", framerate: 60 } );
+	capturer.start();
 
 	var addFrame = function () {
 
 		animator.step = Math.floor((currentFrame/numFrames)*siteswap.numSteps);
 		animator.render();
 
-		context.drawImage( animator.renderer.domElement, 0, 0 );
-
-		var data = context.getImageData( 0, 0, canvas.width, canvas.height ).data;
-
-		var palette = [];
-
-		for ( var j = 0, k = 0, jl = data.length; j < jl; j += 4, k ++ ) {
-
-			var r = Math.floor( data[ j + 0 ] * 0.1 ) * 10;
-			var g = Math.floor( data[ j + 1 ] * 0.1 ) * 10;
-			var b = Math.floor( data[ j + 2 ] * 0.1 ) * 10;
-			var color = r << 16 | g << 8 | b << 0;
-
-			var index = palette.indexOf( color );
-
-			if ( index === -1 ) {
-
-				pixels[ k ] = palette.length;
-				palette.push( color );
-
-			} else {
-
-				pixels[ k ] = index;
-
-			}
-
-		}
-
-		// force palette to be power of 2
-
-		var powof2 = 1;
-		while ( powof2 < palette.length ) powof2 <<= 1;
-		palette.length = powof2;
-
-		gif.addFrame( 0, 0, canvas.width, canvas.height, pixels, { palette: new Uint32Array( palette ), delay: 5 } );
+		capturer.capture($('canvas')[0]);
 
 		$('#gifProgress').val(currentFrame/numFrames);
 
@@ -345,22 +303,12 @@ function generateGIF() {
 			setTimeout(addFrame,0);
 		}
 
-
 	}
 
 	var finish = function () {
 
-		// return buffer.slice( 0, gif.end() );
-
-		var string = '';
-
-		for ( var i = 0, l = gif.end(); i < l; i ++ ) {
-
-			string += String.fromCharCode( buffer[ i ] )
-
-		}
-
-		$('#gifLink').append("<a href='" + 'data:image/gif;base64,' + btoa( string ) + "' target='_blank'>Download GIF</a>");
+		capturer.stop();
+		capturer.save();
 
 		animator.paused = false;
 		animator.animate();
