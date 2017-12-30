@@ -1,7 +1,7 @@
 <div style="text-align:center;">
     <h3><%= tutorial.displayName %></h3>
     <% tutorial.headerImages.forEach(function(img) { %>
-        <img src='../img/tutorials/<%= tutorial.name %>/<%= img %>' width="300px" style="border: 1px solid black"/>
+        <img src='../img/tutorials/<%= tutorial.name %>/<%= img %>' width="300px"/>
     <% }); %>
 </div>
 
@@ -11,7 +11,7 @@
     <% if(c.text && c.img) { %>
         <div class="row">
             <div class="col-md-4" style="text-align:center;">
-                <img src='../img/tutorials/<%= tutorial.name %>/<%= c.img %>' width="300px" style="border: 1px solid black"/>
+                <img src='../img/tutorials/<%= tutorial.name %>/<%= c.img %>' width="300px"/>
             </div>            
             <div class="col-md-8">
                 <p><%= c.text %></p>

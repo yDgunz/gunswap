@@ -281,10 +281,10 @@ function generateGIF() {
 	$('#gifLink').empty();
 
 	animator.paused = true;
-	var numFrames = Math.round((siteswap.states.length*siteswap.beatDuration)*90);
+	var numFrames = Math.round((siteswap.states.length*siteswap.beatDuration)*45);
 	var currentFrame = 0;
 
-	var capturer = new CCapture( { format: 'gif', workersPath: 'js/lib/', name: "gunswap-juggling", framerate: 60 } );
+	var capturer = new CCapture( { format: 'gif', workersPath: 'js/lib/', name: "gunswap-juggling", framerate: 30 } );
 	capturer.start();
 
 	var addFrame = function () {

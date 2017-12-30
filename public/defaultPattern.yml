@@ -11,8 +11,8 @@ pattern:
  emptyTossScale: 0.025
  armAngle: 0.3
  jugglers: [{position: {x: 0, z: 0}, rotation: 0, color: grey}]
- surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1, color: grey}]
- drawHands: true
+ surfaces: []
+ drawHands: false
  motionBlur: false
  backgroundColor: white
  startingHand: RIGHT
@@ -21,4 +21,4 @@ inputs:
  props: [{type: ball, color: random, radius: 0.05, C: 0.9}]
  dwellPath: (30)(10)
  beatDuration: 0.28
- surfaces: [{position: {x: 0, y: 0, z: 0}, normal: {x: 0, y: 1, z: 0}, scale: 1, color: grey}]
+ surfaces: []

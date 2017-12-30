@@ -7,13 +7,14 @@
             "name": "3BallCascade",
             "displayName": "3 Ball Cascade",
             "category": "fundamental",
-            "headerImages": ["3ballCascade.gif", "3ballCascadePOV.gif"],
+            "headerImages": ["3ballCascade.gif"],
             "content": [
                 {"text": "The 3 ball \"cascade\" is the most basic juggling pattern and provides the foundation for all juggling patterns. Frequent practice is better than infrequent long sessions. Everyone learns at a different pace, but with practice you can definitely learn this pattern. Once you are comfortable running a 3 ball cascade for several rounds you should move on to more advanced patterns."},
                 {"text": "Stop doing a 2 ball \"shower\". While there is no generally agreed upon definition of what makes a true \"juggling pattern\", this simple exchange does not provide a meaningful foundation for any growth.", "img": "2ballShower.gif"},
                 {"text": "Practice the 2 ball exchange, changing which hand throws first each time. Vary your throw heights and how long you wait before throwing the second ball. You do not need to rush the 2nd throw. Try to throw and catch as low as you can.", "img": "2ballExchange.gif"},
                 {"text": "Focus on making exagerated \"scoops\" with your hands. Cascade throws should be made close to the center of your body and caught on the outside.", "img": "2ballExchangeWithPaths.gif"},
-                {"text": "Keep the pattern in 1 plane. It may help to practice in front of a wall in order to prevent yourself from throwing forward.", "img": "3ballCascadeSideView.gif"}
+                {"text": "Don't feel like your 2 ball exchange has to be perfect, the earlier you start trying 3 balls the better. Practice short controlled runs instead of trying to 'break you record' every time. Throwing and catching with 2 balls in one hand can be challening. During the first throw and final catch try to throw/catch using your fingers while holding the other ball with your palm and thumb.", "img": "3ballRun.gif"},
+                {"text": "It's very common to keep throwing too far in front of you. Work to keep the pattern in 1 plane. It may help to practice in front of a wall in order to prevent yourself from throwing forward.", "img": "3ballCascadeSideView.gif"}                
             ]
         }
     ]
