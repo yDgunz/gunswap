@@ -32,7 +32,8 @@ function SiteswapAnimator(containerId, options) {
 		siteswap,
 		renderMode = '3D',
 		context,		
-		drawHands = false;
+		drawHands = false,
+		useStickFigure = false;
 
 	this.displayPropPaths = options.displayPropPaths === true ? true : false;
 	this.step = 0;
@@ -165,6 +166,7 @@ function SiteswapAnimator(containerId, options) {
 			propPathLines = [];
 
 			drawHands = options.drawHands ? options.drawHands : 0;
+			useStickFigure = options.useStickFigure ? options.useStickFigure : 0;
 
 			drawSurfaces();
 
@@ -381,9 +383,25 @@ function SiteswapAnimator(containerId, options) {
 
 			var jugglerMesh = new THREE.Object3D();
 
-			var jugglerTorsoG = new THREE.CylinderGeometry( .15, 0, .625, 20, 20 );
-			jugglerTorso = new THREE.Mesh(jugglerTorsoG, new THREE.MeshLambertMaterial( { color: jugglerColor } ));
-			jugglerTorso.position.set(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.11,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0);
+			if (!useStickFigure) {
+				var jugglerTorsoG = new THREE.CylinderGeometry( .15, 0, .625, 20, 20 );
+				jugglerTorso = new THREE.Mesh(jugglerTorsoG, new THREE.MeshLambertMaterial( { color: jugglerColor } ));
+				jugglerTorso.position.set(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.11,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0);
+			}
+
+			if (useStickFigure) {
+				var jugglerTorsoG = new THREE.Geometry();
+				jugglerTorsoG.vertices.push(transformVector(0,.7,0));
+				jugglerTorsoG.vertices.push(transformVector(0,1.425,0));
+				var jugglerTorso = new THREE.Line(jugglerTorsoG, new THREE.LineBasicMaterial({color: 'black'}));
+
+				var jugglerLegsG = new THREE.Geometry();
+				jugglerLegsG.vertices.push(transformVector(-.17,-0.2,0));
+				jugglerLegsG.vertices.push(transformVector(0,.7,0));
+				jugglerLegsG.vertices.push(transformVector(.17,-0.2,0));
+				var jugglerLegs = new THREE.Line(jugglerLegsG, new THREE.LineBasicMaterial({color: 'black'}));
+
+			}
 
 			var shoulderGeometry = new THREE.SphereGeometry( .05, 20, 20 );
 			var elbowGeometry = new THREE.SphereGeometry( .03, 20, 20 );
@@ -502,6 +520,9 @@ function SiteswapAnimator(containerId, options) {
 			jugglerHead.position.set(siteswap.jugglers[i].position.x+Math.cos(siteswap.jugglers[i].rotation)*0,1.6125,siteswap.jugglers[i].position.z+Math.sin(siteswap.jugglers[i].rotation)*0);
 			
 			jugglerMesh.add( jugglerTorso );
+			if (useStickFigure){
+				jugglerMesh.add( jugglerLegs );
+			}
 			jugglerMesh.add( jugglerLeftShoulder );
 			jugglerMesh.add( jugglerRightShoulder );
 			jugglerMesh.add( jugglerLeftElbow );

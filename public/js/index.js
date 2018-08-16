@@ -66,6 +66,13 @@ function updateInputDrawHands() {
 	$('#inputsAdvanced').val(YAML.stringify(inputs,1,1));
 }
 
+function updateInputUseStickFigure() {
+	var useStickFigure = $('#useStickFigure')[0].checked;
+	var inputs = YAML.parse($('#inputsAdvanced').val());
+	inputs.useStickFigure = useStickFigure;
+	$('#inputsAdvanced').val(YAML.stringify(inputs,1,1));
+}
+
 function displayMenu(menu) {	
 	$('.controlDiv').hide()
 	$('#'+menu+'Menu').show();
@@ -211,6 +218,7 @@ function go() {
 				drawHands: inputs.drawHands
 				, motionBlur: inputs.motionBlur
 				, backgroundColor: inputs.backgroundColor
+				, useStickFigure: inputs.useStickFigure
 			}
 		);
 		animator.usingSlider = false;
