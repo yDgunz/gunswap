@@ -53,7 +53,8 @@ var PatternSchema   = new mongoose.Schema({
         armAngle: Number,
         jugglers: [Juggler],
         surfaces: [Surface],
-        drawHands: Boolean
+        drawHands: Boolean,
+        useStickFigure: Boolean
     }    
 });
 

@@ -13,6 +13,7 @@ pattern:
  jugglers: [{position: {x: 0, z: 0}, rotation: 0, color: grey}]
  surfaces: []
  drawHands: false
+ useStickFigure: false
  motionBlur: false
  backgroundColor: white
  startingHand: RIGHT
