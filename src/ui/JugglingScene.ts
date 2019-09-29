@@ -21,24 +21,31 @@ export class JugglingScene {
 	private positionToLookAt : vec3;
 
 	constructor(container : HTMLDivElement, pattern : Pattern|null, width : number, height : number) {
+		
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera( 75, width/height, 0.1, 1000 );
 		this.positionToLookAt = new vec3();
+		
 		this.renderer = new THREE.WebGLRenderer();
+		
 		this.propMeshes = [];
+		
 		this.camRadius = 3;
 		this.camPhi = 0;
 		this.camTheta = Math.PI;
+		
 		this.startTime = (new Date()).getTime();
+		
 		this.pattern = pattern;
 		if (pattern) {
 			this.UpdatePattern(pattern);
-		}		
+		}
+		
 		this.isMouseDown = false;
 		this.onMouseDownPosition = new vec3();
 		this.onMouseDownTheta = 0;
 		this.onMouseDownPhi = 0;
-
+		
 		this.renderer.setSize(width, height);
 
 		this.renderer.domElement.addEventListener( 'mousemove', (event) => { 
@@ -50,11 +57,16 @@ export class JugglingScene {
 		this.renderer.domElement.addEventListener( 'mouseup', (event) => {
 			this.onDocumentMouseUp(event);
 		}, false );
+		
+		this.renderer.domElement.addEventListener( 'wheel', (event) => {
+			this.onDocumentMouseWheel(event);
+		}, false );
+
+		// TODO - add support for touch
 		//this.renderer.domElement.addEventListener( 'touchmove', this.onDocumentTouchMove, false );
 		//this.renderer.domElement.addEventListener( 'touchstart', this.onDocumentTouchStart, false );		
 		//this.renderer.domElement.addEventListener( 'touchend', this.onDocumentMouseUp, false );
-		//this.renderer.domElement.addEventListener( 'mousewheel', this.onDocumentMouseWheel, false );
-
+		
 		container.append(this.renderer.domElement);
 
 		this.animate();
@@ -101,6 +113,11 @@ export class JugglingScene {
 	private onDocumentMouseUp( event : MouseEvent) {
 		event.preventDefault();
 		this.isMouseDown = false;
+	}
+
+	private onDocumentMouseWheel(event : WheelEvent) {
+		this.camRadius += event.deltaY*.002;
+		this.updateCamera();
 	}
 
 	// TODO - account for multiple jugglers
