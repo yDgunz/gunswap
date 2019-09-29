@@ -1,6 +1,0 @@
-/node_modules
-/data
-/.vscode/*
-!/.vscode/launch.json
-test.html
-scratch.js
