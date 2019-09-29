@@ -32,7 +32,7 @@ export class JugglingScene {
 		this.startTime = (new Date()).getTime();
 		this.pattern = pattern;
 		if (pattern) {
-			this.updatePattern(pattern);
+			this.UpdatePattern(pattern);
 		}		
 		this.isMouseDown = false;
 		this.onMouseDownPosition = new vec3();
@@ -60,13 +60,18 @@ export class JugglingScene {
 		this.animate();
 	} 
 
-	public updatePattern(pattern : Pattern|null) {
+	public UpdatePattern(pattern : Pattern|null) {
 		this.pattern = pattern;
 		if (pattern) {
 			var highestLowest = (pattern as Pattern).GetHeighestAndLowestPositionInSimulation();
 			this.positionToLookAt.y = (highestLowest[0] - highestLowest[1])/2;
 			this.updateCamera();
 		}		
+	}
+
+	public Resize(width : number, height : number) {
+		this.renderer.setSize(width, height);
+		this.camera.aspect = width/height;
 	}
 
 	private onDocumentMouseDown( event : MouseEvent ) {

@@ -18,14 +18,24 @@ class Viewport extends Component<Props,any> {
 	constructor(props : Props) {
 		super(props);		
 		this.CanvasContainerRef = null;		
-	}	
+	}		
 
 	componentDidUpdate() {		
 		if (this.jugglingScene === undefined) {
-			this.jugglingScene = new JugglingScene(this.CanvasContainerRef as HTMLDivElement, this.props.pattern, 500, 500);
+			var width = (this.CanvasContainerRef as HTMLDivElement).offsetWidth;
+			var height = window.innerHeight;
+			this.jugglingScene = new JugglingScene(this.CanvasContainerRef as HTMLDivElement, this.props.pattern, width, height);
 		} else {
-			this.jugglingScene.updatePattern(this.props.pattern);
+			this.jugglingScene.UpdatePattern(this.props.pattern);
 		}		
+	}
+
+	componentDidMount() {
+		window.addEventListener('resize', () => { 
+			var width = (this.CanvasContainerRef as HTMLDivElement).offsetWidth;
+			var height = window.innerHeight;
+			(this.jugglingScene as JugglingScene).Resize(width, height); 
+		});
 	}
 
   	render() {
