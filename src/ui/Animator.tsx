@@ -3,7 +3,7 @@ import { Siteswap } from '../simulator/Siteswap';
 import { Pattern } from '../simulator/Pattern';
 import { GetDwellPaths } from '../simulator/DwellPath';
 import { PivotItem, Pivot } from 'office-ui-fabric-react/lib/Pivot';
-import { PatternSettings } from './PatternSettings';
+import { PatternSettingsControls } from './PatternSettings';
 import 'office-ui-fabric-react/dist/css/fabric.css';
 import Viewport from './Viewport';
 import { PatternSimulation } from '../simulator/PatternSimulation';
@@ -39,7 +39,7 @@ class Animator extends Component<any,State> {
     			<div className="ms-Grid-col ms-sm6 ms-md4 ms-lg4">
 					<Pivot >
 						<PivotItem headerText="Pattern" itemIcon="Settings">          
-							<PatternSettings updatePattern={this.updatePattern} initialSiteswap="3"></PatternSettings>
+							<PatternSettingsControls updatePattern={this.updatePattern}></PatternSettingsControls>
 						</PivotItem>
 						<PivotItem headerText="Animator" itemIcon="Video">
 							Content 2

@@ -35,3 +35,7 @@
 canvas {
   display: block;
 }
+
+#juggle-button {
+  margin-top: 10px;
+}

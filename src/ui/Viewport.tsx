@@ -34,7 +34,9 @@ class Viewport extends Component<Props,any> {
 		window.addEventListener('resize', () => { 
 			var width = (this.CanvasContainerRef as HTMLDivElement).offsetWidth;
 			var height = window.innerHeight;
-			(this.jugglingScene as JugglingScene).Resize(width, height); 
+			if (this.jugglingScene) {
+				(this.jugglingScene as JugglingScene).Resize(width, height); 
+			}			
 		});
 	}
 
