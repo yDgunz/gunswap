@@ -12,7 +12,9 @@ interface Props {
 
 interface PatternSettings {	
 	siteswap: string,
-	beatDuration: number
+	beatDuration: number,
+	dwellPath: string,
+	dwellRatio: number
 }
 
 interface State {
@@ -22,7 +24,9 @@ interface State {
 
 const defaultPatternSettings : PatternSettings = {	
 	siteswap: '3',
-	beatDuration: 0.24
+	beatDuration: 0.24,
+	dwellPath: "(30)(10)",
+	dwellRatio: 0.8
 };
 
 export class PatternSettingsControls extends Component<Props,State> {
@@ -50,7 +54,7 @@ export class PatternSettingsControls extends Component<Props,State> {
 
 	juggle() {
 		var siteswap = new Siteswap(this.state.patternSettings.siteswap);
-		var pattern = new Pattern(siteswap, GetDwellPaths("(30)(10)"), 1, 1);
+		var pattern = new Pattern(siteswap, GetDwellPaths(this.state.patternSettings.dwellPath), this.state.patternSettings.dwellRatio, 1);
 		pattern.Simulate(30,this.state.patternSettings.beatDuration);
 		
 		// lift pattern w/ simulation up to parent
@@ -61,7 +65,7 @@ export class PatternSettingsControls extends Component<Props,State> {
 		return (
 			<Stack>
 				 <PrimaryButton id="juggle-button" text="Juggle" onClick={this.juggle} />
-				 <TextField value={this.state.input} multiline={true} label="Advanced Inputs" onChange={this.updateState} />
+				 <TextField value={this.state.input} multiline={true} label="Advanced Inputs" onChange={this.updateState}  />
 			</Stack>
 		);
 	}

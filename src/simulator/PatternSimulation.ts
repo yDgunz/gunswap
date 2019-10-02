@@ -3,6 +3,8 @@ import { vec3, vec4 } from "@tlaukkan/tsm";
 export interface PatternSimulation {
 	readonly Props : SimulationProp[];
 	readonly Jugglers : SimulationJuggler[];
+	readonly BeatDuration : number;
+	readonly NumStepsPerBeat : number;
 }
 
 export interface SimulationProp {

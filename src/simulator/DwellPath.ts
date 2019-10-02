@@ -44,15 +44,24 @@ export class DwellPath {
 		var pos = new vec3();
 		if (t == 0) {
 			pos = this.Snapshots[0].Position.copy();
+			if (hand == Hand.Left) {
+				pos.x *= -1;
+			}
 		} else if (t == 1) {
 			pos = this.Snapshots[this.Snapshots.length-1].Position.copy();
+			if (hand == Hand.Left) {
+				pos.x *= -1;
+			}
 		} else {
-			pos = InterpolateBezierSpline(this.Snapshots.map((a) => { return a.Position }),t,startVelocity,endVelocity,startVelocityScale,endVelocityScale,false);
-		}
-
-		if (hand == Hand.Left) {
-			pos.x *= -1;
-		}
+			var splinePath = this.Snapshots.map((a) => { 
+				var positionCopy = a.Position.copy();
+				if (hand == Hand.Left) {
+					positionCopy.x *= -1;
+				}	
+				return positionCopy;
+			});
+			pos = InterpolateBezierSpline(splinePath,t,startVelocity,endVelocity,startVelocityScale,endVelocityScale,false);
+		}		
 
 		// scale y by juggler height
 		pos.y += 1.0125;

@@ -25,6 +25,8 @@ export class JugglingScene {
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera( 75, width/height, 0.1, 1000 );
 		this.positionToLookAt = new vec3();
+		this.scene.add( new THREE.HemisphereLight(0xffffff, 0x080820, 1 ));
+		this.scene.background = new THREE.Color("white");
 		
 		this.renderer = new THREE.WebGLRenderer();
 		
@@ -135,8 +137,8 @@ export class JugglingScene {
 			var timeElapsed = ((new Date()).getTime() - this.startTime);
 		
 			// todo - update 0.24 to beatDuration variable and 30 to numStepsPerBeat variable
-			var patternTimeElapsed = timeElapsed % (this.pattern.States.length*0.24*1000); 
-			var step = Math.floor(patternTimeElapsed/(this.pattern.States.length*0.24*1000)*(30*this.pattern.States.length));
+			var patternTimeElapsed = timeElapsed % (this.pattern.States.length*this.pattern.Simulation.BeatDuration*1000); 
+			var step = Math.floor(patternTimeElapsed/(this.pattern.States.length*this.pattern.Simulation.BeatDuration*1000)*(this.pattern.Simulation.NumStepsPerBeat*this.pattern.States.length));
 
 			// if we need to, remove some meshes from the scene
 			while (this.pattern.Props.length < this.propMeshes.length) {
@@ -146,7 +148,7 @@ export class JugglingScene {
 
 			// need to create some meshes
 			while (this.pattern.Props.length > this.propMeshes.length) {
-				var geometry = new THREE.SphereGeometry( 0.05 );
+				var geometry = new THREE.SphereGeometry( 0.05, 20 );
 				var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 				var cube = new THREE.Mesh( geometry, material );
 				

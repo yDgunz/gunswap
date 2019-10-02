@@ -252,7 +252,9 @@ export class Pattern {
 		// initialize pattern simulation
 		var patternSimulation : PatternSimulation = {
 			Props: [],
-			Jugglers: []
+			Jugglers: [],
+			BeatDuration: beatDuration,
+			NumStepsPerBeat: numStepsPerBeat
 		};
 
 		this.Props.forEach(prop => patternSimulation.Props.push({
