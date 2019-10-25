@@ -6,6 +6,8 @@ import { Toss, Hand } from "./Toss";
 import { PatternSimulation } from "./PatternSimulation";
 import { vec3 } from "@tlaukkan/tsm";
 import { GetTossPathPositionAndVelocity } from "./TossPath";
+import { InterpolateBezierSpline } from "./Bezier";
+import { ShoulderZOffset, ShoulderHeight, ArmHalfLength, ShoulderXOffset } from "./JugglerConfig";
 
 export interface PropLanding {
 	Prop : Prop,
@@ -17,7 +19,7 @@ export class Pattern {
 
 	public readonly Props : Prop[];
 	public readonly TossCollection : Toss[][];
-	public readonly States : (Prop[]|null)[][][][];
+	public readonly States : (Prop[]|null)[][][][]; // States[referenceBeat][juggler][hand][beat] contains a Prop[] of the props scheduled to land at beat as of the referenceBeat
 	public Simulation : PatternSimulation|undefined;
 
 	constructor(public readonly Siteswap : SiteswapClass, public readonly DwellPaths : DwellPath[], defaultDwellRatio : number, numSurfaces : number) {
@@ -254,12 +256,19 @@ export class Pattern {
 			Props: [],
 			Jugglers: [],
 			BeatDuration: beatDuration,
-			NumStepsPerBeat: numStepsPerBeat
+			NumStepsPerBeat: numStepsPerBeat,
 		};
 
 		this.Props.forEach(prop => patternSimulation.Props.push({
 			Positions: [],
 			Rotations: []
+		}));
+
+		this.States[0].forEach(juggler => patternSimulation.Jugglers.push({
+			LeftHandPositions: [],
+			RightHandPositions: [],
+			LeftElbowPositions: [],
+			RightElbowPositions: []
 		}));
 
 		for(var step = 0; step < numSteps; step++) {
@@ -309,12 +318,19 @@ export class Pattern {
 					var endVelocity = GetTossPathPositionAndVelocity(curToss, nextToss, 0, catchTime-tossTime)[1];
 
 					var t = 1 - (tossTime - virtualCurrentTime) / (tossTime - prevCatchTime);
-					var pos = curToss.Toss.DwellPath.GetPosition(t, curToss.Hand, startVelocity, endVelocity, 0.1, 0.1);
+					var pos = curToss.Toss.DwellPath.GetPosition(t, curToss.Hand, startVelocity, endVelocity, 0.05, 0.05);
 					patternSimulation.Props[propIx].Positions.push(pos);
+					if (curToss.Hand === Hand.Left) {
+						patternSimulation.Jugglers[curToss.Toss.Juggler].LeftHandPositions[step] = pos;
+					} else {
+						patternSimulation.Jugglers[curToss.Toss.Juggler].RightHandPositions[step] = pos;
+					}
 
 				} else if (curToss.Toss.Hold) {
 					// todo - figure out held position
 					patternSimulation.Props[propIx].Positions.push(new vec3());
+					patternSimulation.Jugglers[curToss.Toss.Juggler].LeftHandPositions[step] = new vec3();
+					patternSimulation.Jugglers[curToss.Toss.Juggler].RightHandPositions[step] = new vec3();
 
 				} else {
 					// figure out flight path
@@ -327,10 +343,222 @@ export class Pattern {
 				}
 
 			});
+
+			// find position for hands that are empty and calculate elbow positions
+			patternSimulation.Jugglers.forEach((juggler, jugglerIx) => {
+				[Hand.Left, Hand.Right].forEach((hand) => {
+					/* need 
+						nextToss - to determine where the hand is going to
+						propLastToss - to determine where the prop we're catching came from so we know its catch velocity
+						lastToss - to determine where the hand is coming from
+						propNextToss - to determine where the prop we just tossed is going so we know its toss velocity
+					*/
+
+					if ((hand === Hand.Left && juggler.LeftHandPositions[step] === undefined) || (hand === Hand.Right && juggler.RightHandPositions[step] === undefined)) {
+						
+						var handNextToss : ScheduledToss|undefined;
+						var handNextTossVirtualBeat : number = 0;						
+						this.Props.forEach((prop) => {
+							prop.TossSchedule.forEach((scheduledToss) => {
+								
+								var scheduledTossVirtualBeat = scheduledToss.Beat;
+								if (scheduledTossVirtualBeat < currentBeat) {
+									scheduledTossVirtualBeat += totalNumBeats;
+								}								
+								
+								if (scheduledTossVirtualBeat > currentBeat && scheduledToss.Toss.Juggler == jugglerIx && scheduledToss.Hand == hand) {
+									if (handNextToss === undefined) {
+										handNextToss = scheduledToss;
+										handNextTossVirtualBeat = handNextToss.Beat;
+										if (handNextTossVirtualBeat < currentBeat) {
+											handNextTossVirtualBeat += totalNumBeats;
+										}
+									} else {																				
+										if (scheduledTossVirtualBeat < handNextTossVirtualBeat) {
+											handNextToss = scheduledToss;
+											handNextTossVirtualBeat = handNextToss.Beat;
+											if (handNextTossVirtualBeat < currentBeat) {
+												handNextTossVirtualBeat += totalNumBeats;
+											}
+										}
+									}
+								}
+								
+							});
+						});
+
+						var handLastToss : ScheduledToss|undefined;	
+						var handLastTossVirtualBeat : number = 0;					
+						this.Props.forEach((prop) => {
+							prop.TossSchedule.forEach((scheduledToss) => {
+								
+								var scheduledTossVirtualBeat = scheduledToss.Beat;
+								if (scheduledTossVirtualBeat > currentBeat) {
+									scheduledTossVirtualBeat -= totalNumBeats;
+								}
+
+								if (scheduledTossVirtualBeat <= currentBeat && scheduledToss.Toss.Juggler == jugglerIx && scheduledToss.Hand == hand) {
+									if (handLastToss === undefined) {
+										handLastToss = scheduledToss;
+										handLastTossVirtualBeat = handLastToss.Beat;
+										if (handLastTossVirtualBeat > currentBeat) {
+											handLastTossVirtualBeat -= totalNumBeats;
+										}
+									} else {										
+										if (scheduledTossVirtualBeat > handLastTossVirtualBeat) {
+											handLastToss = scheduledToss;
+											handLastTossVirtualBeat = handLastToss.Beat;
+											if (handLastTossVirtualBeat > currentBeat) {
+												handLastTossVirtualBeat -= totalNumBeats;
+											}
+										}
+									}
+								}								
+							});
+						});											
+					
+						var handPos : vec3;
+						if (handLastToss === undefined || handNextToss === undefined) {
+							// TODO - don't hardcode this
+							handPos = new vec3([.3*hand == Hand.Left ? -1 : 1, 1.0125, 0]);							
+						} else {
+							var emptyHandPath : vec3[] = [];
+							emptyHandPath.push(handLastToss.Toss.DwellPath.Snapshots[handLastToss.Toss.DwellPath.Snapshots.length-1].Position.copy());
+							emptyHandPath.push(handNextToss.Toss.DwellPath.Snapshots[0].Position.copy());
+
+							var catchingPropLastToss : ScheduledToss;
+							var tossedPropNextToss : ScheduledToss;
+
+							this.Props.forEach((prop) => {
+								prop.TossSchedule.forEach((scheduledToss, scheduledTossIx, tossSchedule) => {
+									if(scheduledToss.Hand === hand && scheduledToss.Beat === handNextToss!.Beat) {
+										if (scheduledTossIx == 0) {
+											catchingPropLastToss = tossSchedule[tossSchedule.length-1];
+										} else {
+											catchingPropLastToss = tossSchedule[scheduledTossIx-1];
+										}
+									}
+								});
+							});
+							
+							this.Props.forEach((prop) => {
+								prop.TossSchedule.forEach((scheduledToss, scheduledTossIx, tossSchedule) => {
+									if(scheduledToss === handLastToss) {
+										if (scheduledTossIx === (tossSchedule.length-1)) {
+											tossedPropNextToss = tossSchedule[0];
+										} else {
+											tossedPropNextToss = tossSchedule[scheduledTossIx+1];
+										}
+									}
+								});
+							});
+
+							var tossVelocity = GetTossPathPositionAndVelocity(handLastToss, tossedPropNextToss!, 0, handLastToss.Toss.NumBeats*beatDuration)[1];
+							var catchVelocity = GetTossPathPositionAndVelocity(catchingPropLastToss!, handNextToss, catchingPropLastToss!.Toss.NumBeats*beatDuration,catchingPropLastToss!.Toss.NumBeats*beatDuration)[1];
+							
+							if (hand === Hand.Left) {
+								emptyHandPath.forEach((x) => x.x*=-1);
+							}
+
+							var virtualCurrentTime = currentTime;
+							if (virtualCurrentTime > handNextTossVirtualBeat*beatDuration) {
+								virtualCurrentTime -= totalNumBeats*beatDuration;
+							}
+
+							var totalEmptyHandTime = handNextTossVirtualBeat*beatDuration - (handLastTossVirtualBeat*beatDuration + handLastToss.Toss.DwellRatio*beatDuration);
+							var t = (virtualCurrentTime - (handLastTossVirtualBeat*beatDuration + handLastToss.Toss.DwellRatio*beatDuration))/totalEmptyHandTime;
+
+							handPos = InterpolateBezierSpline(emptyHandPath,t,tossVelocity,catchVelocity,0.05,0.05,false);
+							handPos.y += 1.0125;
+
+						}						
+						
+						if (hand === Hand.Left) {
+							juggler.LeftHandPositions[step] = handPos;
+						} else {
+							juggler.RightHandPositions[step] = handPos;
+						}
+
+					}
+
+					// now that both hands are accounted for, calculate elbow positions
+					// TODO - eventually account for juggler rotation
+					var shoulderPosition = new vec3([
+						(hand === Hand.Left ? - 1 : 1)*ShoulderXOffset,
+						ShoulderHeight,
+						ShoulderZOffset
+					]);
+					var elbowPosition = this.getElbowPosition(shoulderPosition, hand === Hand.Left ? juggler.LeftHandPositions[step] : juggler.RightHandPositions[step], 0.1, hand);
+					if (hand === Hand.Left) {
+						juggler.LeftElbowPositions[step] = elbowPosition;
+					} else {
+						juggler.RightElbowPositions[step] = elbowPosition;
+					}
+
+				});
+			});
+
 		}
 
 		this.Simulation = patternSimulation;
 
+	}
+
+	private getElbowPosition(shoulderPosition : vec3, handPosition : vec3, armAngle : number, hand : Hand) : vec3 {
+		var armHalfLength = ArmHalfLength;
+
+		armAngle*=-1;
+
+		var Hp = new vec3();
+		Hp.x = handPosition.x - shoulderPosition.x;
+		Hp.y = handPosition.y - shoulderPosition.y;
+		Hp.z = handPosition.z - shoulderPosition.z;
+
+		var Hpp = new vec3();
+		Hpp.x = Math.sqrt(Hp.x*Hp.x + Hp.z*Hp.z);
+		Hpp.y = Hp.y;
+		Hpp.z = 0;
+
+		var th = Math.atan2(Hp.z,Hp.x);
+
+		var magHp = Math.sqrt(Hp.x*Hp.x + Hp.y*Hp.y + Hp.z*Hp.z);
+
+		/* magically stretch arms */
+		if (2*armHalfLength < magHp) {
+			armHalfLength = magHp/2;
+		}
+
+		var u1 = new vec3();
+		u1.x = Hpp.y/magHp;
+		u1.y = -Hpp.x/magHp;
+		u1.z = 0;
+
+		var u2 = new vec3([0,0,0]);
+		if (hand == 1) {
+			u2.z = -1;
+		} else {
+			u2.z = 1;
+		}
+
+		var h = Math.sqrt(armHalfLength*armHalfLength - .25*magHp*magHp);
+
+		var Epp = new vec3();
+		Epp.x = Hpp.x/2 + h*u1.x*Math.cos(armAngle) + h*u2.x*Math.sin(armAngle);
+		Epp.y = Hpp.y/2 + h*u1.y*Math.cos(armAngle) + h*u2.y*Math.sin(armAngle);
+		Epp.z = Hpp.z/2 + h*u1.z*Math.cos(armAngle) + h*u2.z*Math.sin(armAngle);
+
+		var Ep = new vec3();
+		Ep.x = Epp.x*Math.cos(th) - Epp.z*Math.sin(th);
+		Ep.y = Epp.y;
+		Ep.z = Epp.x*Math.sin(th) + Epp.z*Math.cos(th);	
+
+		var E = new vec3();
+		E.x = Ep.x + shoulderPosition.x;
+		E.y = Ep.y + shoulderPosition.y;
+		E.z = Ep.z + shoulderPosition.z;
+
+
+		return E;
 	}
 
 	public GetHeighestAndLowestPositionInSimulation() : [number, number] {

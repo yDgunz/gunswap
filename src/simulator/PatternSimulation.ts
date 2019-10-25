@@ -13,7 +13,8 @@ export interface SimulationProp {
 }
 
 export interface SimulationJuggler {
-	readonly HandPositions : vec3[];
-	readonly HandRotations : vec4[];
-	readonly ElbowPositions : vec4[];	
+	readonly LeftHandPositions : vec3[];
+	readonly RightHandPositions : vec3[];
+	readonly LeftElbowPositions : vec3[];	
+	readonly RightElbowPositions : vec3[];	
 }

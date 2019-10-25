@@ -1,6 +1,7 @@
 import { Siteswap } from "../simulator/Siteswap";
 import { GetDwellPaths } from './DwellPath';
 import { Pattern } from "./Pattern";
+import { PatternSimulation } from "./PatternSimulation";
 
 it("Gets correct number of props and states for vanilla siteswap", () => {
 	var s = new Siteswap("3");
@@ -48,4 +49,30 @@ it("Errors on invalid siteswap where number of props can't be determined", () =>
 	var s = new Siteswap("54");
 	var dwellPaths = GetDwellPaths("(30)");
 	expect(() => { new Pattern(s, dwellPaths, 1, 1) }).toThrow();
+});
+
+it("Simulates siteswap 3 correctly", () => {
+	var s = new Siteswap("3");
+	var dwellPaths = GetDwellPaths("(30)");
+	var p = new Pattern(s, dwellPaths, 0.5, 1);
+	p.Simulate(300,1);
+	var simulation = p.Simulation as PatternSimulation;
+	
+	// simulation should contain 3 props
+	expect(simulation.Props.length).toBe(3);	
+
+	// simulation should have 600 frames (100 frames per beat * 6 beats in pattern)
+	expect(simulation.Props[0].Positions.length).toBe(1800);
+
+	// first prop should start and finish at x == 0.3 and y == 1.0125 according to dwell path
+	expect(simulation.Props[0].Positions[0].x).toBeCloseTo(0.3);
+	expect(simulation.Props[0].Positions[1799].x).toBeCloseTo(0.3);
+	expect(simulation.Props[0].Positions[0].y).toBeCloseTo(1.0125, 1);
+	expect(simulation.Props[0].Positions[1799].y).toBeCloseTo(1.0125, 1);
+
+	// right hand (which gets first prop) should start and finish at same positions
+	expect(simulation.Jugglers[0].RightHandPositions[0].x).toBeCloseTo(0.3);
+	expect(simulation.Jugglers[0].RightHandPositions[1799].x).toBeCloseTo(0.3);
+	expect(simulation.Jugglers[0].RightHandPositions[0].y).toBeCloseTo(1.0125, 1);
+	expect(simulation.Jugglers[0].RightHandPositions[1799].y).toBeCloseTo(1.0125, 1);
 });

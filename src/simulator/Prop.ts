@@ -14,7 +14,7 @@ export class Prop {
 		this.TossSchedule = [];
 	}
 
-	public  GetPreviousCurrentAndNextTossForBeat(beat : number) : [ScheduledToss,ScheduledToss,ScheduledToss] {
+	public GetPreviousCurrentAndNextTossForBeat(beat : number) : [ScheduledToss,ScheduledToss,ScheduledToss] {
 		for (var i = 0; i < this.TossSchedule.length; i++) {
 			if (i == this.TossSchedule.length-1 || this.TossSchedule[i].Beat <= beat && this.TossSchedule[i+1].Beat > beat) {
 				

@@ -2,6 +2,24 @@ import * as THREE from "three";
 import { Pattern } from "../simulator/Pattern";
 import { Object3D } from "three";
 import { vec3 } from "@tlaukkan/tsm";
+import { ShoulderZOffset, ShoulderHeight, ArmHalfLength, ShoulderXOffset } from "../simulator/JugglerConfig";
+
+const JugglerMeshMaterial = new THREE.MeshLambertMaterial( { color: 'grey' } );
+
+interface JugglerMeshes {
+	LeftHandMesh : THREE.Mesh;
+	RightHandMesh : THREE.Mesh;
+	LeftElbowMesh : THREE.Mesh;
+	RightElbowMesh : THREE.Mesh;
+	LeftShoulderMesh : THREE.Mesh;
+	RightShoulderMesh : THREE.Mesh;
+	LeftBicepMesh: THREE.Mesh;
+	LeftForearmMesh: THREE.Mesh;
+	RightBicepMesh: THREE.Mesh;
+	RightForearmMesh: THREE.Mesh;
+	BodyMesh: THREE.Mesh;
+	HeadMesh: THREE.Mesh;
+}
 
 export class JugglingScene {
 	
@@ -9,6 +27,7 @@ export class JugglingScene {
 	private camera : THREE.PerspectiveCamera;
 	private renderer : THREE.WebGLRenderer;	
 	private propMeshes : THREE.Mesh[];
+	private jugglerMeshes : JugglerMeshes[];
 	private camRadius : number;
 	private camPhi : number;
 	private camTheta : number;
@@ -19,18 +38,22 @@ export class JugglingScene {
 	private onMouseDownTheta : number;
 	private onMouseDownPhi : number;
 	private positionToLookAt : vec3;
+	public currentStep : number;
+	public userControllingStep : boolean;
 
 	constructor(container : HTMLDivElement, pattern : Pattern|null, width : number, height : number) {
 		
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera( 75, width/height, 0.1, 1000 );
-		this.positionToLookAt = new vec3();
-		this.scene.add( new THREE.HemisphereLight(0xffffff, 0x080820, 1 ));
-		this.scene.background = new THREE.Color("white");
+		this.positionToLookAt = new vec3();	
 		
-		this.renderer = new THREE.WebGLRenderer();
+		this.renderer = new THREE.WebGLRenderer({ antialias: true });
 		
+		this.scene.add( new THREE.HemisphereLight(0xffffff, 0x000000, 1 ));
+		//this.scene.background = new THREE.Color("white");
+
 		this.propMeshes = [];
+		this.jugglerMeshes = [];
 		
 		this.camRadius = 3;
 		this.camPhi = 0;
@@ -47,7 +70,9 @@ export class JugglingScene {
 		this.onMouseDownPosition = new vec3();
 		this.onMouseDownTheta = 0;
 		this.onMouseDownPhi = 0;
-		
+		this.userControllingStep = false;
+		this.currentStep = 0;
+
 		this.renderer.setSize(width, height);
 
 		this.renderer.domElement.addEventListener( 'mousemove', (event) => { 
@@ -74,6 +99,11 @@ export class JugglingScene {
 		this.animate();
 	} 
 
+	public UpdateStep(patternProgress : number) {
+		this.currentStep = Math.floor(this.pattern!.States.length*this.pattern!.Simulation!.NumStepsPerBeat*patternProgress);
+		this.userControllingStep = true;
+	}
+
 	public UpdatePattern(pattern : Pattern|null) {
 		this.pattern = pattern;
 		if (pattern) {
@@ -86,6 +116,7 @@ export class JugglingScene {
 	public Resize(width : number, height : number) {
 		this.renderer.setSize(width, height);
 		this.camera.aspect = width/height;
+		this.camera.updateProjectionMatrix();
 	}
 
 	private onDocumentMouseDown( event : MouseEvent ) {
@@ -118,7 +149,7 @@ export class JugglingScene {
 	}
 
 	private onDocumentMouseWheel(event : WheelEvent) {
-		this.camRadius += event.deltaY*.002;
+		this.camRadius += event.deltaY*.05;
 		this.updateCamera();
 	}
 
@@ -134,11 +165,12 @@ export class JugglingScene {
 	private animate() {
 		if (this.pattern && this.pattern.Simulation) {			
 
-			var timeElapsed = ((new Date()).getTime() - this.startTime);
+			if (!this.userControllingStep) {
+				var timeElapsed = ((new Date()).getTime() - this.startTime);
 		
-			// todo - update 0.24 to beatDuration variable and 30 to numStepsPerBeat variable
-			var patternTimeElapsed = timeElapsed % (this.pattern.States.length*this.pattern.Simulation.BeatDuration*1000); 
-			var step = Math.floor(patternTimeElapsed/(this.pattern.States.length*this.pattern.Simulation.BeatDuration*1000)*(this.pattern.Simulation.NumStepsPerBeat*this.pattern.States.length));
+				var patternTimeElapsed = timeElapsed % (this.pattern.States.length*this.pattern.Simulation.BeatDuration*3000); 
+				this.currentStep = Math.floor(patternTimeElapsed/(this.pattern.States.length*this.pattern.Simulation.BeatDuration*3000)*(this.pattern.Simulation.NumStepsPerBeat*this.pattern.States.length));
+			}
 
 			// if we need to, remove some meshes from the scene
 			while (this.pattern.Props.length < this.propMeshes.length) {
@@ -149,20 +181,118 @@ export class JugglingScene {
 			// need to create some meshes
 			while (this.pattern.Props.length > this.propMeshes.length) {
 				var geometry = new THREE.SphereGeometry( 0.05, 20 );
-				var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-				var cube = new THREE.Mesh( geometry, material );
+				var material = new THREE.MeshLambertMaterial( { color: 0x00ff00 } );
+				var propMesh = new THREE.Mesh( geometry, material );
 				
-				this.propMeshes.push( cube );
-				this.scene.add( cube );
+				this.propMeshes.push( propMesh );
+				this.scene.add( propMesh );
 			}
 			
 			this.propMeshes.forEach((mesh, propIx) => {
-				var position = this.pattern!.Simulation!.Props[propIx].Positions[step];
+				var position = this.pattern!.Simulation!.Props[propIx].Positions[this.currentStep];
 				mesh.position.set(position.x, position.y, position.z);
 			});
+
+			// TODO - remove juggler meshes if necessary
+			while (this.pattern.Simulation.Jugglers.length > this.jugglerMeshes.length) {				
+				this.addJugglerMeshes();				
+			}
+
+			this.jugglerMeshes.forEach((meshes, jugglerIx) => {
+				var jugglerPositions = this.pattern!.Simulation!.Jugglers[jugglerIx];
+				var leftHandPosition = this.vec3ToTHREEVector3(jugglerPositions.LeftHandPositions[this.currentStep]);
+				var rightHandPosition = this.vec3ToTHREEVector3(jugglerPositions.RightHandPositions[this.currentStep]);
+				var leftElbowPosition = this.vec3ToTHREEVector3(jugglerPositions.LeftElbowPositions[this.currentStep]);
+				var rightElbowPosition = this.vec3ToTHREEVector3(jugglerPositions.RightElbowPositions[this.currentStep]);
+				var leftShoulderPosition = new THREE.Vector3(-ShoulderXOffset,ShoulderHeight,ShoulderZOffset);
+				var rightShoulderPosition = new THREE.Vector3(ShoulderXOffset,ShoulderHeight,ShoulderZOffset);
+				
+				meshes.LeftHandMesh.position.copy(leftHandPosition);
+				meshes.RightHandMesh.position.copy(rightHandPosition);
+				meshes.LeftElbowMesh.position.copy(leftElbowPosition);
+				meshes.RightElbowMesh.position.copy(rightElbowPosition);
+				meshes.LeftShoulderMesh.position.copy(leftShoulderPosition);
+				meshes.RightShoulderMesh.position.copy(rightShoulderPosition);
+
+				this.positionAndRotateArm(leftElbowPosition, leftShoulderPosition, leftHandPosition, meshes.LeftBicepMesh, meshes.LeftForearmMesh);
+				this.positionAndRotateArm(rightElbowPosition, rightShoulderPosition, rightHandPosition, meshes.RightBicepMesh, meshes.RightForearmMesh);
+
+			});
 		}
+
 		requestAnimationFrame( () => this.animate() );
 		this.renderer.render( this.scene, this.camera );
+	}
+
+	private vec3ToTHREEVector3(vec3 : vec3) : THREE.Vector3 {
+		return new THREE.Vector3(vec3.x, vec3.y, vec3.z);
+	}
+
+	private positionAndRotateArm(elbowPosition: THREE.Vector3, shoulderPosition: THREE.Vector3, handPosition: THREE.Vector3, bicepMesh : THREE.Mesh, forearmMesh: THREE.Mesh) {
+		// bicep
+		var armDirection = new THREE.Vector3().subVectors(elbowPosition, shoulderPosition);
+		var arrow = new THREE.ArrowHelper(armDirection.clone().normalize(), shoulderPosition);
+		bicepMesh.rotation.setFromVector3(arrow.rotation.toVector3());
+		var newPosition = new THREE.Vector3().addVectors(shoulderPosition, armDirection.multiplyScalar(0.5));
+		bicepMesh.position.set(newPosition.x, newPosition.y, newPosition.z);
+		
+		// forearm
+		armDirection = new THREE.Vector3().subVectors(elbowPosition, handPosition);
+		arrow = new THREE.ArrowHelper(armDirection.clone().normalize(), handPosition);
+		forearmMesh.rotation.setFromVector3(arrow.rotation.toVector3());
+		newPosition = new THREE.Vector3().addVectors(handPosition, armDirection.multiplyScalar(0.5)).add(armDirection.clone().normalize().multiplyScalar(.03));
+		forearmMesh.position.set(newPosition.x, newPosition.y, newPosition.z);
+	}
+
+	private getHandMesh() : THREE.Mesh {
+		var geometry = new THREE.SphereBufferGeometry( 0.06, 20, 20, 0, Math.PI*2, Math.PI/2, Math.PI);
+		var material = new THREE.MeshPhongMaterial( { color: 'grey', side: THREE.DoubleSide, flatShading: true } );
+		return new THREE.Mesh( geometry, material );
+	}
+
+	private getJointMesh(radius : number) : THREE.Mesh {
+		var geometry = new THREE.SphereGeometry( radius, 20);
+		return new THREE.Mesh( geometry, JugglerMeshMaterial );
+	}
+
+	private getArmCylinder(radius1 : number, radius2: number, length: number) : THREE.Mesh {		 
+    	var cylinder = new THREE.CylinderGeometry( radius2, radius1, length, 20, 20 );
+    	return new THREE.Mesh( cylinder, JugglerMeshMaterial );
+	}
+
+	private addJugglerMeshes() {
+		var jugglerMeshes =  {	
+			LeftHandMesh: this.getHandMesh(),
+			RightHandMesh: this.getHandMesh(),
+			LeftElbowMesh: this.getJointMesh(.04),
+			RightElbowMesh: this.getJointMesh(.04),
+			LeftShoulderMesh: this.getJointMesh(.025),
+			RightShoulderMesh: this.getJointMesh(.025),
+			LeftBicepMesh: this.getArmCylinder(.025, .04, ArmHalfLength),
+			LeftForearmMesh: this.getArmCylinder(0, .04, ArmHalfLength-0.06),
+			RightBicepMesh: this.getArmCylinder(.025, .04, ArmHalfLength),
+			RightForearmMesh: this.getArmCylinder(0, .04, ArmHalfLength-0.06),
+			BodyMesh: new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.05, .4, 20, 20, false), JugglerMeshMaterial),
+			HeadMesh: new THREE.Mesh(new THREE.SphereBufferGeometry(.1, 20, 20), JugglerMeshMaterial)
+		};
+
+		jugglerMeshes.BodyMesh.position.add(new THREE.Vector3(0, ShoulderHeight-.4/2, ShoulderZOffset));
+		jugglerMeshes.HeadMesh.position.add(new THREE.Vector3(0, ShoulderHeight+.17, ShoulderZOffset));
+
+		this.jugglerMeshes.push(jugglerMeshes);
+
+		this.scene.add(jugglerMeshes.LeftElbowMesh);
+		this.scene.add(jugglerMeshes.LeftHandMesh);
+		this.scene.add(jugglerMeshes.LeftShoulderMesh);
+		this.scene.add(jugglerMeshes.RightElbowMesh);
+		this.scene.add(jugglerMeshes.RightHandMesh);
+		this.scene.add(jugglerMeshes.RightShoulderMesh);
+		this.scene.add(jugglerMeshes.LeftBicepMesh);
+		this.scene.add(jugglerMeshes.LeftForearmMesh);
+		this.scene.add(jugglerMeshes.RightBicepMesh);
+		this.scene.add(jugglerMeshes.RightForearmMesh);
+		this.scene.add(jugglerMeshes.BodyMesh);
+		this.scene.add(jugglerMeshes.HeadMesh);
 	}
 
 }

@@ -9,7 +9,7 @@ import Viewport from './Viewport';
 import { PatternSimulation } from '../simulator/PatternSimulation';
 
 interface State {
-	pattern: Pattern|null
+	pattern: Pattern
 }
 
 class Animator extends Component<any,State> {
@@ -18,8 +18,10 @@ class Animator extends Component<any,State> {
 		super(props);		
 
 		this.state = {
-			pattern: null
+			pattern: new Pattern(new Siteswap("3"), GetDwellPaths("(30)(10)"), 0.8, 0)
 		}
+
+		this.state.pattern.Simulate(100,0.24);
 
 		this.updatePattern = this.updatePattern.bind(this);
 	}
@@ -29,10 +31,6 @@ class Animator extends Component<any,State> {
 	}
 
   render() {
-	var patternDisplay : number|undefined;
-	if (this.state.pattern != null) {
-		patternDisplay = (this.state.pattern as Pattern).Props.length
-	}
 	return (
 		<div className="ms-Grid" dir="ltr">
   			<div className="ms-Grid-row">
