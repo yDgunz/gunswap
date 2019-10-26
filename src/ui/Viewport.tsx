@@ -7,7 +7,8 @@ import { Slider } from 'office-ui-fabric-react';
 
 
 interface Props {
-	pattern: Pattern
+	pattern: Pattern,
+	animationSpeed: number
 }
 
 class Viewport extends Component<Props,any> {
@@ -31,6 +32,7 @@ class Viewport extends Component<Props,any> {
 		if (this.jugglingScene) {
 			this.jugglingScene.UpdatePattern(this.props.pattern);
 			this.jugglingScene.userControllingStep = false;
+			this.jugglingScene.animationSpeed = this.props.animationSpeed;
 		}
 	}
 
@@ -38,7 +40,7 @@ class Viewport extends Component<Props,any> {
 		
 		var width = (this.CanvasContainerRef as HTMLDivElement).offsetWidth;
 		var height = window.innerHeight-28; // subtracting size of slider
-		this.jugglingScene = new JugglingScene(this.CanvasContainerRef as HTMLDivElement, this.props.pattern, width, height);
+		this.jugglingScene = new JugglingScene(this.CanvasContainerRef as HTMLDivElement, this.props.pattern, width, height, this.props.animationSpeed);
 
 		(window as any).jugglingScene = this.jugglingScene; // for debugging
 

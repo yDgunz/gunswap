@@ -42,8 +42,11 @@ export class JugglingScene {
 	private positionToLookAt : vec3;
 	public currentStep : number;
 	public userControllingStep : boolean;
+	public animationSpeed : number;
 
-	constructor(container : HTMLDivElement, pattern : Pattern|null, width : number, height : number) {		
+	
+
+	constructor(container : HTMLDivElement, pattern : Pattern|null, width : number, height : number, animationSpeed: number) {		
 
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera( 75, width/height, 0.1, 1000 );
@@ -74,6 +77,7 @@ export class JugglingScene {
 		this.onMouseDownPhi = 0;
 		this.userControllingStep = false;
 		this.currentStep = 0;
+		this.animationSpeed = animationSpeed;
 
 		this.renderer.setSize(width, height);
 
@@ -170,8 +174,8 @@ export class JugglingScene {
 			if (!this.userControllingStep) {
 				var timeElapsed = ((new Date()).getTime() - this.startTime);
 		
-				var patternTimeElapsed = timeElapsed % (this.pattern.States.length*this.pattern.Simulation.BeatDuration*3000); 
-				this.currentStep = Math.floor(patternTimeElapsed/(this.pattern.States.length*this.pattern.Simulation.BeatDuration*3000)*(this.pattern.Simulation.NumStepsPerBeat*this.pattern.States.length));
+				var patternTimeElapsed = timeElapsed % (this.pattern.States.length*this.pattern.Simulation.BeatDuration*this.animationSpeed); 
+				this.currentStep = Math.floor(patternTimeElapsed/(this.pattern.States.length*this.pattern.Simulation.BeatDuration*this.animationSpeed)*(this.pattern.Simulation.NumStepsPerBeat*this.pattern.States.length));
 			}
 
 			// if we need to, remove some meshes from the scene

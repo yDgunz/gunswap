@@ -7,9 +7,11 @@ import { PatternSettingsControls } from './PatternSettings';
 import 'office-ui-fabric-react/dist/css/fabric.css';
 import Viewport from './Viewport';
 import { PatternSimulation } from '../simulator/PatternSimulation';
+import { Slider } from 'office-ui-fabric-react';
 
 interface State {
-	pattern: Pattern
+	pattern: Pattern,
+	animationSpeed: number
 }
 
 class Animator extends Component<any,State> {
@@ -18,7 +20,8 @@ class Animator extends Component<any,State> {
 		super(props);		
 
 		this.state = {
-			pattern: new Pattern(new Siteswap("3"), GetDwellPaths("(30)(10)"), 0.8, 0)
+			pattern: new Pattern(new Siteswap("3"), GetDwellPaths("(30)(10)"), 0.8, 0),
+			animationSpeed: 3000
 		}
 
 		this.state.pattern.Simulate(100,0.24);
@@ -30,27 +33,40 @@ class Animator extends Component<any,State> {
 		this.setState({pattern: pattern});
 	}
 
-  render() {
-	return (
-		<div className="ms-Grid" dir="ltr">
-  			<div className="ms-Grid-row">
-    			<div className="ms-Grid-col ms-sm6 ms-md4 ms-lg4">
-					<Pivot >
-						<PivotItem headerText="Pattern" itemIcon="Settings">          
-							<PatternSettingsControls updatePattern={this.updatePattern}></PatternSettingsControls>
-						</PivotItem>
-						<PivotItem headerText="Animator" itemIcon="Video">
-							Content 2
-						</PivotItem>
-					</Pivot>
+	updateAnimationSpeed(value : number) {
+		var animationSpeed = 1000*value + 5000*(1-value);
+		this.setState({animationSpeed: animationSpeed});
+	}
+
+  	render() {
+		return (
+			<div className="ms-Grid" dir="ltr">
+				<div className="ms-Grid-row">
+					<div className="ms-Grid-col ms-sm6 ms-md4 ms-lg4">
+						<Pivot >
+							<PivotItem headerText="Pattern" itemIcon="Settings">          
+								<PatternSettingsControls updatePattern={this.updatePattern}></PatternSettingsControls>
+							</PivotItem>
+							<PivotItem headerText="Animator" itemIcon="Video">
+							<Slider
+								label={"Animation Speed"}
+								min={0}
+								max={1}
+								step={0.01}
+								defaultValue={0.5}
+								showValue={false}
+								onChanged={(e,value) => this.updateAnimationSpeed(value)}
+							/>
+							</PivotItem>
+						</Pivot>
+					</div>
+					<div className="ms-Grid-col ms-sm6 ms-md8 ms-lg8">
+						<Viewport pattern={this.state.pattern} animationSpeed={this.state.animationSpeed} />
+					</div>
 				</div>
-    			<div className="ms-Grid-col ms-sm6 ms-md8 ms-lg8">
-					<Viewport pattern={this.state.pattern} />
-				</div>
-  			</div>
-		</div>      		
-	);
-  }
+			</div>      		
+		);
+  	}
 }
 
 export default Animator;
