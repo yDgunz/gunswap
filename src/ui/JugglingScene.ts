@@ -17,6 +17,8 @@ interface JugglerMeshes {
 	LeftForearmMesh: THREE.Mesh;
 	RightBicepMesh: THREE.Mesh;
 	RightForearmMesh: THREE.Mesh;
+	LeftWristMesh: THREE.Mesh;
+	RightWristMesh: THREE.Mesh;
 	BodyMesh: THREE.Mesh;
 	HeadMesh: THREE.Mesh;
 }
@@ -108,7 +110,7 @@ export class JugglingScene {
 		this.pattern = pattern;
 		if (pattern) {
 			var highestLowest = (pattern as Pattern).GetHeighestAndLowestPositionInSimulation();
-			this.positionToLookAt.y = (highestLowest[0] - highestLowest[1])/2;
+			this.positionToLookAt.y = highestLowest[0] - (highestLowest[0] - highestLowest[1])/2;
 			this.updateCamera();
 		}		
 	}
@@ -214,8 +216,15 @@ export class JugglingScene {
 				meshes.LeftShoulderMesh.position.copy(leftShoulderPosition);
 				meshes.RightShoulderMesh.position.copy(rightShoulderPosition);
 
-				this.positionAndRotateArm(leftElbowPosition, leftShoulderPosition, leftHandPosition, meshes.LeftBicepMesh, meshes.LeftForearmMesh);
-				this.positionAndRotateArm(rightElbowPosition, rightShoulderPosition, rightHandPosition, meshes.RightBicepMesh, meshes.RightForearmMesh);
+				this.positionAndRotateArm(leftElbowPosition, leftShoulderPosition, leftHandPosition, meshes.LeftBicepMesh, meshes.LeftForearmMesh, meshes.LeftWristMesh);
+				this.positionAndRotateArm(rightElbowPosition, rightShoulderPosition, rightHandPosition, meshes.RightBicepMesh, meshes.RightForearmMesh, meshes.RightWristMesh);
+
+				// rotate hands
+				var rotation = new THREE.Quaternion();
+				rotation.setFromUnitVectors(new THREE.Vector3(0,1,0), this.vec3ToTHREEVector3(jugglerPositions.LeftHandDirections[this.currentStep]));
+				meshes.LeftHandMesh.setRotationFromQuaternion(rotation);
+				rotation.setFromUnitVectors(new THREE.Vector3(0,1,0), this.vec3ToTHREEVector3(jugglerPositions.RightHandDirections[this.currentStep]));
+				meshes.RightHandMesh.setRotationFromQuaternion(rotation);
 
 			});
 		}
@@ -228,20 +237,24 @@ export class JugglingScene {
 		return new THREE.Vector3(vec3.x, vec3.y, vec3.z);
 	}
 
-	private positionAndRotateArm(elbowPosition: THREE.Vector3, shoulderPosition: THREE.Vector3, handPosition: THREE.Vector3, bicepMesh : THREE.Mesh, forearmMesh: THREE.Mesh) {
+	private positionAndRotateArm(elbowPosition: THREE.Vector3, shoulderPosition: THREE.Vector3, handPosition: THREE.Vector3, bicepMesh : THREE.Mesh, forearmMesh: THREE.Mesh, wristMesh: THREE.Mesh) {
 		// bicep
 		var armDirection = new THREE.Vector3().subVectors(elbowPosition, shoulderPosition);
 		var arrow = new THREE.ArrowHelper(armDirection.clone().normalize(), shoulderPosition);
 		bicepMesh.rotation.setFromVector3(arrow.rotation.toVector3());
 		var newPosition = new THREE.Vector3().addVectors(shoulderPosition, armDirection.multiplyScalar(0.5));
-		bicepMesh.position.set(newPosition.x, newPosition.y, newPosition.z);
+		bicepMesh.position.copy(newPosition);
 		
 		// forearm
 		armDirection = new THREE.Vector3().subVectors(elbowPosition, handPosition);
 		arrow = new THREE.ArrowHelper(armDirection.clone().normalize(), handPosition);
 		forearmMesh.rotation.setFromVector3(arrow.rotation.toVector3());
-		newPosition = new THREE.Vector3().addVectors(handPosition, armDirection.multiplyScalar(0.5)).add(armDirection.clone().normalize().multiplyScalar(.03));
-		forearmMesh.position.set(newPosition.x, newPosition.y, newPosition.z);
+		newPosition = new THREE.Vector3().addVectors(handPosition, armDirection.multiplyScalar(0.5)).add(armDirection.clone().normalize().multiplyScalar(.04));
+		forearmMesh.position.copy(newPosition);
+
+		// wrist
+		newPosition = handPosition.clone().add(armDirection.clone().normalize().multiplyScalar(.08));
+		wristMesh.position.copy(newPosition);
 	}
 
 	private getHandMesh() : THREE.Mesh {
@@ -268,10 +281,12 @@ export class JugglingScene {
 			RightElbowMesh: this.getJointMesh(.04),
 			LeftShoulderMesh: this.getJointMesh(.025),
 			RightShoulderMesh: this.getJointMesh(.025),
+			LeftWristMesh: this.getJointMesh(.02),
+			RightWristMesh: this.getJointMesh(.02),
 			LeftBicepMesh: this.getArmCylinder(.025, .04, ArmHalfLength),
-			LeftForearmMesh: this.getArmCylinder(0, .04, ArmHalfLength-0.06),
+			LeftForearmMesh: this.getArmCylinder(.02, .04, ArmHalfLength-0.09),
 			RightBicepMesh: this.getArmCylinder(.025, .04, ArmHalfLength),
-			RightForearmMesh: this.getArmCylinder(0, .04, ArmHalfLength-0.06),
+			RightForearmMesh: this.getArmCylinder(.02, .04, ArmHalfLength-0.09),
 			BodyMesh: new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.05, .4, 20, 20, false), JugglerMeshMaterial),
 			HeadMesh: new THREE.Mesh(new THREE.SphereBufferGeometry(.1, 20, 20), JugglerMeshMaterial)
 		};
@@ -291,6 +306,8 @@ export class JugglingScene {
 		this.scene.add(jugglerMeshes.LeftForearmMesh);
 		this.scene.add(jugglerMeshes.RightBicepMesh);
 		this.scene.add(jugglerMeshes.RightForearmMesh);
+		this.scene.add(jugglerMeshes.LeftWristMesh);
+		this.scene.add(jugglerMeshes.RightWristMesh);
 		this.scene.add(jugglerMeshes.BodyMesh);
 		this.scene.add(jugglerMeshes.HeadMesh);
 	}

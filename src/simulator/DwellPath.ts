@@ -2,6 +2,7 @@ import { DwellPathSnapshot, DefaultBallRotation } from "./DwellPathSnapshot";
 import { vec4, vec3 } from "@tlaukkan/tsm";
 import { Hand } from "./Toss";
 import { InterpolateBezierSpline } from "./Bezier";
+import { BasePatternHeight } from "./JugglerConfig";
 	
 export class DwellPath {
 
@@ -39,8 +40,10 @@ export class DwellPath {
 		startVelocity : vec3,
 		endVelocity : vec3,
 		startVelocityScale : number,
-		endVelocityScale : number
+		endVelocityScale : number,
+		additionalPathSnapshot?: DwellPathSnapshot | null // optional dwell path snapshot to append to spline path
 	) : vec3 {
+
 		var pos = new vec3();
 		if (t == 0) {
 			pos = this.Snapshots[0].Position.copy();
@@ -48,7 +51,11 @@ export class DwellPath {
 				pos.x *= -1;
 			}
 		} else if (t == 1) {
-			pos = this.Snapshots[this.Snapshots.length-1].Position.copy();
+			if (additionalPathSnapshot) {
+				pos = additionalPathSnapshot.Position.copy();
+			} else {
+				pos = this.Snapshots[this.Snapshots.length-1].Position.copy();
+			}			
 			if (hand == Hand.Left) {
 				pos.x *= -1;
 			}
@@ -60,11 +67,20 @@ export class DwellPath {
 				}	
 				return positionCopy;
 			});
+			
+			if (additionalPathSnapshot) {
+				var positionCopy = additionalPathSnapshot.Position.copy();
+				if (hand == Hand.Left) {
+					positionCopy.x *= -1;
+				}	
+				splinePath.push(positionCopy);
+			}
+
 			pos = InterpolateBezierSpline(splinePath,t,startVelocity,endVelocity,startVelocityScale,endVelocityScale,false);
 		}		
 
 		// scale y by juggler height
-		pos.y += 1.0125;
+		pos.y += BasePatternHeight;
 
 		return pos;
 

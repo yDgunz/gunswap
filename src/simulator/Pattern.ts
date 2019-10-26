@@ -7,7 +7,7 @@ import { PatternSimulation } from "./PatternSimulation";
 import { vec3 } from "@tlaukkan/tsm";
 import { GetTossPathPositionAndVelocity } from "./TossPath";
 import { InterpolateBezierSpline } from "./Bezier";
-import { ShoulderZOffset, ShoulderHeight, ArmHalfLength, ShoulderXOffset } from "./JugglerConfig";
+import { ShoulderZOffset, ShoulderHeight, ArmHalfLength, ShoulderXOffset, BasePatternHeight } from "./JugglerConfig";
 
 export interface PropLanding {
 	Prop : Prop,
@@ -268,7 +268,9 @@ export class Pattern {
 			LeftHandPositions: [],
 			RightHandPositions: [],
 			LeftElbowPositions: [],
-			RightElbowPositions: []
+			RightElbowPositions: [],
+			LeftHandDirections: [],
+			RightHandDirections: []
 		}));
 
 		for(var step = 0; step < numSteps; step++) {
@@ -309,28 +311,35 @@ export class Pattern {
 
 				
 				// if we're before the toss then we're in the dwell path
-				if (virtualCurrentTime < tossTime) {
+				if (virtualCurrentTime < tossTime || curToss.Toss.Hold) {
 					// velocity at time of catch
 					var prevTossFlightTime = prevCatchTime - prevTossTime;
-					var startVelocity = GetTossPathPositionAndVelocity(prevToss, curToss, prevTossFlightTime, prevTossFlightTime)[1];
+					var catchVelocity = GetTossPathPositionAndVelocity(prevToss, curToss, prevTossFlightTime, prevTossFlightTime)[1];
 
 					// velocity at the time of throw
-					var endVelocity = GetTossPathPositionAndVelocity(curToss, nextToss, 0, catchTime-tossTime)[1];
+					var tossVelocity = GetTossPathPositionAndVelocity(curToss, nextToss, 0, catchTime-tossTime)[1];
 
-					var t = 1 - (tossTime - virtualCurrentTime) / (tossTime - prevCatchTime);
-					var pos = curToss.Toss.DwellPath.GetPosition(t, curToss.Hand, startVelocity, endVelocity, 0.05, 0.05);
-					patternSimulation.Props[propIx].Positions.push(pos);
+					var t : number;
+					if (curToss.Toss.Hold) {
+						var t = 1 - (catchTime - virtualCurrentTime) / (catchTime - prevCatchTime);
+					} else {
+						var t = 1 - (tossTime - virtualCurrentTime) / (tossTime - prevCatchTime);
+					}
+					
+					var pos = curToss.Toss.DwellPath.GetPosition(t, curToss.Hand, catchVelocity, tossVelocity, 0.01, 0.015, curToss.Toss.Hold ? nextToss.Toss.DwellPath.Snapshots[0] : null);
+					
+					patternSimulation.Props[propIx].Positions.push(pos);					
+					var handDirection = catchVelocity.copy().normalize().scale(t-1);
+					handDirection.add(tossVelocity.copy().normalize().scale(t));
+
+
 					if (curToss.Hand === Hand.Left) {
 						patternSimulation.Jugglers[curToss.Toss.Juggler].LeftHandPositions[step] = pos;
+						patternSimulation.Jugglers[curToss.Toss.Juggler].LeftHandDirections[step] = handDirection;
 					} else {
 						patternSimulation.Jugglers[curToss.Toss.Juggler].RightHandPositions[step] = pos;
+						patternSimulation.Jugglers[curToss.Toss.Juggler].RightHandDirections[step] = handDirection;
 					}
-
-				} else if (curToss.Toss.Hold) {
-					// todo - figure out held position
-					patternSimulation.Props[propIx].Positions.push(new vec3());
-					patternSimulation.Jugglers[curToss.Toss.Juggler].LeftHandPositions[step] = new vec3();
-					patternSimulation.Jugglers[curToss.Toss.Juggler].RightHandPositions[step] = new vec3();
 
 				} else {
 					// figure out flight path
@@ -418,9 +427,11 @@ export class Pattern {
 						});											
 					
 						var handPos : vec3;
+						var handDirection : vec3;
 						if (handLastToss === undefined || handNextToss === undefined) {
 							// TODO - don't hardcode this
-							handPos = new vec3([.3*hand == Hand.Left ? -1 : 1, 1.0125, 0]);							
+							handPos = new vec3([.3*hand == Hand.Left ? -1 : 1, BasePatternHeight, 0]);							
+							handDirection = new vec3([0,1,0]);
 						} else {
 							var emptyHandPath : vec3[] = [];
 							emptyHandPath.push(handLastToss.Toss.DwellPath.Snapshots[handLastToss.Toss.DwellPath.Snapshots.length-1].Position.copy());
@@ -454,7 +465,7 @@ export class Pattern {
 							});
 
 							var tossVelocity = GetTossPathPositionAndVelocity(handLastToss, tossedPropNextToss!, 0, handLastToss.Toss.NumBeats*beatDuration)[1];
-							var catchVelocity = GetTossPathPositionAndVelocity(catchingPropLastToss!, handNextToss, catchingPropLastToss!.Toss.NumBeats*beatDuration,catchingPropLastToss!.Toss.NumBeats*beatDuration)[1];
+							var catchVelocity = GetTossPathPositionAndVelocity(catchingPropLastToss!, handNextToss, catchingPropLastToss!.Toss.NumBeats*beatDuration-catchingPropLastToss!.Toss.DwellRatio*beatDuration,catchingPropLastToss!.Toss.NumBeats*beatDuration-catchingPropLastToss!.Toss.DwellRatio*beatDuration)[1];
 							
 							if (hand === Hand.Left) {
 								emptyHandPath.forEach((x) => x.x*=-1);
@@ -468,15 +479,20 @@ export class Pattern {
 							var totalEmptyHandTime = handNextTossVirtualBeat*beatDuration - (handLastTossVirtualBeat*beatDuration + handLastToss.Toss.DwellRatio*beatDuration);
 							var t = (virtualCurrentTime - (handLastTossVirtualBeat*beatDuration + handLastToss.Toss.DwellRatio*beatDuration))/totalEmptyHandTime;
 
-							handPos = InterpolateBezierSpline(emptyHandPath,t,tossVelocity,catchVelocity,0.05,0.05,false);
-							handPos.y += 1.0125;
+							handPos = InterpolateBezierSpline(emptyHandPath,t,tossVelocity,catchVelocity,0.01,0.01,false);
+							handPos.y += BasePatternHeight;
+
+							handDirection = tossVelocity.copy().normalize().scale(1-t);
+							handDirection.add(catchVelocity.copy().normalize().scale(-t));
 
 						}						
 						
 						if (hand === Hand.Left) {
 							juggler.LeftHandPositions[step] = handPos;
+							juggler.LeftHandDirections[step] = handDirection;
 						} else {
 							juggler.RightHandPositions[step] = handPos;
+							juggler.RightHandDirections[step] = handDirection;
 						}
 
 					}
@@ -562,8 +578,8 @@ export class Pattern {
 	}
 
 	public GetHeighestAndLowestPositionInSimulation() : [number, number] {
-		var highestPoint = 0;
-		var lowestPoint = 0;
+		var highestPoint = BasePatternHeight;
+		var lowestPoint = BasePatternHeight;
 		if (this.Simulation) {			
 			this.Simulation.Props.forEach((prop) => {
 				prop.Positions.forEach((p) => {

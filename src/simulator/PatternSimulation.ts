@@ -16,5 +16,7 @@ export interface SimulationJuggler {
 	readonly LeftHandPositions : vec3[];
 	readonly RightHandPositions : vec3[];
 	readonly LeftElbowPositions : vec3[];	
-	readonly RightElbowPositions : vec3[];	
+	readonly RightElbowPositions : vec3[];
+	readonly LeftHandDirections : vec3[]; // normalized vector for direction the hand should be facing
+	readonly RightHandDirections : vec3[];
 }

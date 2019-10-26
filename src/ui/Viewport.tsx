@@ -59,7 +59,7 @@ class Viewport extends Component<Props,any> {
 				<Slider
 					min={0}
 					max={0.99}
-					step={.01}
+					step={.005}
 					showValue={false}
 					onChange={(value: number) => this.updateStep(value)}
 				/>

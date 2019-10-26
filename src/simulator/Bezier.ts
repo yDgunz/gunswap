@@ -24,11 +24,16 @@ export function InterpolateBezierSpline(
 			dwellPath.push(dwellPath[0]);
 		}			
 
-		var lastPosition = dwellPath[dwellPath.length-1];
-		var C = [
-				new vec3([dwellPath[0].x+v_0.x*v_0scale, dwellPath[0].y+v_0.y*v_0scale, dwellPath[0].z+v_0.z*v_0scale]),
-				new vec3([lastPosition.x-v_T.x*v_Tscale, lastPosition.y-v_T.y*v_Tscale, lastPosition.z-v_T.z*v_Tscale])
-				];
+		var C0 = dwellPath[0].copy();
+		C0.add(v_0.copy().scale(v_0scale));	// factor in how much the velocity impacts the path 
+		C0.add(v_0.copy().normalize().scale(0.1)); // make sure to consider the direction of the velocity regardless of the v_0scale
+
+		var C1 = dwellPath[dwellPath.length-1].copy();
+		C1.add(v_T.copy().scale(-v_Tscale));
+		C1.add(v_T.copy().normalize().scale(-0.1));
+
+		var C = [C0,C1];
+			
 		var eps = .00001;
 
 		var c : vec3[] = [];
