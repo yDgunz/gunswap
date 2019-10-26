@@ -24,7 +24,7 @@ export class DwellPath {
 				this.Snapshots.push(new DwellPathSnapshot(x, false, defaultRotation))
 			});
 		} else {		
-			throw "Invalid dwell path";
+			throw new Error("Invalid dwell path");
 		}
 		if (emptyDwellPathSnapshots) {
 			emptyDwellPathSnapshots.forEach(x => {

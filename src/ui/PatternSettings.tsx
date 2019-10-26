@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Siteswap } from '../simulator/Siteswap';
 import { Pattern } from '../simulator/Pattern';
 import { GetDwellPaths, DwellPath } from '../simulator/DwellPath';
-import { PrimaryButton, Stack, TextField } from 'office-ui-fabric-react';
+import { PrimaryButton, Stack, TextField, MessageBar, MessageBarType } from 'office-ui-fabric-react';
 import 'office-ui-fabric-react/dist/css/fabric.css';
 import * as Yaml from 'js-yaml';
 
@@ -19,7 +19,7 @@ interface PatternSettings {
 
 interface State {
 	input: string,
-	patternSettings: PatternSettings
+	errorMessage: string|null
 }
 
 const defaultPatternSettings : PatternSettings = {	
@@ -36,7 +36,7 @@ export class PatternSettingsControls extends Component<Props,State> {
 
 		this.state = {
 			input: Yaml.safeDump(defaultPatternSettings),
-			patternSettings: defaultPatternSettings
+			errorMessage: null
 		};
 	
 		// This binding is necessary to make `this` work in the callback
@@ -44,28 +44,57 @@ export class PatternSettingsControls extends Component<Props,State> {
 		this.updateState = this.updateState.bind(this);
 	}
 
-	updateState(e : any) {		
-		var patternSettings = Yaml.safeLoad(e.target.value);
+	updateState(e : any) {				
 		this.setState({
-			input: e.target.value,
-			patternSettings: patternSettings || defaultPatternSettings 
+			input: e.target.value
 		});
 	}
 
 	juggle() {
-		var siteswap = new Siteswap(this.state.patternSettings.siteswap);
-		var pattern = new Pattern(siteswap, GetDwellPaths(this.state.patternSettings.dwellPath), this.state.patternSettings.dwellRatio, 1);
-		pattern.Simulate(30,this.state.patternSettings.beatDuration);
-		
-		// lift pattern w/ simulation up to parent
-		this.props.updatePattern(pattern);
+		var patternSettings : PatternSettings | undefined;
+		try {
+			patternSettings = Yaml.safeLoad(this.state.input);
+		} catch (e) {
+			this.setState({errorMessage: "Invalid pattern settings."});
+		}
+		if (patternSettings) {
+			try {
+				var siteswap = new Siteswap(patternSettings.siteswap.toString());
+				var pattern = new Pattern(siteswap, GetDwellPaths(patternSettings.dwellPath), patternSettings.dwellRatio, 1);
+				pattern.Simulate(30,patternSettings.beatDuration);
+				// lift pattern w/ simulation up to parent
+				this.props.updatePattern(pattern);
+				this.setState({
+					errorMessage: null
+				});
+			} catch(e) {
+				var errorMessage : string;
+				if (e.message) {
+					errorMessage = e.message;
+				} else {
+					// fallback in case any exceptions were thrown as strings
+					errorMessage = e;
+				}
+				this.setState({errorMessage: errorMessage});	
+			}		
+		}		
 	}
 
-	render() {
+	render() {		
 		return (
 			<Stack>
-				 <PrimaryButton id="juggle-button" text="Juggle" onClick={this.juggle} />
-				 <TextField value={this.state.input} multiline={true} label="Advanced Inputs" onChange={this.updateState}  />
+				{this.state.errorMessage &&
+					<MessageBar messageBarType={MessageBarType.severeWarning} isMultiline={false}>
+						{this.state.errorMessage}
+			 	 	</MessageBar>
+				}
+				<PrimaryButton id="juggle-button" text="Juggle" onClick={this.juggle} />
+				<TextField 
+					value={this.state.input} 
+					multiline={true} 
+					label="Advanced Inputs" 
+					onChange={this.updateState} 
+					autoAdjustHeight={true} />
 			</Stack>
 		);
 	}

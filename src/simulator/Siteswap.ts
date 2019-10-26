@@ -26,13 +26,13 @@ export class Siteswap {
 					if a passing pattern only has 1 juggler than it's automatically a mismatch
 				*/
 				if(this.NumJugglers == 1) {
-					throw "Cannot have passing pattern with 1 juggler.";
+					throw new Error("Cannot have passing pattern with 1 juggler.");
 				};
 							
 				// ensure all beats have the same number of jugglers
 				passingBeats.forEach(beat => {
 					if (beat.split("|").length != this.NumJugglers) {
-						throw "Each beat in passing siteswap must contain same number of jugglers";
+						throw new Error("Each beat in passing siteswap must contain same number of jugglers");
 					}
 				});
 			}			
