@@ -479,6 +479,12 @@ export class Pattern {
 							var totalEmptyHandTime = handNextTossVirtualBeat*beatDuration - (handLastTossVirtualBeat*beatDuration + handLastToss.Toss.DwellRatio*beatDuration);
 							var t = (virtualCurrentTime - (handLastTossVirtualBeat*beatDuration + handLastToss.Toss.DwellRatio*beatDuration))/totalEmptyHandTime;
 
+							// fail-safe in case virtual times weren't calculated perfectly
+							// solves bug with hands flashing to wrong position for even patterns like 4
+							if (t < 0) {
+								t = 1;
+							}
+
 							handPos = InterpolateBezierSpline(emptyHandPath,t,tossVelocity,catchVelocity,0.01,0.01,false);
 							handPos.y += BasePatternHeight;
 

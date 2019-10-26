@@ -40,6 +40,8 @@ class Viewport extends Component<Props,any> {
 		var height = window.innerHeight-28; // subtracting size of slider
 		this.jugglingScene = new JugglingScene(this.CanvasContainerRef as HTMLDivElement, this.props.pattern, width, height);
 
+		(window as any).jugglingScene = this.jugglingScene; // for debugging
+
 		window.addEventListener('resize', () => { 
 			var width = (this.CanvasContainerRef as HTMLDivElement).offsetWidth;
 			var height = window.innerHeight-28; // subtracting size of slider

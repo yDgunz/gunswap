@@ -43,8 +43,8 @@ export class JugglingScene {
 	public currentStep : number;
 	public userControllingStep : boolean;
 
-	constructor(container : HTMLDivElement, pattern : Pattern|null, width : number, height : number) {
-		
+	constructor(container : HTMLDivElement, pattern : Pattern|null, width : number, height : number) {		
+
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera( 75, width/height, 0.1, 1000 );
 		this.positionToLookAt = new vec3();	

@@ -76,7 +76,7 @@ export class PatternSettingsControls extends Component<Props,State> {
 					errorMessage = e;
 				}
 				this.setState({errorMessage: errorMessage});	
-			}		
+			}
 		}		
 	}
 
