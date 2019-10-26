@@ -484,6 +484,9 @@ export class Pattern {
 							if (t < 0) {
 								t = 1;
 							}
+							if (t > 1) {
+								t = 0;
+							}
 
 							handPos = InterpolateBezierSpline(emptyHandPath,t,tossVelocity,catchVelocity,0.01,0.01,false);
 							handPos.y += BasePatternHeight;

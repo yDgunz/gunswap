@@ -154,17 +154,24 @@ export class Siteswap {
 					var propTosses = handToss.toss.match(SiteswapRegex.ValidTossRe);
 					
 					propTosses!.forEach(propToss => {
-						singleBeatTossCollection.push(
-							new Toss(
-								propToss,
-								jugglerIx, 
-								handToss.hand,
-								dwellPath,
-								jugglerTosses.length,
-								defaultDwellRatio,
-								numSurfaces
-							)
+						var toss = new Toss(
+							propToss,
+							jugglerIx, 
+							handToss.hand,
+							dwellPath,
+							jugglerTosses.length,
+							defaultDwellRatio,
+							numSurfaces
 						);
+						singleBeatTossCollection.push(toss);
+						
+						// don't use up a dwell path on a 0 throw
+						if (toss.NumBeats == 0) {
+							dwellPathIx--; 
+							if (dwellPathIx < 0) {
+								dwellPathIx = dwellPaths.length-1;
+							}
+						}						
 					});				
 				});
 			});
