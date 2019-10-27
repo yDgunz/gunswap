@@ -186,7 +186,7 @@ export class JugglingScene {
 
 			// need to create some meshes
 			while (this.pattern.Props.length > this.propMeshes.length) {
-				var geometry = new THREE.SphereGeometry( 0.05, 20 );
+				var geometry = new THREE.SphereGeometry( 0.05, 40 );
 				var material = new THREE.MeshLambertMaterial( { color: 0x00ff00 } );
 				var propMesh = new THREE.Mesh( geometry, material );
 				
@@ -204,14 +204,41 @@ export class JugglingScene {
 				this.addJugglerMeshes();				
 			}
 
-			this.jugglerMeshes.forEach((meshes, jugglerIx) => {
+			this.jugglerMeshes.forEach((meshes, jugglerIx) => {								
 				var jugglerPositions = this.pattern!.Simulation!.Jugglers[jugglerIx];
+				
+				meshes.BodyMesh.position.set(
+					-ShoulderZOffset*Math.sin(jugglerPositions.BodyRotations[this.currentStep]),
+					(ShoulderHeight-.4/2),
+					ShoulderZOffset*Math.cos(jugglerPositions.BodyRotations[this.currentStep])
+				);
+				meshes.BodyMesh.position.add(this.vec3ToTHREEVector3(jugglerPositions.BodyPositions[this.currentStep]));
+
+				meshes.HeadMesh.position.set(
+					-ShoulderZOffset*Math.sin(jugglerPositions.BodyRotations[this.currentStep]),
+					(ShoulderHeight+.17),
+					ShoulderZOffset*Math.cos(jugglerPositions.BodyRotations[this.currentStep])
+				);
+				meshes.HeadMesh.position.add(this.vec3ToTHREEVector3(jugglerPositions.BodyPositions[this.currentStep]));
+
+				var leftShoulderPosition = new THREE.Vector3(
+					-ShoulderXOffset*Math.cos(jugglerPositions.BodyRotations[this.currentStep])-ShoulderZOffset*Math.sin(jugglerPositions.BodyRotations[this.currentStep]),
+					(ShoulderHeight),
+					-ShoulderXOffset*Math.sin(jugglerPositions.BodyRotations[this.currentStep])+ShoulderZOffset*Math.cos(jugglerPositions.BodyRotations[this.currentStep])
+				);
+				leftShoulderPosition.add(this.vec3ToTHREEVector3(jugglerPositions.BodyPositions[this.currentStep]));
+
+				var rightShoulderPosition = new THREE.Vector3(
+					ShoulderXOffset*Math.cos(jugglerPositions.BodyRotations[this.currentStep])-ShoulderZOffset*Math.sin(jugglerPositions.BodyRotations[this.currentStep]),
+					(ShoulderHeight),
+					ShoulderXOffset*Math.sin(jugglerPositions.BodyRotations[this.currentStep])+ShoulderZOffset*Math.cos(jugglerPositions.BodyRotations[this.currentStep])
+				);
+				rightShoulderPosition.add(this.vec3ToTHREEVector3(jugglerPositions.BodyPositions[this.currentStep]));
+
 				var leftHandPosition = this.vec3ToTHREEVector3(jugglerPositions.LeftHandPositions[this.currentStep]);
 				var rightHandPosition = this.vec3ToTHREEVector3(jugglerPositions.RightHandPositions[this.currentStep]);
 				var leftElbowPosition = this.vec3ToTHREEVector3(jugglerPositions.LeftElbowPositions[this.currentStep]);
-				var rightElbowPosition = this.vec3ToTHREEVector3(jugglerPositions.RightElbowPositions[this.currentStep]);
-				var leftShoulderPosition = new THREE.Vector3(-ShoulderXOffset,ShoulderHeight,ShoulderZOffset);
-				var rightShoulderPosition = new THREE.Vector3(ShoulderXOffset,ShoulderHeight,ShoulderZOffset);
+				var rightElbowPosition = this.vec3ToTHREEVector3(jugglerPositions.RightElbowPositions[this.currentStep]);				
 				
 				meshes.LeftHandMesh.position.copy(leftHandPosition);
 				meshes.RightHandMesh.position.copy(rightHandPosition);
@@ -294,9 +321,6 @@ export class JugglingScene {
 			BodyMesh: new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.05, .4, 20, 20, false), JugglerMeshMaterial),
 			HeadMesh: new THREE.Mesh(new THREE.SphereBufferGeometry(.1, 20, 20), JugglerMeshMaterial)
 		};
-
-		jugglerMeshes.BodyMesh.position.add(new THREE.Vector3(0, ShoulderHeight-.4/2, ShoulderZOffset));
-		jugglerMeshes.HeadMesh.position.add(new THREE.Vector3(0, ShoulderHeight+.17, ShoulderZOffset));
 
 		this.jugglerMeshes.push(jugglerMeshes);
 

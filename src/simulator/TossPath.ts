@@ -5,11 +5,15 @@ export function GetTossPathPositionAndVelocity(
 	curToss : ScheduledToss, 
 	nextToss: ScheduledToss, 
 	currentTime: number, 
-	totalTime: number
+	totalTime: number,
+	tossJugglerBodyPosition : vec3,
+	tossJugglerBodyRotation : number,
+	catchJugglerBodyPosition : vec3,
+	catchJugglerBodyRotation : number
 ) : [vec3,vec3] {
 	// figure out flight path
-	var startPosition = curToss.Toss.DwellPath.GetPosition(1, curToss.Hand, new vec3(), new vec3(), 0, 0);
-	var endPosition = nextToss.Toss.DwellPath.GetPosition(0, nextToss.Hand, new vec3(), new vec3(), 0, 0);
+	var startPosition = curToss.Toss.DwellPath.GetPosition(1, curToss.Hand, new vec3(), new vec3(), 0, 0, null, tossJugglerBodyPosition, tossJugglerBodyRotation);
+	var endPosition = nextToss.Toss.DwellPath.GetPosition(0, nextToss.Hand, new vec3(), new vec3(), 0, 0, null, catchJugglerBodyPosition, catchJugglerBodyRotation);
 
 	return [
 		new vec3([

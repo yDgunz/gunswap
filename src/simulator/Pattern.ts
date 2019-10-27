@@ -264,14 +264,42 @@ export class Pattern {
 			Rotations: []
 		}));
 
-		this.States[0].forEach(juggler => patternSimulation.Jugglers.push({
-			LeftHandPositions: [],
-			RightHandPositions: [],
-			LeftElbowPositions: [],
-			RightElbowPositions: [],
-			LeftHandDirections: [],
-			RightHandDirections: []
-		}));
+		this.States[0].forEach((juggler, jugglerIx, jugglers) => {
+		
+			// todo - this is still a bit hokey and should be based on inputs
+
+			var bodyPosition : vec3;
+			var bodyRotation : number;
+
+			if (jugglers.length == 1) {
+				bodyPosition = new vec3([0,0,0]);
+				bodyRotation = 0;
+			} else {
+				var jugglerCircleRadius = 1;
+
+				var t = jugglerIx/jugglers.length;
+
+				bodyRotation = t*Math.PI*2;
+
+				bodyPosition = new vec3([
+					-jugglerCircleRadius*Math.sin(bodyRotation),
+					0,
+					jugglerCircleRadius*Math.cos(bodyRotation)
+				]);
+
+			}
+
+			patternSimulation.Jugglers.push({
+				BodyPositions: Array(numSteps).fill(bodyPosition),
+				BodyRotations: Array(numSteps).fill(bodyRotation),
+				LeftHandPositions: [],
+				RightHandPositions: [],
+				LeftElbowPositions: [],
+				RightElbowPositions: [],
+				LeftHandDirections: [],
+				RightHandDirections: []
+			})
+		});
 
 		for(var step = 0; step < numSteps; step++) {
 			var currentBeat = Math.floor(step*totalNumBeats/numSteps);
@@ -308,16 +336,22 @@ export class Pattern {
 				if (virtualCurrentTime > catchTime) {
 					virtualCurrentTime -= totalNumBeats*beatDuration;
 				}
-
 				
+				var tossJugglerBodyPosition = patternSimulation.Jugglers[curToss.Toss.Juggler].BodyPositions[step];
+				var tossJugglerBodyRotation = patternSimulation.Jugglers[curToss.Toss.Juggler].BodyRotations[step];
+
+				var catchJugglerBodyPosition = patternSimulation.Jugglers[nextToss.Toss.Juggler].BodyPositions[step];
+				var catchJugglerBodyRotation = patternSimulation.Jugglers[nextToss.Toss.Juggler].BodyRotations[step];
+
 				// if we're before the toss then we're in the dwell path
 				if (virtualCurrentTime < tossTime || curToss.Toss.Hold) {
 					// velocity at time of catch
-					var prevTossFlightTime = prevCatchTime - prevTossTime;
-					var catchVelocity = GetTossPathPositionAndVelocity(prevToss, curToss, prevTossFlightTime, prevTossFlightTime)[1];
+					var prevTossFlightTime = prevCatchTime - prevTossTime;				
+
+					var catchVelocity = GetTossPathPositionAndVelocity(prevToss, curToss, prevTossFlightTime, prevTossFlightTime, tossJugglerBodyPosition, tossJugglerBodyRotation, catchJugglerBodyPosition, catchJugglerBodyRotation)[1];
 
 					// velocity at the time of throw
-					var tossVelocity = GetTossPathPositionAndVelocity(curToss, nextToss, 0, catchTime-tossTime)[1];
+					var tossVelocity = GetTossPathPositionAndVelocity(curToss, nextToss, 0, catchTime-tossTime, tossJugglerBodyPosition, tossJugglerBodyRotation, catchJugglerBodyPosition, catchJugglerBodyRotation)[1];
 
 					var t : number;
 					if (curToss.Toss.Hold) {
@@ -326,7 +360,7 @@ export class Pattern {
 						var t = 1 - (tossTime - virtualCurrentTime) / (tossTime - prevCatchTime);
 					}
 					
-					var pos = curToss.Toss.DwellPath.GetPosition(t, curToss.Hand, catchVelocity, tossVelocity, 0.01, 0.015, curToss.Toss.Hold ? nextToss.Toss.DwellPath.Snapshots[0] : null);
+					var pos = curToss.Toss.DwellPath.GetPosition(t, curToss.Hand, catchVelocity, tossVelocity, 0.01, 0.015, curToss.Toss.Hold ? nextToss.Toss.DwellPath.Snapshots[0] : null, tossJugglerBodyPosition, tossJugglerBodyRotation);
 					
 					patternSimulation.Props[propIx].Positions.push(pos);					
 					var handDirection = catchVelocity.copy().normalize().scale(t-1);
@@ -346,7 +380,7 @@ export class Pattern {
 					var T = catchTime - tossTime;
 					var t = virtualCurrentTime - tossTime;
 					
-					var pos = GetTossPathPositionAndVelocity(curToss, nextToss, t, T)[0];
+					var pos = GetTossPathPositionAndVelocity(curToss, nextToss, t, T, tossJugglerBodyPosition, tossJugglerBodyRotation, catchJugglerBodyPosition, catchJugglerBodyRotation)[0];
 
 					patternSimulation.Props[propIx].Positions.push(pos);
 				}
@@ -464,8 +498,20 @@ export class Pattern {
 								});
 							});
 
-							var tossVelocity = GetTossPathPositionAndVelocity(handLastToss, tossedPropNextToss!, 0, handLastToss.Toss.NumBeats*beatDuration)[1];
-							var catchVelocity = GetTossPathPositionAndVelocity(catchingPropLastToss!, handNextToss, catchingPropLastToss!.Toss.NumBeats*beatDuration-catchingPropLastToss!.Toss.DwellRatio*beatDuration,catchingPropLastToss!.Toss.NumBeats*beatDuration-catchingPropLastToss!.Toss.DwellRatio*beatDuration)[1];
+							// the juggler whose empty hand we're calculting
+							var jugglerBodyPosition = juggler.BodyPositions[step];
+							var jugglerBodyRotation = juggler.BodyRotations[step];
+
+							// the juggler that we just tossed a prop to
+							var tossedPropCatchingJugglerBodyPosition = patternSimulation.Jugglers[tossedPropNextToss!.Toss.Juggler].BodyPositions[step];
+							var tossedPropCatchingJugglerBodyRotation = patternSimulation.Jugglers[tossedPropNextToss!.Toss.Juggler].BodyRotations[step]; 
+
+							// the juggler that tossed the prop we're catching
+							var catchingPropTossJugglerBodyPosition = patternSimulation.Jugglers[catchingPropLastToss!.Toss.Juggler].BodyPositions[step];
+							var catchingPropTossJugglerBodyRotation = patternSimulation.Jugglers[catchingPropLastToss!.Toss.Juggler].BodyRotations[step];
+
+							var tossVelocity = GetTossPathPositionAndVelocity(handLastToss, tossedPropNextToss!, 0, handLastToss.Toss.NumBeats*beatDuration, jugglerBodyPosition, jugglerBodyRotation, tossedPropCatchingJugglerBodyPosition, tossedPropCatchingJugglerBodyRotation)[1];							
+							var catchVelocity = GetTossPathPositionAndVelocity(catchingPropLastToss!, handNextToss, catchingPropLastToss!.Toss.NumBeats*beatDuration-catchingPropLastToss!.Toss.DwellRatio*beatDuration,catchingPropLastToss!.Toss.NumBeats*beatDuration-catchingPropLastToss!.Toss.DwellRatio*beatDuration, catchingPropTossJugglerBodyPosition, catchingPropTossJugglerBodyRotation, jugglerBodyPosition, jugglerBodyRotation)[1];
 							
 							if (hand === Hand.Left) {
 								emptyHandPath.forEach((x) => x.x*=-1);
@@ -479,6 +525,7 @@ export class Pattern {
 							var totalEmptyHandTime = handNextTossVirtualBeat*beatDuration - (handLastTossVirtualBeat*beatDuration + handLastToss.Toss.DwellRatio*beatDuration);
 							var t = (virtualCurrentTime - (handLastTossVirtualBeat*beatDuration + handLastToss.Toss.DwellRatio*beatDuration))/totalEmptyHandTime;
 
+							// todo - this probably doesn't actually work
 							// fail-safe in case virtual times weren't calculated perfectly
 							// solves bug with hands flashing to wrong position for even patterns like 4
 							if (t < 0) {
@@ -488,8 +535,16 @@ export class Pattern {
 								t = 0;
 							}
 
+							for (var i = 0; i < emptyHandPath.length; i++) {
+								var copy = emptyHandPath[i].copy();
+								emptyHandPath[i].x = copy.x*Math.cos(jugglerBodyRotation) - copy.z*Math.sin(jugglerBodyRotation);
+								emptyHandPath[i].y = copy.y + BasePatternHeight;
+								emptyHandPath[i].z = copy.x*Math.sin(jugglerBodyRotation) + copy.z*Math.cos(jugglerBodyRotation);							
+							
+								emptyHandPath[i].add(jugglerBodyPosition);
+							}							
+
 							handPos = InterpolateBezierSpline(emptyHandPath,t,tossVelocity,catchVelocity,0.01,0.01,false);
-							handPos.y += BasePatternHeight;
 
 							handDirection = tossVelocity.copy().normalize().scale(1-t);
 							handDirection.add(catchVelocity.copy().normalize().scale(-t));
@@ -506,13 +561,18 @@ export class Pattern {
 
 					}
 
-					// now that both hands are accounted for, calculate elbow positions
-					// TODO - eventually account for juggler rotation
+					// now that both hands are accounted for, calculate elbow positions					
+					var rot = juggler.BodyRotations[step];
+					var pos = juggler.BodyPositions[step];
+					var x = (hand === Hand.Left ? - 1 : 1)*ShoulderXOffset;
+					var z = ShoulderZOffset;
 					var shoulderPosition = new vec3([
-						(hand === Hand.Left ? - 1 : 1)*ShoulderXOffset,
+						pos.x + (x*Math.cos(rot) - z*Math.sin(rot)),
 						ShoulderHeight,
-						ShoulderZOffset
+						pos.z + (x*Math.sin(rot) + z*Math.cos(rot))
+						
 					]);
+					
 					var elbowPosition = this.getElbowPosition(shoulderPosition, hand === Hand.Left ? juggler.LeftHandPositions[step] : juggler.RightHandPositions[step], 0.1, hand);
 					if (hand === Hand.Left) {
 						juggler.LeftElbowPositions[step] = elbowPosition;

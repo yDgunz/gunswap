@@ -33,7 +33,7 @@ export class DwellPath {
 		}
 	}
 
-	// todo - this should transform position based on juggler position
+	// todo - this should take an obect as params
 	public GetPosition(
 		t : number, 
 		hand : Hand,
@@ -41,51 +41,49 @@ export class DwellPath {
 		endVelocity : vec3,
 		startVelocityScale : number,
 		endVelocityScale : number,
-		additionalPathSnapshot?: DwellPathSnapshot | null // optional dwell path snapshot to append to spline path
+		additionalPathSnapshot: DwellPathSnapshot | null, // optional dwell path snapshot to append to spline path
+		jugglerBodyPosition : vec3,
+		jugglerBodyRotation : number
 	) : vec3 {
+
+		var splinePath = this.Snapshots.map((a) => { 
+			return adjustDwellPathSnapshotByHandAndJuggler(a, hand, jugglerBodyPosition, jugglerBodyRotation);
+		});
+
+		if (additionalPathSnapshot) {
+			splinePath.push(adjustDwellPathSnapshotByHandAndJuggler(additionalPathSnapshot, hand, jugglerBodyPosition, jugglerBodyRotation));
+		}
 
 		var pos = new vec3();
 		if (t == 0) {
-			pos = this.Snapshots[0].Position.copy();
-			if (hand == Hand.Left) {
-				pos.x *= -1;
-			}
+			pos = splinePath[0].copy();
 		} else if (t == 1) {
-			if (additionalPathSnapshot) {
-				pos = additionalPathSnapshot.Position.copy();
-			} else {
-				pos = this.Snapshots[this.Snapshots.length-1].Position.copy();
-			}			
-			if (hand == Hand.Left) {
-				pos.x *= -1;
-			}
-		} else {
-			var splinePath = this.Snapshots.map((a) => { 
-				var positionCopy = a.Position.copy();
-				if (hand == Hand.Left) {
-					positionCopy.x *= -1;
-				}	
-				return positionCopy;
-			});
-			
-			if (additionalPathSnapshot) {
-				var positionCopy = additionalPathSnapshot.Position.copy();
-				if (hand == Hand.Left) {
-					positionCopy.x *= -1;
-				}	
-				splinePath.push(positionCopy);
-			}
-
+			pos = splinePath[splinePath.length-1].copy();			
+		} else {									
 			pos = InterpolateBezierSpline(splinePath,t,startVelocity,endVelocity,startVelocityScale,endVelocityScale,false);
-		}		
-
-		// scale y by juggler height
-		pos.y += BasePatternHeight;
+		}				
 
 		return pos;
 
 	}
 
+}
+
+function adjustDwellPathSnapshotByHandAndJuggler(a: DwellPathSnapshot, hand: Hand, jugglerBodyPosition : vec3, jugglerBodyRotation : number) {
+	var positionCopy = a.Position.copy();
+	if (hand == Hand.Left) {
+		positionCopy.x *= -1;
+	}
+	
+	// scale y by juggler height
+	positionCopy.y += BasePatternHeight;
+
+	positionCopy.x = positionCopy.x*Math.cos(jugglerBodyRotation) - positionCopy.z*Math.sin(jugglerBodyRotation);
+	positionCopy.z = positionCopy.x*Math.sin(jugglerBodyRotation) + positionCopy.z*Math.cos(jugglerBodyRotation);
+
+	positionCopy.add(jugglerBodyPosition);
+
+	return positionCopy;
 }
 
 export function GetDwellPaths(input : string, defaultRotation : vec4 = DefaultBallRotation) : DwellPath[] {
@@ -95,6 +93,6 @@ export function GetDwellPaths(input : string, defaultRotation : vec4 = DefaultBa
 			return new DwellPath(a);
 		});
 	} else {
-		throw "Could not determine dwell paths"
+		throw new Error("Could not determine dwell paths");
 	}
 }
