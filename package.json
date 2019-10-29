@@ -5,7 +5,7 @@
   "dependencies": {
     "express": "~4.0.0",
     "ejs" : "2.5.5",
-    "mongoose": "4.6.1",
+    "mongoose": "5.7.7",
     "body-parser": "~1.0.1",
     "passport" : "~0.1.17",
     "passport-local" : "~0.1.6",
