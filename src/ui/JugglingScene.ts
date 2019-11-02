@@ -60,8 +60,8 @@ export class JugglingScene {
 		this.propMeshes = [];
 		this.jugglerMeshes = [];
 		
-		this.camRadius = 3;
-		this.camPhi = 0;
+		this.camRadius = 1;
+		this.camPhi = .3;
 		this.camTheta = Math.PI;
 		
 		this.startTime = (new Date()).getTime();

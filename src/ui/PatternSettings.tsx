@@ -119,6 +119,9 @@ export class PatternSettingsControls extends Component<Props,State> {
 	render() {		
 		return (
 			<Stack>				
+				<MessageBar messageBarType={MessageBarType.info}>
+					This is a new version of Gunswap still in development. The old version is still available at <Link href="https://www.gunswap.co">gunswap.co</Link>. Found a bug or have an enhancement idea? <Link href="https://github.com/yDgunz/gunswap/issues">Open a ticket in Github</Link> or email me at <Link href="mailto:gunswapjuggling@gmail.com">gunswapjuggling@gmail.com</Link>.
+				</MessageBar>
 				{this.state.errorMessage &&
 					<MessageBar messageBarType={MessageBarType.severeWarning} isMultiline={false}>
 						{this.state.errorMessage}
