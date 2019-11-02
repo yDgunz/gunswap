@@ -1,0 +1,17 @@
+{
+  "files": {
+    "main.css": "/gunswap/static/css/main.99d16c8a.chunk.css",
+    "main.js": "/gunswap/static/js/main.4b15ccaf.chunk.js",
+    "main.js.map": "/gunswap/static/js/main.4b15ccaf.chunk.js.map",
+    "runtime~main.js": "/gunswap/static/js/runtime~main.bf83cfe5.js",
+    "runtime~main.js.map": "/gunswap/static/js/runtime~main.bf83cfe5.js.map",
+    "static/css/2.5dfd5ae6.chunk.css": "/gunswap/static/css/2.5dfd5ae6.chunk.css",
+    "static/js/2.7ef6f09b.chunk.js": "/gunswap/static/js/2.7ef6f09b.chunk.js",
+    "static/js/2.7ef6f09b.chunk.js.map": "/gunswap/static/js/2.7ef6f09b.chunk.js.map",
+    "index.html": "/gunswap/index.html",
+    "precache-manifest.bd1e817c772f34cdf591cc1d49887e70.js": "/gunswap/precache-manifest.bd1e817c772f34cdf591cc1d49887e70.js",
+    "service-worker.js": "/gunswap/service-worker.js",
+    "static/css/2.5dfd5ae6.chunk.css.map": "/gunswap/static/css/2.5dfd5ae6.chunk.css.map",
+    "static/css/main.99d16c8a.chunk.css.map": "/gunswap/static/css/main.99d16c8a.chunk.css.map"
+  }
+}
