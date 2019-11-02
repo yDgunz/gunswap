@@ -7,7 +7,7 @@ import { PatternSimulation } from "./PatternSimulation";
 import { vec3 } from "@tlaukkan/tsm";
 import { GetTossPathPositionAndVelocity } from "./TossPath";
 import { InterpolateBezierSpline } from "./Bezier";
-import { ShoulderZOffset, ShoulderHeight, ArmHalfLength, ShoulderXOffset, BasePatternHeight } from "./JugglerConfig";
+import { ShoulderZOffset, ShoulderHeight, ArmHalfLength, ShoulderXOffset, BasePatternHeight, ArmAngle } from "./JugglerConfig";
 
 export interface PropLanding {
 	Prop : Prop,
@@ -247,9 +247,10 @@ export class Pattern {
 		return total;
 	}
 
-	public Simulate(numStepsPerBeat : number, beatDuration : number) {
+	public Simulate(numStepsPerBeat : number, beatDuration : number, breakOnCollision : boolean = false) : boolean {
 		var totalNumBeats = this.States.length;
 		var numSteps = totalNumBeats*numStepsPerBeat;		
+		var hasCollision = false;
 		
 		// initialize pattern simulation
 		var patternSimulation : PatternSimulation = {
@@ -386,6 +387,22 @@ export class Pattern {
 				}
 
 			});
+
+			// check to see if any of the props are colliding
+			for (var i = 0; i < this.Props.length; i++) {
+				for (var j = i+1; j < this.Props.length; j++) {
+					var pos1 = patternSimulation.Props[i].Positions[step];
+					var pos2 = patternSimulation.Props[j].Positions[step];
+					var dist = vec3.distance(pos1, pos2);
+					if (dist < this.Props[i].Radius || dist < this.Props[j].Radius) {
+						if (breakOnCollision) {
+							return false;
+						} else {
+							hasCollision = true;
+						}
+					}
+				}
+			}
 
 			// find position for hands that are empty and calculate elbow positions
 			patternSimulation.Jugglers.forEach((juggler, jugglerIx) => {
@@ -573,7 +590,7 @@ export class Pattern {
 						
 					]);
 					
-					var elbowPosition = this.getElbowPosition(shoulderPosition, hand === Hand.Left ? juggler.LeftHandPositions[step] : juggler.RightHandPositions[step], 0.1, hand);
+					var elbowPosition = this.getElbowPosition(shoulderPosition, hand === Hand.Left ? juggler.LeftHandPositions[step] : juggler.RightHandPositions[step], ArmAngle, hand);
 					if (hand === Hand.Left) {
 						juggler.LeftElbowPositions[step] = elbowPosition;
 					} else {
@@ -586,6 +603,8 @@ export class Pattern {
 		}
 
 		this.Simulation = patternSimulation;
+
+		return hasCollision;
 
 	}
 

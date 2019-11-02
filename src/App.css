@@ -36,6 +36,26 @@ canvas {
   display: block;
 }
 
-#juggle-button {
+.panel-main-button {
   margin-top: 10px;
+  width: 100%;
+}
+
+.close-button {
+	float: right;
+    margin-top: 5px;
+}
+
+code {
+    font-family: Monaco, monospace;
+    line-height: 100%;
+    background-color: #eee;
+    padding: 0.2em;
+    letter-spacing: -0.05em;
+    word-break: normal;
+	border-radius: 5px
+}
+
+.example-pattern-settings {
+	display: block;
 }

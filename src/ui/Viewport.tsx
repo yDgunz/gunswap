@@ -45,10 +45,12 @@ class Viewport extends Component<Props,any> {
 		(window as any).jugglingScene = this.jugglingScene; // for debugging
 
 		window.addEventListener('resize', () => { 
-			var width = (this.CanvasContainerRef as HTMLDivElement).offsetWidth;
-			var height = window.innerHeight-28; // subtracting size of slider
-			if (this.jugglingScene) {
-				this.jugglingScene!.Resize(width, height); 
+			if (this.CanvasContainerRef) {
+				var width = this.CanvasContainerRef.offsetWidth;
+				var height = window.innerHeight-28; // subtracting size of slider
+				if (this.jugglingScene) {
+					this.jugglingScene!.Resize(width, height); 
+				}
 			}			
 		});
 	}

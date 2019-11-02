@@ -89,16 +89,19 @@ export class JugglingScene {
 		}, false );
 		this.renderer.domElement.addEventListener( 'mouseup', (event) => {
 			this.onDocumentMouseUp(event);
-		}, false );
-		
+		}, false );		
 		this.renderer.domElement.addEventListener( 'wheel', (event) => {
 			this.onDocumentMouseWheel(event);
 		}, false );
-
-		// TODO - add support for touch
-		//this.renderer.domElement.addEventListener( 'touchmove', this.onDocumentTouchMove, false );
-		//this.renderer.domElement.addEventListener( 'touchstart', this.onDocumentTouchStart, false );		
-		//this.renderer.domElement.addEventListener( 'touchend', this.onDocumentMouseUp, false );
+		this.renderer.domElement.addEventListener( 'touchmove', (event) => {
+			this.onDocumentTouchMove(event);
+		}, false );
+		this.renderer.domElement.addEventListener( 'touchstart', (event) => {
+			this.onDocumentTouchStart(event);
+		}, false );
+		this.renderer.domElement.addEventListener( 'touchmove', (event) => {
+			this.onDocumentTouchEnd(event);
+		}, false );
 		
 		container.append(this.renderer.domElement);
 
@@ -133,12 +136,19 @@ export class JugglingScene {
 		this.onMouseDownPosition.y = event.clientY;
 	}
 
-	private onDocumentMouseMove(event : MouseEvent) {
-		event.preventDefault();
+	private onDocumentTouchStart(event : TouchEvent) {
+		this.isMouseDown = true;
+		this.onMouseDownTheta = this.camTheta;
+		this.onMouseDownPhi = this.camPhi;
+		this.onMouseDownPosition.x = event.touches[0].clientX;
+		this.onMouseDownPosition.y = event.touches[0].clientY;
+	}
+
+	private onMove(x : number, y : number) {
 		if ( this.isMouseDown ) {
-			this.camTheta = - ( ( event.clientX - this.onMouseDownPosition.x ) * 0.01 ) + this.onMouseDownTheta;
+			this.camTheta = - ( ( x - this.onMouseDownPosition.x ) * 0.01 ) + this.onMouseDownTheta;
 			
-			var dy = event.clientY - this.onMouseDownPosition.y;
+			var dy = y - this.onMouseDownPosition.y;
 			
 			var newCamPhi = ( ( dy ) * 0.01 ) + this.onMouseDownPhi;
 
@@ -149,7 +159,22 @@ export class JugglingScene {
 		}
 	}
 
+	private onDocumentMouseMove(event : MouseEvent) {
+		event.preventDefault();		
+		this.onMove(event.clientX, event.clientY);
+	}
+
+	private onDocumentTouchMove(event : TouchEvent) {
+		event.preventDefault();
+		this.onMove(event.touches[0].clientX, event.touches[0].clientY);
+	}
+
 	private onDocumentMouseUp( event : MouseEvent) {
+		event.preventDefault();
+		this.isMouseDown = false;
+	}
+
+	private onDocumentTouchEnd( event : TouchEvent) {
 		event.preventDefault();
 		this.isMouseDown = false;
 	}

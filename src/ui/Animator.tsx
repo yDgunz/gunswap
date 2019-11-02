@@ -8,6 +8,7 @@ import 'office-ui-fabric-react/dist/css/fabric.css';
 import Viewport from './Viewport';
 import { PatternSimulation } from '../simulator/PatternSimulation';
 import { Slider } from 'office-ui-fabric-react';
+import { Search } from './Search';
 
 interface State {
 	pattern: Pattern,
@@ -26,46 +27,62 @@ class Animator extends Component<any,State> {
 
 		this.state.pattern.Simulate(100,0.24);
 
+		window.onresize = () => {
+			this.forceUpdate();
+		}
+
 		this.updatePattern = this.updatePattern.bind(this);
 	}
 
-	updatePattern(pattern : Pattern) {
+	private updatePattern(pattern : Pattern) {
 		this.setState({pattern: pattern});
 	}
 
-	updateAnimationSpeed(value : number) {
-		var animationSpeed = 1000*value + 5000*(1-value);
-		this.setState({animationSpeed: animationSpeed});
-	}
+	private updateAnimationSpeed(value : number) {
+		this.setState({animationSpeed: value});
+	}	
 
   	render() {
-		return (
-			<div className="ms-Grid" dir="ltr">
-				<div className="ms-Grid-row">
-					<div className="ms-Grid-col ms-sm6 ms-md4 ms-lg4">
-						<Pivot >
-							<PivotItem headerText="Pattern" itemIcon="Settings">          
-								<PatternSettingsControls updatePattern={this.updatePattern}></PatternSettingsControls>
-							</PivotItem>
-							<PivotItem headerText="Animator" itemIcon="Video">
-							<Slider
-								label={"Animation Speed"}
-								min={0}
-								max={1}
-								step={0.01}
-								defaultValue={0.5}
-								showValue={false}
-								onChanged={(e,value) => this.updateAnimationSpeed(value)}
-							/>
-							</PivotItem>
-						</Pivot>
-					</div>
-					<div className="ms-Grid-col ms-sm6 ms-md8 ms-lg8">
-						<Viewport pattern={this.state.pattern} animationSpeed={this.state.animationSpeed} />
-					</div>
-				</div>
-			</div>      		
+		let controls = (
+			<Pivot >
+				<PivotItem headerText="Pattern" itemIcon="Settings">
+					<PatternSettingsControls updatePattern={this.updatePattern} updateAnimationSpeed={this.updateAnimationSpeed}></PatternSettingsControls>
+				</PivotItem>
+				<PivotItem headerText="Siteswaps" itemIcon="Search">
+					<Search></Search>
+				</PivotItem>
+			</Pivot>
 		);
+	
+		let viewport = (
+			<Viewport pattern={this.state.pattern} animationSpeed={this.state.animationSpeed} />
+		);
+		if (window.innerWidth > 900) {
+			return (			
+				<div className="ms-Grid" dir="ltr">
+					<div className="ms-Grid-row">
+						<div style={{"height":"100vh", "overflow":"auto"}} className="ms-Grid-col ms-sm6 ms-md4 ms-lg4">
+							{controls}		
+						</div>
+						<div className="ms-Grid-col ms-sm6 ms-md8 ms-lg8">
+							{viewport}
+						</div>
+					</div>
+				</div>      		
+			);
+		} else {
+			return (
+				<Pivot>
+					<PivotItem headerText="Controls">
+						{controls}
+					</PivotItem>
+					<PivotItem headerText="Animator">
+						{viewport}
+					</PivotItem>
+				</Pivot>
+			)
+		}
+
   	}
 }
 
