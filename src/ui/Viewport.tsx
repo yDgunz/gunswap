@@ -11,7 +11,16 @@ interface Props {
 	animationSpeed: number
 }
 
-class Viewport extends Component<Props,any> {
+interface State {
+	debugInfo: DebugInfo | null,
+	userControllingStep: boolean
+}
+
+interface DebugInfo {
+	step: number
+}
+
+class Viewport extends Component<Props,State> {
 
 	CanvasContainerRef : HTMLDivElement | null;
 
@@ -20,18 +29,33 @@ class Viewport extends Component<Props,any> {
 	constructor(props : Props) {
 		super(props);		
 		this.CanvasContainerRef = null;
+
+		this.state = {
+			debugInfo: null,
+			userControllingStep: false
+		};
 	}		
 
-	updateStep(step : number) {
+	updateStep(sliderValue : number) {
 		if (this.jugglingScene) {
-			this.jugglingScene.UpdateStep(step);
-		}
+			this.jugglingScene.UpdateStep(sliderValue);
+			
+			 this.setState({
+				 debugInfo: {step: this.jugglingScene!.currentStep},
+				 userControllingStep: true
+			});
+
+		}		
 	}
 
 	componentDidUpdate() {		
 		if (this.jugglingScene) {
+			// if the pattern changed then user is no longer controlling step
+			if (this.jugglingScene.pattern !== this.props.pattern) {
+				this.jugglingScene.userControllingStep = false;
+				this.setState({userControllingStep: false, debugInfo: null});
+			}
 			this.jugglingScene.UpdatePattern(this.props.pattern);
-			this.jugglingScene.userControllingStep = false;
 			this.jugglingScene.animationSpeed = this.props.animationSpeed;
 		}
 	}
@@ -56,8 +80,13 @@ class Viewport extends Component<Props,any> {
 	}
 
   	render() {
+		let debug : JSX.Element = (<div></div>);
+		if (this.state.debugInfo) {
+			debug = <div>{this.state.debugInfo.step}</div>
+		}
 		return (
-			<div>
+			<div>				
+				<div className="debug-info">{debug}</div>
 				<div ref={(DOMNodeRef) => {
 					this.CanvasContainerRef=DOMNodeRef;
 				}}>

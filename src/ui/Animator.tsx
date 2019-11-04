@@ -22,7 +22,7 @@ class Animator extends Component<any,State> {
 
 		this.state = {
 			pattern: new Pattern(new Siteswap("3"), GetDwellPaths("(30)(10)"), 0.8, 0),
-			animationSpeed: 3000
+			animationSpeed: 2000
 		}
 
 		this.state.pattern.Simulate(100,0.24);

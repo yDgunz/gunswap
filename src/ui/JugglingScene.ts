@@ -34,7 +34,7 @@ export class JugglingScene {
 	private camPhi : number;
 	private camTheta : number;
 	private startTime : number;
-	private pattern : Pattern|null;	
+	public pattern : Pattern|null;	
 	private isMouseDown : boolean;
 	private onMouseDownPosition : vec3;
 	private onMouseDownTheta : number;

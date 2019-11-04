@@ -59,3 +59,10 @@ code {
 .example-pattern-settings {
 	display: block;
 }
+
+.debug-info {
+	position: absolute;
+	bottom: 100px;
+	right: 20px;
+	color: green;
+}
