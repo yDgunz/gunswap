@@ -336,8 +336,11 @@ export class Pattern {
 
 				if (virtualCurrentTime >= catchTime) {
 					virtualCurrentTime -= totalNumBeats*beatDuration;
-				}
-				
+				}							
+
+				var prevTossJugglerBodyPosition = patternSimulation.Jugglers[prevToss.Toss.Juggler].BodyPositions[step];
+				var prevTossJugglerBodyRotation = patternSimulation.Jugglers[prevToss.Toss.Juggler].BodyRotations[step];
+
 				var tossJugglerBodyPosition = patternSimulation.Jugglers[curToss.Toss.Juggler].BodyPositions[step];
 				var tossJugglerBodyRotation = patternSimulation.Jugglers[curToss.Toss.Juggler].BodyRotations[step];
 
@@ -349,7 +352,7 @@ export class Pattern {
 					// velocity at time of catch
 					var prevTossFlightTime = prevCatchTime - prevTossTime;				
 
-					var catchVelocity = GetTossPathPositionAndVelocity(prevToss, curToss, prevTossFlightTime, prevTossFlightTime, tossJugglerBodyPosition, tossJugglerBodyRotation, catchJugglerBodyPosition, catchJugglerBodyRotation)[1];
+					var catchVelocity = GetTossPathPositionAndVelocity(prevToss, curToss, prevTossFlightTime, prevTossFlightTime, prevTossJugglerBodyPosition, prevTossJugglerBodyRotation, tossJugglerBodyPosition, tossJugglerBodyRotation)[1];
 
 					// velocity at the time of throw
 					var tossVelocity = GetTossPathPositionAndVelocity(curToss, nextToss, 0, catchTime-tossTime, tossJugglerBodyPosition, tossJugglerBodyRotation, catchJugglerBodyPosition, catchJugglerBodyRotation)[1];
@@ -471,7 +474,7 @@ export class Pattern {
 
 							this.Props.forEach((prop) => {
 								prop.TossSchedule.forEach((scheduledToss, scheduledTossIx, tossSchedule) => {
-									if(scheduledToss.Hand === hand && scheduledToss.Beat === handNextToss!.Beat) {
+									if(scheduledToss.Hand === hand && scheduledToss.Beat === handNextToss!.Beat && scheduledToss.Toss.Juggler === jugglerIx) {
 										if (scheduledTossIx == 0) {
 											catchingPropLastToss = tossSchedule[tossSchedule.length-1];
 										} else {
@@ -498,14 +501,14 @@ export class Pattern {
 							var jugglerBodyRotation = juggler.BodyRotations[step];
 
 							// the juggler that we just tossed a prop to
-							var tossedPropCatchingJugglerBodyPosition = patternSimulation.Jugglers[tossedPropNextToss!.Toss.Juggler].BodyPositions[step];
-							var tossedPropCatchingJugglerBodyRotation = patternSimulation.Jugglers[tossedPropNextToss!.Toss.Juggler].BodyRotations[step]; 
+							var tossedPropCatchingJugglerBodyPosition = patternSimulation.Jugglers[handLastToss.Toss.TargetJuggler].BodyPositions[step];
+							var tossedPropCatchingJugglerBodyRotation = patternSimulation.Jugglers[handLastToss.Toss.TargetJuggler].BodyRotations[step]; 
 
 							// the juggler that tossed the prop we're catching
 							var catchingPropTossJugglerBodyPosition = patternSimulation.Jugglers[catchingPropLastToss!.Toss.Juggler].BodyPositions[step];
 							var catchingPropTossJugglerBodyRotation = patternSimulation.Jugglers[catchingPropLastToss!.Toss.Juggler].BodyRotations[step];
 
-							var tossVelocity = GetTossPathPositionAndVelocity(handLastToss, tossedPropNextToss!, 0, handLastToss.Toss.NumBeats*beatDuration, jugglerBodyPosition, jugglerBodyRotation, tossedPropCatchingJugglerBodyPosition, tossedPropCatchingJugglerBodyRotation)[1];							
+							var tossVelocity = GetTossPathPositionAndVelocity(handLastToss, tossedPropNextToss!, 0, handLastToss.Toss.NumBeats*beatDuration, jugglerBodyPosition, jugglerBodyRotation, tossedPropCatchingJugglerBodyPosition, tossedPropCatchingJugglerBodyRotation)[1];
 							var catchVelocity = GetTossPathPositionAndVelocity(catchingPropLastToss!, handNextToss, catchingPropLastToss!.Toss.NumBeats*beatDuration-catchingPropLastToss!.Toss.DwellRatio*beatDuration,catchingPropLastToss!.Toss.NumBeats*beatDuration-catchingPropLastToss!.Toss.DwellRatio*beatDuration, catchingPropTossJugglerBodyPosition, catchingPropTossJugglerBodyRotation, jugglerBodyPosition, jugglerBodyRotation)[1];
 							
 							if (hand === Hand.Left) {
