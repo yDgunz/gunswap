@@ -43,26 +43,23 @@ class Animator extends Component<any,State> {
 	}	
 
   	render() {
-		let controls = (
-			<Pivot >
-				<PivotItem headerText="Pattern" itemIcon="Settings">
-					<PatternSettingsControls updatePattern={this.updatePattern} updateAnimationSpeed={this.updateAnimationSpeed}></PatternSettingsControls>
-				</PivotItem>
-				<PivotItem headerText="Siteswaps" itemIcon="Search">
-					<Search></Search>
-				</PivotItem>
-			</Pivot>
-		);
-	
-		let viewport = (
-			<Viewport pattern={this.state.pattern} animationSpeed={this.state.animationSpeed} />
-		);
+		let patternSettings = <PatternSettingsControls updatePattern={this.updatePattern} updateAnimationSpeed={this.updateAnimationSpeed}></PatternSettingsControls>;
+		let search = <Search></Search>; 
+		let viewport = <Viewport pattern={this.state.pattern} animationSpeed={this.state.animationSpeed} />;	
+		
 		if (window.innerWidth > 900) {
 			return (			
 				<div className="ms-Grid" dir="ltr">
 					<div className="ms-Grid-row">
-						<div style={{"height":"100vh", "overflow":"auto"}} className="ms-Grid-col ms-sm6 ms-md4 ms-lg4">
-							{controls}		
+						<div className="ms-Grid-col ms-sm6 ms-md4 ms-lg4">
+						<Pivot >
+							<PivotItem headerText="Pattern" itemIcon="Settings">
+								{patternSettings}
+							</PivotItem>
+							<PivotItem headerText="Siteswaps" itemIcon="Search">
+								{search}
+							</PivotItem>
+						</Pivot>
 						</div>
 						<div className="ms-Grid-col ms-sm6 ms-md8 ms-lg8">
 							{viewport}
@@ -72,13 +69,16 @@ class Animator extends Component<any,State> {
 			);
 		} else {
 			return (
-				<Pivot>
-					<PivotItem headerText="Controls">
-						{controls}
-					</PivotItem>
-					<PivotItem headerText="Animator">
+				<Pivot >
+					<PivotItem headerText="Animator" itemIcon="Video">
 						{viewport}
 					</PivotItem>
+					<PivotItem headerText="Pattern" itemIcon="Settings">
+						{patternSettings}
+					</PivotItem>
+					<PivotItem headerText="Siteswaps" itemIcon="Search">
+						{search}
+					</PivotItem>					
 				</Pivot>
 			)
 		}
