@@ -334,7 +334,7 @@ export class Pattern {
 				var prevTossTime = prevTossVirtualBeat*beatDuration + prevToss.Toss.DwellRatio*beatDuration;
 				var prevCatchTime = curTossVirtualBeat*beatDuration;
 
-				if (virtualCurrentTime > catchTime) {
+				if (virtualCurrentTime >= catchTime) {
 					virtualCurrentTime -= totalNumBeats*beatDuration;
 				}
 				
@@ -422,25 +422,14 @@ export class Pattern {
 							prop.TossSchedule.forEach((scheduledToss) => {
 								
 								var scheduledTossVirtualBeat = scheduledToss.Beat;
-								if (scheduledTossVirtualBeat < currentBeat) {
+								if (scheduledTossVirtualBeat <= currentBeat) {
 									scheduledTossVirtualBeat += totalNumBeats;
 								}								
 								
 								if (scheduledTossVirtualBeat > currentBeat && scheduledToss.Toss.Juggler == jugglerIx && scheduledToss.Hand == hand) {
-									if (handNextToss === undefined) {
+									if (handNextToss === undefined || scheduledTossVirtualBeat < handNextTossVirtualBeat) {
 										handNextToss = scheduledToss;
-										handNextTossVirtualBeat = handNextToss.Beat;
-										if (handNextTossVirtualBeat < currentBeat) {
-											handNextTossVirtualBeat += totalNumBeats;
-										}
-									} else {																				
-										if (scheduledTossVirtualBeat < handNextTossVirtualBeat) {
-											handNextToss = scheduledToss;
-											handNextTossVirtualBeat = handNextToss.Beat;
-											if (handNextTossVirtualBeat < currentBeat) {
-												handNextTossVirtualBeat += totalNumBeats;
-											}
-										}
+										handNextTossVirtualBeat = scheduledTossVirtualBeat;
 									}
 								}
 								
@@ -458,20 +447,9 @@ export class Pattern {
 								}
 
 								if (scheduledTossVirtualBeat <= currentBeat && scheduledToss.Toss.Juggler == jugglerIx && scheduledToss.Hand == hand) {
-									if (handLastToss === undefined) {
+									if (handLastToss === undefined || scheduledTossVirtualBeat > handLastTossVirtualBeat) {
 										handLastToss = scheduledToss;
-										handLastTossVirtualBeat = handLastToss.Beat;
-										if (handLastTossVirtualBeat > currentBeat) {
-											handLastTossVirtualBeat -= totalNumBeats;
-										}
-									} else {										
-										if (scheduledTossVirtualBeat > handLastTossVirtualBeat) {
-											handLastToss = scheduledToss;
-											handLastTossVirtualBeat = handLastToss.Beat;
-											if (handLastTossVirtualBeat > currentBeat) {
-												handLastTossVirtualBeat -= totalNumBeats;
-											}
-										}
+										handLastTossVirtualBeat = scheduledTossVirtualBeat;
 									}
 								}								
 							});

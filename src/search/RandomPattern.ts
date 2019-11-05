@@ -21,7 +21,7 @@ export function FindRandomPattern() : PatternSettings {
 
 	var siteswaps = FindSiteswaps(config);	
 
-	var dwellPathXPositions = [-20,-10,0,10,10,20,20,30];
+	var dwellPathXPositions = [-20,-10,0,10,20,30];
 	var dwellPathYPositions = [0,0,10,20,20,30];
 
 	var dwellPathPositions : string[] = [];
@@ -36,7 +36,7 @@ export function FindRandomPattern() : PatternSettings {
 		var siteswap = siteswaps[Math.floor(Math.random()*siteswaps.length)];	
 		
 		var dwellPaths = [];
-		for (var i = 0; i < 1+Math.random()*5; i++) {			
+		for (var i = 0; i < 1+Math.round(Math.random()); i++) {			
 			var dwellPath = "";
 			for (var j = 0; j < 1+Math.round(Math.random())*4; j++) {
 				dwellPath += dwellPathPositions[Math.floor(Math.random()*dwellPathPositions.length)];

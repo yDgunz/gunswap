@@ -75,7 +75,7 @@ export class PatternSettingsControls extends Component<Props,State> {
 		try {
 			var siteswap = new Siteswap(patternSettings.siteswap.toString());
 			var pattern = new Pattern(siteswap, GetDwellPaths(patternSettings.dwellPath), patternSettings.dwellRatio, 1);
-			pattern.Simulate(30,patternSettings.beatDuration);
+			pattern.Simulate(100,patternSettings.beatDuration);
 			// lift pattern w/ simulation up to parent
 			this.props.updatePattern(pattern);
 			this.setState({
