@@ -38,7 +38,7 @@ export function FindRandomPattern() : PatternSettings {
 		var dwellPaths = [];
 		for (var i = 0; i < 1+Math.round(Math.random()); i++) {			
 			var dwellPath = "";
-			for (var j = 0; j < 1+Math.round(Math.random())*4; j++) {
+			for (var j = 0; j < 1+Math.round(Math.random()); j++) {
 				dwellPath += dwellPathPositions[Math.floor(Math.random()*dwellPathPositions.length)];
 			}
 			dwellPaths.push(dwellPath);		

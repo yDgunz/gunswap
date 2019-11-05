@@ -39,7 +39,7 @@ export class PatternSettingsControls extends Component<Props,State> {
 		super(props);		
 
 		this.state = {
-			input: Yaml.safeDump(defaultPatternSettings),
+			input: Yaml.safeDump(defaultPatternSettings).replace(/'/g,""),
 			errorMessage: null,
 			showSyntaxHelp: false
 		};
@@ -95,7 +95,7 @@ export class PatternSettingsControls extends Component<Props,State> {
 
 	private juggleRandomPattern() {
 		var patternSettings = FindRandomPattern();
-		this.setState({input: Yaml.safeDump(patternSettings)});
+		this.setState({input: Yaml.safeDump(patternSettings).replace(/'/g,"")});
 		this.juggle(patternSettings);
 	}
 
