@@ -43,8 +43,7 @@ export class JugglingScene {
 	public currentStep : number;
 	public userControllingStep : boolean;
 	public animationSpeed : number;
-
-	
+	public isPlaying : boolean;
 
 	constructor(container : HTMLDivElement, pattern : Pattern|null, width : number, height : number, animationSpeed: number) {		
 
@@ -78,6 +77,7 @@ export class JugglingScene {
 		this.userControllingStep = false;
 		this.currentStep = 0;
 		this.animationSpeed = animationSpeed;
+		this.isPlaying = true;
 
 		this.renderer.setSize(width, height);
 
@@ -194,13 +194,14 @@ export class JugglingScene {
 	}
 
 	private animate() {
-		if (this.pattern && this.pattern.Simulation) {			
+
+		if (this.pattern && this.pattern.Simulation && (this.isPlaying || this.userControllingStep)) {			
 
 			if (!this.userControllingStep) {
 				var timeElapsed = ((new Date()).getTime() - this.startTime);
 		
-				var patternTimeElapsed = timeElapsed % (this.pattern.States.length*this.pattern.Simulation.BeatDuration*this.animationSpeed); 
-				this.currentStep = Math.floor(patternTimeElapsed/(this.pattern.States.length*this.pattern.Simulation.BeatDuration*this.animationSpeed)*(this.pattern.Simulation.NumStepsPerBeat*this.pattern.States.length));
+				var patternTimeElapsed = timeElapsed % (this.pattern.States.length*this.pattern.Simulation.BeatDuration*1000/this.animationSpeed); 
+				this.currentStep = Math.floor(patternTimeElapsed/(this.pattern.States.length*this.pattern.Simulation.BeatDuration*1000/this.animationSpeed)*(this.pattern.Simulation.NumStepsPerBeat*this.pattern.States.length));
 			}
 
 			// if we need to, remove some meshes from the scene

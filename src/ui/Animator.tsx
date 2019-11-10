@@ -11,8 +11,7 @@ import { Slider } from 'office-ui-fabric-react';
 import { Search } from './Search';
 
 interface State {
-	pattern: Pattern,
-	animationSpeed: number
+	pattern: Pattern
 }
 
 class Animator extends Component<any,State> {
@@ -21,8 +20,7 @@ class Animator extends Component<any,State> {
 		super(props);		
 
 		this.state = {
-			pattern: new Pattern(new Siteswap("3"), GetDwellPaths("(30)(10)"), 0.8, 0),
-			animationSpeed: 2000
+			pattern: new Pattern(new Siteswap("3"), GetDwellPaths("(30)(10)"), 0.8, 0)
 		}
 
 		this.state.pattern.Simulate(100,0.24);
@@ -38,14 +36,10 @@ class Animator extends Component<any,State> {
 		this.setState({pattern: pattern});
 	}
 
-	private updateAnimationSpeed(value : number) {
-		this.setState({animationSpeed: value});
-	}	
-
   	render() {
-		let patternSettings = <PatternSettingsControls updatePattern={this.updatePattern} updateAnimationSpeed={this.updateAnimationSpeed}></PatternSettingsControls>;
+		let patternSettings = <PatternSettingsControls updatePattern={this.updatePattern}></PatternSettingsControls>;
 		let search = <Search></Search>; 
-		let viewport = <Viewport pattern={this.state.pattern} animationSpeed={this.state.animationSpeed} />;	
+		let viewport = <Viewport pattern={this.state.pattern} />;
 		
 		if (window.innerWidth > 900) {
 			return (			

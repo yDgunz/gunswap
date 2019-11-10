@@ -5,12 +5,10 @@ import { GetDwellPaths, DwellPath } from '../simulator/DwellPath';
 import { PrimaryButton, Stack, TextField, MessageBar, MessageBarType, Modal, Label, Link, DefaultButton, Slider } from 'office-ui-fabric-react';
 import 'office-ui-fabric-react/dist/css/fabric.css';
 import * as Yaml from 'js-yaml';
-import { SyntaxHelp } from './SyntaxHelp';
 import { FindRandomPattern } from '../search/RandomPattern';
 
 interface Props {
-	updatePattern: Function,
-	updateAnimationSpeed: Function
+	updatePattern: Function
 }
 
 export interface PatternSettings {	
@@ -46,23 +44,9 @@ export class PatternSettingsControls extends Component<Props,State> {
 	
 		// This binding is necessary to make `this` work in the callback		
 		this.updatePatternSettingsInput = this.updatePatternSettingsInput.bind(this);
-		this.closeSyntaxHelp = this.closeSyntaxHelp.bind(this);
-		this.showSyntaxHelp = this.showSyntaxHelp.bind(this);
 		this.juggleRandomPattern = this.juggleRandomPattern.bind(this);
 		this.juggleInputPattern = this.juggleInputPattern.bind(this);
 		this.juggle = this.juggle.bind(this);
-	}
-
-	private showSyntaxHelp() {
-		this.setState({
-			showSyntaxHelp: true
-		});
-	}
-
-	private closeSyntaxHelp() {
-		this.setState({
-			showSyntaxHelp: false
-		});
 	}
 
 	private updatePatternSettingsInput(e : any) {		
@@ -111,11 +95,6 @@ export class PatternSettingsControls extends Component<Props,State> {
 		}		
 	}
 
-	private updateAnimationSpeed(value : number) {
-		var animationSpeed = 1000*value + 5000*(1-value);
-		this.props.updateAnimationSpeed(animationSpeed);
-	}
-
 	render() {		
 		return (
 			<Stack>				
@@ -131,45 +110,14 @@ export class PatternSettingsControls extends Component<Props,State> {
 					<PrimaryButton className="panel-main-button" text="Juggle" onClick={this.juggleInputPattern} />
 					<DefaultButton className="panel-main-button" text="Random Pattern" onClick={this.juggleRandomPattern} />	
 				</Stack>
-				<Label>Advanced Pattern Settings | <Link onClick={this.showSyntaxHelp}>Syntax Help</Link></Label>
-				<Modal
-					isOpen={this.state.showSyntaxHelp}
-					onDismiss={this.closeSyntaxHelp}
-					isBlocking={false}
-				>
-					<SyntaxHelp closeSyntaxHelp={this.closeSyntaxHelp} />
-				</Modal>							
+				<Label>Pattern Settings</Label>
 				<TextField 
 					value={this.state.input} 
 					multiline={true}
 					onChange={this.updatePatternSettingsInput} 
-					autoAdjustHeight={true} />		
-				<br/>		
-				<Slider
-					label={"Animation Speed"}
-					min={0}
-					max={1}
-					step={0.01}
-					defaultValue={0.5}
-					showValue={false}
-					onChanged={(e,value) => this.updateAnimationSpeed(value)}
-				/>
+					autoAdjustHeight={true} />
 			</Stack>
 		);
 	}
 
 }
-
-// would like to use this for the buttons but adds scrollbars to the window
-/*
-				<div className="ms-Grid" dir="ltr">
-					<div className="ms-Grid-row">
-						<div className="ms-Grid-col ms-md6">
-							<PrimaryButton className="panel-main-button" text="Juggle" onClick={this.juggle} />
-						</div>
-						<div className="ms-Grid-col ms-md6">
-							<PrimaryButton className="panel-main-button" text="Random Pattern" onClick={this.randomPattern} />	
-						</div>
-					</div>
-				</div>
-*/
