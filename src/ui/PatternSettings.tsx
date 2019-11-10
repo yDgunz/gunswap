@@ -8,7 +8,8 @@ import * as Yaml from 'js-yaml';
 import { FindRandomPattern } from '../search/RandomPattern';
 
 interface Props {
-	updatePattern: Function
+	updatePattern: Function,
+	patternSettings: PatternSettings
 }
 
 export interface PatternSettings {	
@@ -24,20 +25,13 @@ interface State {
 	showSyntaxHelp: boolean
 }
 
-const defaultPatternSettings : PatternSettings = {	
-	siteswap: '3',
-	beatDuration: 0.24,
-	dwellPath: "(30)(10)",
-	dwellRatio: 0.8
-};
-
 export class PatternSettingsControls extends Component<Props,State> {
 
 	constructor(props : Props) {
 		super(props);		
 
 		this.state = {
-			input: Yaml.safeDump(defaultPatternSettings).replace(/'/g,""),
+			input: Yaml.safeDump(this.props.patternSettings).replace(/'/g,""),
 			errorMessage: null,
 			showSyntaxHelp: false
 		};
@@ -49,7 +43,7 @@ export class PatternSettingsControls extends Component<Props,State> {
 		this.juggle = this.juggle.bind(this);
 	}
 
-	private updatePatternSettingsInput(e : any) {		
+	private updatePatternSettingsInput(e : any) {
 		this.setState({
 			input: e.target.value
 		});
@@ -61,7 +55,7 @@ export class PatternSettingsControls extends Component<Props,State> {
 			var pattern = new Pattern(siteswap, GetDwellPaths(patternSettings.dwellPath), patternSettings.dwellRatio, 1);
 			pattern.Simulate(100,patternSettings.beatDuration);
 			// lift pattern w/ simulation up to parent
-			this.props.updatePattern(pattern);
+			this.props.updatePattern(pattern, patternSettings);			
 			this.setState({
 				errorMessage: null
 			});
