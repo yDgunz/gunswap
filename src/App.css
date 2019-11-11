@@ -70,3 +70,11 @@ code {
 .viewport-slider {
 	width: 100%;
 }
+
+.animator-layout-right {
+	padding: 0px !important;
+}
+
+.siteswap-list {
+	text-align: center;
+}

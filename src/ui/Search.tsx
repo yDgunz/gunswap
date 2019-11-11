@@ -1,14 +1,22 @@
 import React, { Component, ReactNode } from 'react';
 import { FindSiteswaps, FindSiteswapsConfig } from '../search/Search';
-import { List, Stack, PrimaryButton, TextField, Label } from 'office-ui-fabric-react';
+import { List, Stack, PrimaryButton, TextField, Label, Link } from 'office-ui-fabric-react';
 import * as Yaml from 'js-yaml';
+import { Siteswap } from '../simulator/Siteswap';
+import { Pattern } from '../simulator/Pattern';
+import { GetDwellPaths } from '../simulator/DwellPath';
+import { PatternSettings } from './PatternSettings';
 
-interface State {
-	Siteswaps : string[];
-	Input: string
+interface Props {
+	updatePattern : Function
 }
 
-export class Search extends Component<any,State> {
+interface State {
+	siteswaps : string[];
+	input: string
+}
+
+export class Search extends Component<Props,State> {
 
 	constructor(props : any) {
 		super(props);
@@ -26,42 +34,65 @@ export class Search extends Component<any,State> {
 		}		
 
 		this.state = {
-			Siteswaps: [],
-			Input: Yaml.safeDump(defaultConfig),
+			siteswaps: [],
+			input: Yaml.safeDump(defaultConfig),
 		};
 
 		this.onRenderCell = this.onRenderCell.bind(this);
 		this.findSiteswaps = this.findSiteswaps.bind(this);
 		this.updateInput = this.updateInput.bind(this);
-
+		this.juggleSiteswap = this.juggleSiteswap.bind(this);
 	}
 
+	private juggleSiteswap(siteswap : string) {
+		var patternSettings : PatternSettings = {
+			siteswap: siteswap,
+			dwellPath: "(30)(10)",
+			beatDuration: 0.24,
+			dwellRatio: 0.8
+		}
+
+		var s = new Siteswap(patternSettings.siteswap);
+		var pattern = new Pattern(s, GetDwellPaths(patternSettings.dwellPath), patternSettings.dwellRatio, 1);
+		pattern.Simulate(100,patternSettings.beatDuration);		
+
+		this.props.updatePattern(pattern, patternSettings);
+	}
+	
 	private findSiteswaps() {
 		var config : FindSiteswapsConfig | undefined;
 		try {
-			config = Yaml.safeLoad(this.state.Input);
+			config = Yaml.safeLoad(this.state.input);
 		} catch (e) {
 			// TODO
 		}
 
 		if (config) {
 			var siteswaps = FindSiteswaps(config);
-			this.setState({Siteswaps: siteswaps});
+			this.setState({siteswaps: siteswaps});
 		}		
 	}	
 
 	private onRenderCell(item?: string, index?: number | undefined): ReactNode {
 		return (
 			<div id={index!.toString()}>
-				{item}
+				<Link onClick={() => {this.juggleSiteswap(item as string)}}>{item}</Link>
 			</div>
 		);
 	}
 
 	private updateInput(e : any) {
 		this.setState({
-			Input: e.target.value
+			input: e.target.value
 		});
+	}
+
+	componentDidUpdate() {
+		var siteswapList = document.getElementsByClassName('siteswap-list');
+		if (siteswapList) {
+			(siteswapList[0] as any).style.height = (window.innerHeight - (siteswapList[0] as any).offsetTop).toString()+"px";
+			(siteswapList[0] as any).style.overflow = "auto";
+		}
 	}
 
 	render() {
@@ -71,11 +102,11 @@ export class Search extends Component<any,State> {
 				<PrimaryButton className="panel-main-button" text="Find Siteswaps" onClick={this.findSiteswaps} />					
 				<Label>Search Settings</Label>
 				<TextField 
-					value={this.state.Input} 
+					value={this.state.input} 
 					multiline={true}
 					onChange={this.updateInput} 
 					autoAdjustHeight={true} />
-				<List className="siteswap-list" items={this.state.Siteswaps} onRenderCell={this.onRenderCell}></List>
+				<List className="siteswap-list" items={this.state.siteswaps} onRenderCell={this.onRenderCell}></List>
 			</Stack>				
 		)
 	}

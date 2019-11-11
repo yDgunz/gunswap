@@ -18,7 +18,7 @@ interface State {
 }
 
 var defaultPatternSettings : PatternSettings = {	
-	siteswap: '3',
+	siteswap: '5',
 	beatDuration: 0.24,
 	dwellPath: "(30)(10)",
 	dwellRatio: 0.8
@@ -58,13 +58,12 @@ class Animator extends Component<any,State> {
 		
 		var patternSettingsQueryString = encodeURIComponent(lzutf8.compress(JSON.stringify(patternSettings),{outputEncoding: "Base64"}));
 		window.history.pushState('pattern', 'pattern', '/?patternSettings=' + patternSettingsQueryString);
-
-		this.setState({pattern: pattern, patternSettings: patternSettings});
+		this.setState({pattern: pattern, patternSettings: patternSettings});		
 	}
 
   	render() {
 		let patternSettings = <PatternSettingsControls updatePattern={this.updatePattern} patternSettings={this.state.patternSettings}></PatternSettingsControls>;
-		let search = <Search></Search>; 
+		let search = <Search updatePattern={this.updatePattern}></Search>; 
 		let viewport = <Viewport pattern={this.state.pattern} />;
 		
 		if (window.innerWidth > 900) {
@@ -81,7 +80,7 @@ class Animator extends Component<any,State> {
 							</PivotItem>
 						</Pivot>
 						</div>
-						<div className="ms-Grid-col ms-sm6 ms-md8 ms-lg8">
+						<div className="animator-layout-right ms-Grid-col ms-sm6 ms-md8 ms-lg8">
 							{viewport}
 						</div>
 					</div>

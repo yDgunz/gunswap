@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { Pattern } from "../simulator/Pattern";
 import { Object3D } from "three";
 import { vec3 } from "@tlaukkan/tsm";
-import { ShoulderZOffset, ShoulderHeight, ArmHalfLength, ShoulderXOffset } from "../simulator/JugglerConfig";
+import { ShoulderZOffset, ShoulderHeight, ArmHalfLength, ShoulderXOffset, BasePatternHeight } from "../simulator/JugglerConfig";
 
 const JugglerMeshMaterial = new THREE.MeshLambertMaterial( { color: 'grey' } );
 
@@ -60,7 +60,7 @@ export class JugglingScene {
 		this.jugglerMeshes = [];
 		
 		this.camRadius = 1;
-		this.camPhi = .3;
+		this.camPhi = 0;
 		this.camTheta = Math.PI;
 		
 		this.startTime = (new Date()).getTime();
@@ -118,6 +118,7 @@ export class JugglingScene {
 		if (pattern) {
 			var highestLowest = (pattern as Pattern).GetHeighestAndLowestPositionInSimulation();
 			this.positionToLookAt.y = highestLowest[0] - (highestLowest[0] - highestLowest[1])/2;
+			this.camRadius = (highestLowest[0] - (highestLowest[0] - highestLowest[1])/2) - BasePatternHeight/2;
 			this.updateCamera();
 		}		
 	}
