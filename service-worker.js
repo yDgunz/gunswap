@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/gunswap/precache-manifest.3b28c9b7a6ab7d9f39611e6dfd89c407.js"
+  "/gunswap/precache-manifest.af6372b5cc6b3cd2441c1a7697e1dd36.js"
 );
 
 self.addEventListener('message', (event) => {
