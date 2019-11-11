@@ -57,7 +57,7 @@ class Animator extends Component<any,State> {
 	private updatePattern(pattern : Pattern, patternSettings: PatternSettings) {
 		
 		var patternSettingsQueryString = encodeURIComponent(lzutf8.compress(JSON.stringify(patternSettings),{outputEncoding: "Base64"}));
-		window.history.pushState('pattern', 'pattern', '/?patternSettings=' + patternSettingsQueryString);
+		window.history.pushState('pattern', 'pattern', window.location + '?patternSettings=' + patternSettingsQueryString);
 		this.setState({pattern: pattern, patternSettings: patternSettings});		
 	}
 
