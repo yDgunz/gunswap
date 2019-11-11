@@ -12,7 +12,7 @@ export class Siteswap {
 	public readonly NumJugglers : number;
 
     constructor(siteswapInput: string) {
-        this.Siteswap = siteswapInput.replace(/\s/g,"");
+        this.Siteswap = siteswapInput.toString().replace(/\s/g,"");
         this.NumJugglers = 1;
         this.IsPassingPattern = /<[^ ]+>/.test(this.Siteswap);
         

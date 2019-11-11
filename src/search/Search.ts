@@ -2,15 +2,15 @@ import { Node, GetNodes } from "./Node";
 import { Edge, GetEdges } from "./Edge";
 
 export interface FindSiteswapsConfig {
-	MinPeriod: number;
-	MaxPeriod: number;
-	NumProps: number;
-	IncludeMultiplex: boolean;
-	IncludeExcited: boolean;
-	MaxSearches: number;
-	MaxSiteswaps: number;
-	Sync: boolean;
-	Exclude: string[];
+	minPeriod: number;
+	maxPeriod: number;
+	numProps: number;
+	includeMultiplex: boolean;
+	includeExcited: boolean;
+	maxSearches: number;
+	maxSiteswaps: number;
+	sync: boolean;
+	exclude: string[];
 }
 
 function last<T>(arr : T[]) : T {
@@ -20,7 +20,7 @@ function last<T>(arr : T[]) : T {
 
 export function FindSiteswaps(config : FindSiteswapsConfig) : string[] {
 
-	var nodes = GetNodes(config.MaxPeriod, config.NumProps, config.IncludeMultiplex);
+	var nodes = GetNodes(config.maxPeriod, config.numProps, config.includeMultiplex);
 	var edges = GetEdges(nodes);
 
 	var numSearches = 0;
@@ -34,24 +34,24 @@ export function FindSiteswaps(config : FindSiteswapsConfig) : string[] {
 	function search(origNodeIx : number, history : number[]) {
 
 		numSearches++;	
-		if (numSearches <= config.MaxSearches && siteswaps.length < config.MaxSiteswaps) {
+		if (numSearches <= config.maxSearches && siteswaps.length < config.maxSiteswaps) {
 
 			var nextNodeIx = origNodeIx;
 			var validSiteswap = false;
 			var siteswapStartNode = undefined;
 
-			if (history.length > 0 && history.length <= config.MaxPeriod) {
+			if (history.length > 0 && history.length <= config.maxPeriod) {
 				
 				// check if valid siteswap, ie. the last edge returns us to a node in the history
-				if (history.length >= config.MinPeriod && (!config.Sync || history.length % 2 == 0)) {
+				if (history.length >= config.minPeriod && (!config.sync || history.length % 2 == 0)) {
 					if (edges[last(history)].TargetNode == origNodeIx) {
 						validSiteswap = true;
 						siteswapStartNode = 0;
 					} else {
 						// excited siteswaps would return us to any node within the search (assuming the first node is the ground node)
-						if (config.IncludeExcited) {
+						if (config.includeExcited) {
 							for (var i = 0; i < history.length; i++) {
-								if (edges[last(history)].TargetNode == edges[history[i]].SourceNode && (!config.Sync || i % 2 == 0)) {
+								if (edges[last(history)].TargetNode == edges[history[i]].SourceNode && (!config.sync || i % 2 == 0)) {
 									validSiteswap = true;									
 									siteswapStartNode = i;
 								}
@@ -64,7 +64,7 @@ export function FindSiteswaps(config : FindSiteswapsConfig) : string[] {
 				if (validSiteswap) {
 					
 					var siteswap = history.map(function (a,ix) {
-						if (!config.Sync) {
+						if (!config.sync) {
 							return edges[a].Value; 
 						} else {
 							var syncEdgeValue = "";
@@ -85,7 +85,7 @@ export function FindSiteswaps(config : FindSiteswapsConfig) : string[] {
 					var exists = false;
 					for (var i = 0; i < siteswaps.length; i++) {
 						var ssToMatch = siteswaps[i].map(function (a,ix) {
-							if (!config.Sync) {
+							if (!config.sync) {
 								return edges[a].Value; 
 							} else {
 								var syncEdgeValue = "";
@@ -116,7 +116,7 @@ export function FindSiteswaps(config : FindSiteswapsConfig) : string[] {
 							}
 						}
 						var formattedSiteswap = "";
-						if (config.Sync) {
+						if (config.sync) {
 							for (var i = 0; i < siteswap.length; i++) {
 								if (i % 2 == 0) {
 									formattedSiteswap += ("(" + siteswap[i] + ",");
@@ -135,7 +135,7 @@ export function FindSiteswaps(config : FindSiteswapsConfig) : string[] {
 			}
 
 			// if the siteswap was invalid or it was valid but was excited, and we're still below the maxperiod for a siteswap, keep searching
-			if ((!validSiteswap || siteswapStartNode! > 0) && history.length < config.MaxPeriod) {
+			if ((!validSiteswap || siteswapStartNode! > 0) && history.length < config.maxPeriod) {
 
 				// search each edge of this next node
 				nodes[nextNodeIx].Edges.map(function(edgeIx) {
@@ -146,15 +146,15 @@ export function FindSiteswaps(config : FindSiteswapsConfig) : string[] {
 					// check if searching this edge is going to match the exclusion pattern
 					// TODO: need to fix this to search better
 					var exclude = false;
-					for (var j = 0; j < config.Exclude.length; j++) {
-						if (config.Exclude[j] == edges[edgeIx].Value) {
+					for (var j = 0; j < config.exclude.length; j++) {
+						if (config.exclude[j] == edges[edgeIx].Value) {
 							exclude = true;
 							break;
 						}
 					}
 
 					// if this is an odd numbered edge in the history and we're doing sync, this can't be a 1
-					if (config.Sync && history.length % 2 == 0 && edges[edgeIx].Value.indexOf("1") > -1) {
+					if (config.sync && history.length % 2 == 0 && edges[edgeIx].Value.indexOf("1") > -1) {
 						exclude = true;
 					}
 
@@ -184,7 +184,7 @@ export function FindSiteswaps(config : FindSiteswapsConfig) : string[] {
 				}
 				p1.push(p1[0]);
 				p1 = p1.slice(1);	
-				if (config.Sync) {
+				if (config.sync) {
 					p1.push(p1[0]);
 					p1 = p1.slice(1);
 				}		

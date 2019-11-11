@@ -1,5 +1,5 @@
 import { Pattern } from "../simulator/Pattern";
-import { FindSiteswaps } from "./Search";
+import { FindSiteswaps, FindSiteswapsConfig } from "./Search";
 import { Siteswap } from "../simulator/Siteswap";
 import { DwellPath, GetDwellPaths } from "../simulator/DwellPath";
 import { PatternSettings } from "../ui/PatternSettings";
@@ -7,16 +7,16 @@ import { PatternSettings } from "../ui/PatternSettings";
 
 export function FindRandomPattern() : PatternSettings {
 	
-	var config = {
-		NumProps: 3+Math.round(Math.random()),
-		MinPeriod: 1,
-		MaxPeriod: 6,
-		IncludeMultiplex: false,
-		IncludeExcited: true, // kept as false so we can string together patterns
-		MaxSearches: 1000,
-		MaxSiteswaps: 100,
-		Sync: Math.random() < 0.3,
-		Exclude: []
+	var config : FindSiteswapsConfig = {
+		numProps: 3+Math.round(Math.random()),
+		minPeriod: 1,
+		maxPeriod: 6,
+		includeMultiplex: false,
+		includeExcited: true, // kept as false so we can string together patterns
+		maxSearches: 1000,
+		maxSiteswaps: 100,
+		sync: Math.random() < 0.3,
+		exclude: []
 	}
 
 	var siteswaps = FindSiteswaps(config);	

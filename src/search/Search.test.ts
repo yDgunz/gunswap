@@ -3,15 +3,15 @@ import { FindSiteswaps, FindSiteswapsConfig } from "./Search";
 
 it("Finds all siteswaps with 3 props and period 5", () => { 	
 	var config : FindSiteswapsConfig = {
-		MinPeriod: 1,
-		MaxPeriod: 5,
-		NumProps: 3,
-		IncludeMultiplex: false,
-		IncludeExcited: true,
-		MaxSearches: 1000,
-		MaxSiteswaps: 100,
-		Sync: false,
-		Exclude: []
+		minPeriod: 1,
+		maxPeriod: 5,
+		numProps: 3,
+		includeMultiplex: false,
+		includeExcited: true,
+		maxSearches: 1000,
+		maxSiteswaps: 100,
+		sync: false,
+		exclude: []
 	}
 	var siteswaps = FindSiteswaps(config);
 	expect(siteswaps.length).toEqual(23);

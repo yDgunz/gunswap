@@ -14,15 +14,15 @@ export class Search extends Component<any,State> {
 		super(props);
 
 		var defaultConfig : FindSiteswapsConfig = {
-			NumProps: 3,
-			MinPeriod: 1,
-			MaxPeriod: 5,			
-			IncludeMultiplex: false,
-			IncludeExcited: true,
-			MaxSearches: 1000,
-			MaxSiteswaps: 100,
-			Sync: false,
-			Exclude: []
+			numProps: 3,
+			minPeriod: 1,
+			maxPeriod: 5,			
+			includeMultiplex: false,
+			includeExcited: true,
+			maxSearches: 1000,
+			maxSiteswaps: 100,
+			sync: false,
+			exclude: []
 		}		
 
 		this.state = {
@@ -65,6 +65,7 @@ export class Search extends Component<any,State> {
 	}
 
 	render() {
+
 		return (
 			<Stack>
 				<PrimaryButton className="panel-main-button" text="Find Siteswaps" onClick={this.findSiteswaps} />					
@@ -74,7 +75,7 @@ export class Search extends Component<any,State> {
 					multiline={true}
 					onChange={this.updateInput} 
 					autoAdjustHeight={true} />
-				<List items={this.state.Siteswaps} onRenderCell={this.onRenderCell}></List>
+				<List className="siteswap-list" items={this.state.Siteswaps} onRenderCell={this.onRenderCell}></List>
 			</Stack>				
 		)
 	}
