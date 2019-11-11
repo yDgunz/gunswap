@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "035be319c186b32004e618f39cc35d1d",
+    "revision": "75f3924026598eb58a4bc5cedfa64781",
     "url": "/gunswap/index.html"
   },
   {
@@ -8,7 +8,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/gunswap/static/css/2.5dfd5ae6.chunk.css"
   },
   {
-    "revision": "883c2e6530f6d6b3f21a",
+    "revision": "80af60a7a53beb2c919e",
     "url": "/gunswap/static/css/main.7eb42f69.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/gunswap/static/js/2.03b663de.chunk.js"
   },
   {
-    "revision": "883c2e6530f6d6b3f21a",
-    "url": "/gunswap/static/js/main.15ca9995.chunk.js"
+    "revision": "80af60a7a53beb2c919e",
+    "url": "/gunswap/static/js/main.ed4bd26f.chunk.js"
   },
   {
     "revision": "3cb80f386532af9dac54",
