@@ -2,7 +2,7 @@ import { Siteswap as SiteswapClass } from "./Siteswap";
 import { DwellPath } from "./DwellPath";
 import * as SiteswapRegex from "./SiteswapRegex";
 import { Prop, PropType, ScheduledToss } from "./Prop";
-import { Toss, Hand } from "./Toss";
+import { Toss, Hand, TossType, CatchType } from "./Toss";
 import { PatternSimulation } from "./PatternSimulation";
 import { vec3 } from "@tlaukkan/tsm";
 import { GetTossPathPositionAndVelocity } from "./TossPath";
@@ -366,10 +366,9 @@ export class Pattern {
 					
 					var pos = curToss.Toss.DwellPath.GetPosition(t, curToss.Hand, catchVelocity, tossVelocity, 0.01, 0.015, curToss.Toss.Hold ? nextToss.Toss.DwellPath.Snapshots[0] : null, tossJugglerBodyPosition, tossJugglerBodyRotation);
 					
-					patternSimulation.Props[propIx].Positions.push(pos);					
-					var handDirection = catchVelocity.copy().normalize().scale(t-1);
-					handDirection.add(tossVelocity.copy().normalize().scale(t));
+					patternSimulation.Props[propIx].Positions.push(pos);				
 
+					var handDirection = this.interpolateHandDirection(catchVelocity.copy().scale(curToss.Toss.CatchType == CatchType.Claw ? 1 : -1), tossVelocity.copy().scale(curToss.Toss.TossType == TossType.Claw ? -1 : 1), t);
 
 					if (curToss.Hand === Hand.Left) {
 						patternSimulation.Jugglers[curToss.Toss.Juggler].LeftHandPositions[step] = pos;
@@ -544,8 +543,7 @@ export class Pattern {
 
 							handPos = InterpolateBezierSpline(emptyHandPath,t,tossVelocity,catchVelocity,0.01,0.01,false);
 
-							handDirection = tossVelocity.copy().normalize().scale(1-t);
-							handDirection.add(catchVelocity.copy().normalize().scale(-t));
+							var handDirection = this.interpolateHandDirection(tossVelocity.copy().scale(handLastToss.Toss.TossType == TossType.Claw ? -1 : 1), catchVelocity.copy().scale(handNextToss.Toss.CatchType == CatchType.Claw ? 1 : -1), t);
 
 						}						
 						
@@ -644,6 +642,23 @@ export class Pattern {
 
 
 		return E;
+	}
+
+	private interpolateHandDirection(v0: vec3, v1: vec3, t: number) : vec3 {
+		// this logic taken from http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/
+
+		v0 = v0.copy().normalize();
+		v1 = v1.copy().normalize();
+		var dot = vec3.dot(v0, v1);
+
+		if (dot > .9995) {
+			v1.subtract(v0).scale(t).add(v0);
+			return v1;
+		}
+
+		var theta = t*Math.acos(dot);
+		var v2 = (v1.copy().subtract(v0.copy().scale(dot))).normalize();
+		return v0.scale(Math.cos(theta)).add(v2.scale(Math.sin(theta)));
 	}
 
 	public GetHeighestAndLowestPositionInSimulation() : [number, number] {

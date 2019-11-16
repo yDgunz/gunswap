@@ -18,7 +18,7 @@ interface State {
 }
 
 var defaultPatternSettings : PatternSettings = {	
-	siteswap: '5',
+	siteswap: '51',
 	beatDuration: 0.24,
 	dwellPath: "(30)(10)",
 	dwellRatio: 0.8
