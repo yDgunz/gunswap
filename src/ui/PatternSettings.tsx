@@ -6,6 +6,7 @@ import { PrimaryButton, Stack, TextField, MessageBar, MessageBarType, Modal, Lab
 import 'office-ui-fabric-react/dist/css/fabric.css';
 import * as Yaml from 'js-yaml';
 import { FindRandomPattern } from '../search/RandomPattern';
+import { ExamplePatternsList } from './ExamplePatternsList';
 
 interface Props {
 	updatePattern: Function,
@@ -40,6 +41,7 @@ export class PatternSettingsControls extends Component<Props,State> {
 		this.updatePatternSettingsInput = this.updatePatternSettingsInput.bind(this);
 		this.juggleRandomPattern = this.juggleRandomPattern.bind(this);
 		this.juggleInputPattern = this.juggleInputPattern.bind(this);
+		this.juggleExamplePattern = this.juggleExamplePattern.bind(this);
 		this.juggle = this.juggle.bind(this);
 	}
 
@@ -89,11 +91,16 @@ export class PatternSettingsControls extends Component<Props,State> {
 		}		
 	}
 
+	private juggleExamplePattern(pattern : Pattern, patternSettings: PatternSettings) {
+		this.setState({input: Yaml.safeDump(patternSettings).replace(/'/g,"")});
+		this.props.updatePattern(pattern, patternSettings);
+	}
+
 	render() {		
 		return (
 			<Stack>				
 				<MessageBar messageBarType={MessageBarType.info}>
-					This is a new version of Gunswap still in development. The old version is still available at <Link href="https://www.gunswap.co">gunswap.co</Link>. Found a bug or have an enhancement idea? <Link href="https://github.com/yDgunz/gunswap/issues">Open a ticket in Github</Link> or email me at <Link href="mailto:gunswapjuggling@gmail.com">gunswapjuggling@gmail.com</Link>.
+					Due to some hosting issues the old version of Gunswap is no longer available. This version is not frequently updated, but you can follow progress on GitHub at <Link href="https://github.com/ydgunz/gunswap">https://github.com/ydgunz/gunswap</Link>.
 				</MessageBar>
 				{this.state.errorMessage &&
 					<MessageBar messageBarType={MessageBarType.severeWarning} isMultiline={false}>
@@ -110,6 +117,8 @@ export class PatternSettingsControls extends Component<Props,State> {
 					multiline={true}
 					onChange={this.updatePatternSettingsInput} 
 					autoAdjustHeight={true} />
+				<Label>Example Patterns</Label>
+				<ExamplePatternsList updatePattern={this.juggleExamplePattern} />
 			</Stack>
 		);
 	}

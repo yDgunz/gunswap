@@ -4,6 +4,7 @@ import 'office-ui-fabric-react/dist/css/fabric.css';
 import { Pattern } from '../simulator/Pattern';
 import { JugglingScene } from './JugglingScene';
 import { Slider, Stack, PrimaryButton, IconButton } from 'office-ui-fabric-react';
+import { GenerateGif } from './GifWriter';
 
 
 interface Props {
@@ -55,6 +56,9 @@ class Viewport extends Component<Props,State> {
 		if (this.jugglingScene) {
 			this.jugglingScene.isPlaying = false;
 			this.setState({isPlaying: false});
+
+			// GenerateGif(this.jugglingScene);
+
 		}
 	}
 

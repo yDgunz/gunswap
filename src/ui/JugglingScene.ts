@@ -51,7 +51,7 @@ export class JugglingScene {
 		this.camera = new THREE.PerspectiveCamera( 75, width/height, 0.1, 1000 );
 		this.positionToLookAt = new vec3();	
 		
-		this.renderer = new THREE.WebGLRenderer({ antialias: true });
+		this.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 		
 		this.scene.add( new THREE.HemisphereLight(0xffffff, 0x000000, 1 ));
 		//this.scene.background = new THREE.Color("white");
@@ -352,10 +352,10 @@ export class JugglingScene {
 		this.jugglerMeshes.push(jugglerMeshes);
 
 		this.scene.add(jugglerMeshes.LeftElbowMesh);
-		this.scene.add(jugglerMeshes.LeftHandMesh);
+		//this.scene.add(jugglerMeshes.LeftHandMesh);
 		this.scene.add(jugglerMeshes.LeftShoulderMesh);
 		this.scene.add(jugglerMeshes.RightElbowMesh);
-		this.scene.add(jugglerMeshes.RightHandMesh);
+		//this.scene.add(jugglerMeshes.RightHandMesh);
 		this.scene.add(jugglerMeshes.RightShoulderMesh);
 		this.scene.add(jugglerMeshes.LeftBicepMesh);
 		this.scene.add(jugglerMeshes.LeftForearmMesh);
