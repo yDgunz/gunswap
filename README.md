@@ -1,6 +1,16 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Gunswap Juggling Animator
 
-## Available Scripts
+Gunswap can be found here: [www.gunswap.co](https://www.gunswap.co).
+
+Gunswap is a web-based juggling animator based on [siteswap notation](https://en.wikipedia.org/wiki/Siteswap). It supports synchronous and multiplex patterns, customizable dwell paths (for patterns such as factory and mills mess), and a variety of other novel inputs.
+
+## Where is the Old Version?
+
+Gunswap was completely rebuilt using TypeScript and hosting moved to GitHube Pages. While there are some features from the old version that haven't been ported to the new version, such as bounce support, the new version should provide a more stable foundation for future maintenance.
+
+## Dev Guidance
+
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 In the project directory, you can run:
 
