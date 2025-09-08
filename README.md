@@ -1,6 +1,6 @@
 # Gunswap Juggling Animator
 
-Gunswap can be found here: [www.gunswap.co](https://www.gunswap.co).
+Gunswap can be found here: [GitHub Page](https://ydgunz.github.io/gunswap/).
 
 Gunswap is a web-based juggling animator based on [siteswap notation](https://en.wikipedia.org/wiki/Siteswap). It supports synchronous and multiplex patterns, customizable dwell paths (for patterns such as factory and mills mess), and a variety of other novel inputs.
 
